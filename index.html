@@ -355,17 +355,22 @@ const DEFAULT_ACTIVITIES=[
 function loadData(){
   try{
     const d=JSON.parse(localStorage.getItem(KEY));
+    // Se non ci sono dati salvati, usa i default
     if(!d) return getDefault();
-    if(!d.activities) d.activities=[...DEFAULT_ACTIVITIES];
+    // Aggiungi solo i campi MANCANTI — non sovrascrivere mai dati esistenti
+    if(!d.activities) d.activities=JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+    if(!d.days) d.days=JSON.parse(JSON.stringify(DEFAULT_DAYS));
     if(!d.goalSessions) d.goalSessions=5;
-    // ensure exercises field on each day
-    if(d.days) d.days.forEach(day=>{if(!day.exercises)day.exercises=[];});
-    // checklist: object keyed by "weekStart_dayIndex"
     if(!d.checks) d.checks={};
+    if(!d.sessions) d.sessions=[];
+    // Assicura che ogni giorno abbia il campo exercises (retrocompatibilità)
+    d.days.forEach(day=>{if(!day.exercises)day.exercises=[];});
+    // Salva subito per persistere eventuali migrazioni
+    localStorage.setItem(KEY,JSON.stringify(d));
     return d;
   }catch{return getDefault();}
 }
-function getDefault(){return{sessions:[],streak:0,bestStreak:0,lastDate:null,days:JSON.parse(JSON.stringify(DEFAULT_DAYS)),activities:[...DEFAULT_ACTIVITIES],goalSessions:5,checks:{}};}
+function getDefault(){return{sessions:[],streak:0,bestStreak:0,lastDate:null,days:JSON.parse(JSON.stringify(DEFAULT_DAYS)),activities:JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES)),goalSessions:5,checks:{}};}
 function saveData(d){localStorage.setItem(KEY,JSON.stringify(d));}
 
 let data=loadData();
