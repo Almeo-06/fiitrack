@@ -2,7 +2,7 @@
   "name": "FitTrack - Il Tuo Progresso",
   "short_name": "FitTrack",
   "description": "Traccia i tuoi allenamenti quotidiani con streak e recap settimanale",
-  "start_url": "/",
+  "start_url": "/fiitrack/",
   "display": "standalone",
   "background_color": "#060610",
   "theme_color": "#060610",
