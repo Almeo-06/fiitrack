@@ -3,733 +3,448 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#060610">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>FitTrack</title>
+<title>FitTrack v7 Preview</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#060610;--surface:#0e0e1e;--surface2:#161628;
-  --border:#1e1e38;--border2:#2a2a48;
-  --fire:#ff4d00;--fire2:#ff8c00;--green:#00e676;
-  --blue:#2979ff;--purple:#aa00ff;
-  --text:#eeeef8;--muted:#5a5a80;--muted2:#8888aa;
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#0a0a14; min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  font-family:'Outfit',sans-serif; padding:28px 16px 40px;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;padding-bottom:80px;-webkit-tap-highlight-color:transparent;}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(41,121,255,0.08),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(255,77,0,0.05),transparent);pointer-events:none;z-index:0;}
-.app{max-width:480px;margin:0 auto;padding:24px 16px;position:relative;z-index:1;}
+body::before {
+  content:''; position:fixed; inset:0;
+  background: radial-gradient(ellipse 60% 50% at 30% 20%, rgba(255,85,0,0.07), transparent),
+              radial-gradient(ellipse 50% 40% at 70% 80%, rgba(0,120,255,0.05), transparent);
+  pointer-events:none;
+}
 
-/* TABS */
-.tab-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:50;}
-.tab-btn{flex:1;padding:10px 8px 14px;background:none;border:none;color:var(--muted);font-family:'Outfit',sans-serif;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color 0.2s;}
-.tab-btn .ti{font-size:18px;}
-.tab-btn.active{color:var(--fire2);}
-.page{display:none;}
-.page.active{display:block;}
+.preview-title { font-family:'Syne',sans-serif; font-weight:800; font-size:26px; color:#fff; margin-bottom:4px; }
+.preview-title span { color:#ff4d00; }
+.preview-sub { font-size:12px; color:#55557a; margin-bottom:18px; }
+
+/* CONTROLLI ESTERNI */
+.controls { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
+.ctrl-group { display:flex; gap:5px; background:#111118; border:1px solid #22222e; border-radius:12px; padding:5px; }
+.ctrl-btn { padding:7px 16px; border-radius:8px; border:none; background:transparent; color:#55557a; font-family:'Outfit',sans-serif; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.2s; }
+.ctrl-btn.active { background:#ff4d00; color:#fff; box-shadow:0 3px 10px rgba(255,77,0,0.3); }
+.ctrl-btn.active.rest { background:linear-gradient(135deg,#4040aa,#6060cc); box-shadow:0 3px 10px rgba(80,60,200,0.3); }
+.mode-label { font-size:10px; color:#44446a; font-family:'Syne Mono',monospace; text-align:center; margin-bottom:14px; letter-spacing:1px; }
+
+/* PHONE */
+.phone-wrap { filter: drop-shadow(0 32px 64px rgba(0,0,0,0.8)) drop-shadow(0 0 24px rgba(255,77,0,0.05)); }
+.phone { width:320px; background:#0d0d18; border-radius:42px; border:2px solid #252530; overflow:hidden; position:relative; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.03); transition:background 0.5s; }
+.phone.rest-mode { background:#060610; border-color:#1a1a30; }
+.phone-notch { position:absolute; top:0; left:50%; transform:translateX(-50%); width:110px; height:26px; background:#060610; border-radius:0 0 16px 16px; z-index:10; display:flex; align-items:center; justify-content:center; gap:5px; }
+.notch-speaker { width:44px; height:4px; border-radius:3px; background:#181820; }
+.notch-cam { width:9px; height:9px; border-radius:50%; background:#181820; border:1px solid #282830; }
+.status-bar { height:38px; padding:10px 18px 0; display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#6668aa; font-family:'Syne Mono',monospace; }
+
+.app-frame { height:640px; overflow-y:auto; overflow-x:hidden; padding:14px 14px 70px; scrollbar-width:none; }
+.app-frame::-webkit-scrollbar { display:none; }
+
+.phone-tabbar { position:absolute; bottom:0; left:0; right:0; background:rgba(10,10,20,0.96); backdrop-filter:blur(20px); border-top:1px solid #1e1e38; display:flex; height:58px; z-index:10; border-radius:0 0 40px 40px; }
+.phone-tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:#44446a; font-size:8px; font-family:'Outfit',sans-serif; cursor:pointer; border:none; background:none; padding-bottom:6px; transition:color 0.2s; }
+.phone-tab .ti { font-size:16px; }
+.phone-tab.active { color:#ff8c00; }
+.phone-tab.active.rest-tab { color:#8888ff; }
+
+/* ── APP VARS ── */
+:root {
+  --bg:#060610; --surface:#0e0e1e; --surface2:#161628;
+  --border:#1e1e38; --border2:#2a2a48;
+  --fire:#ff4d00; --fire2:#ff8c00; --green:#00e676;
+  --blue:#2979ff; --text:#eeeef8; --muted:#5a5a80; --muted2:#8888aa;
+}
 
 /* HEADER */
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;animation:slideDown 0.6s ease both;}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.5px;}
-.logo span{color:var(--fire);}
-.date-badge{font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted2);background:var(--surface);border:1px solid var(--border);padding:5px 10px;border-radius:6px;}
+.header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; letter-spacing:-0.5px; color:var(--text); }
+.logo .fire { color:#ff4d00; }
+.logo .rest { color:#7070ff; }
+.date-badge { font-family:'Syne Mono',monospace; font-size:9px; color:var(--muted2); background:var(--surface); border:1px solid var(--border); padding:4px 8px; border-radius:5px; }
 
-/* CARDS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;}
-.card-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.card-title .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+/* STREAK ALLENAMENTO */
+.streak-card { background:linear-gradient(135deg,#1a0a00,#0e0e1e); border:1px solid rgba(255,77,0,0.3); border-radius:18px; padding:16px; margin-bottom:10px; display:flex; align-items:center; gap:12px; position:relative; overflow:hidden; }
+.streak-card::before { content:''; position:absolute; top:-20px; right:-20px; width:90px; height:90px; background:radial-gradient(circle,rgba(255,77,0,0.15),transparent 70%); }
+.streak-flame { font-size:38px; filter:drop-shadow(0 0 10px rgba(255,140,0,0.6)); }
+.streak-num { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; line-height:1; background:linear-gradient(135deg,#ff4d00,#ff8c00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.streak-label { font-size:10px; color:var(--muted2); margin-top:2px; }
+.streak-best { font-family:'Syne Mono',monospace; font-size:8px; color:var(--muted); margin-top:3px; }
+.streak-dots { display:flex; gap:3px; margin-top:6px; }
+.sdot { width:20px; height:4px; border-radius:3px; background:var(--border2); }
+.sdot.active { background:linear-gradient(90deg,#ff4d00,#ff8c00); }
+.sdot.today { background:#ff4d00; box-shadow:0 0 6px #ff4d00; }
 
-/* STREAK */
-.streak-card{background:linear-gradient(135deg,#1a0a00,#0e0e1e);border:1px solid rgba(255,77,0,0.3);border-radius:20px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;animation:slideUp 0.6s ease 0.1s both;}
-.streak-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,77,0,0.15),transparent 70%);}
-.streak-flame{font-size:44px;line-height:1;filter:drop-shadow(0 0 12px rgba(255,140,0,0.6));}
-.streak-num{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--fire),var(--fire2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.streak-label{font-size:12px;color:var(--muted2);margin-top:2px;}
-.streak-best{font-family:'Syne Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;}
-.streak-dots{display:flex;gap:4px;margin-top:8px;}
-.sdot{width:24px;height:5px;border-radius:3px;background:var(--border2);}
-.sdot.active{background:linear-gradient(90deg,var(--fire),var(--fire2));}
-.sdot.today{background:var(--fire);box-shadow:0 0 8px var(--fire);}
+/* STREAK RIPOSO */
+.rest-streak-card { background:linear-gradient(135deg,#06060f,#0a0818,#060610); border:1px solid rgba(100,80,255,0.25); border-radius:18px; padding:16px; margin-bottom:10px; display:flex; align-items:center; gap:12px; position:relative; overflow:hidden; }
+.rest-streak-card::before { content:''; position:absolute; top:-20px; right:-20px; width:110px; height:110px; background:radial-gradient(circle,rgba(80,60,220,0.12),transparent 70%); }
+.rest-moon { font-size:38px; filter:drop-shadow(0 0 12px rgba(120,100,255,0.5)); }
+.rest-streak-num { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; line-height:1; background:linear-gradient(135deg,#8888ff,#aaaaff,#ccccff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.rest-streak-label { font-size:10px; color:#8888bb; margin-top:2px; }
+.rest-streak-best { font-family:'Syne Mono',monospace; font-size:8px; color:#55557a; margin-top:3px; }
+.rdot { width:20px; height:4px; border-radius:3px; background:#1a1a30; }
+.rdot.active { background:linear-gradient(90deg,#6060cc,#9090ff); }
+.rdot.today { background:#8080ff; box-shadow:0 0 6px rgba(120,100,255,0.5); }
 
-/* GOAL BAR */
-.goal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.goal-label{font-size:13px;color:var(--muted2);}
-.goal-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
-.goal-bar-bg{background:var(--border2);border-radius:99px;height:7px;overflow:hidden;}
-.goal-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--fire),var(--fire2));transition:width 0.6s ease;}
-.goal-bar-fill.done{background:linear-gradient(90deg,var(--green),#00bfa5);}
+/* QUOTE */
+.rest-quote-card { background:linear-gradient(135deg,#08081a,#0c0c22); border:1px solid rgba(100,80,255,0.2); border-radius:18px; padding:16px; margin-bottom:10px; }
+.rest-quote { font-family:'Syne',sans-serif; font-size:13px; font-weight:600; color:#cccce8; line-height:1.5; font-style:italic; margin-bottom:6px; }
+.rest-quote-author { font-family:'Syne Mono',monospace; font-size:9px; color:#55557a; letter-spacing:1px; }
 
-/* RECAP STATS */
-.recap-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.rstat{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;}
-.rstat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
-.rstat-val.fire{color:var(--fire);}
-.rstat-val.green{color:var(--green);}
-.rstat-val.blue{color:var(--blue);}
-.rstat-lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
-.week-bars{display:flex;gap:5px;align-items:flex-end;height:50px;margin-top:14px;}
-.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;}
-.bar{width:100%;border-radius:4px 4px 0 0;background:var(--border2);transition:height 0.5s ease;min-height:4px;}
-.bar.has-data{background:linear-gradient(180deg,var(--fire2),var(--fire));}
-.bar.today-bar{background:linear-gradient(180deg,#ffcc00,var(--fire2));box-shadow:0 0 8px rgba(255,140,0,0.4);}
-.bar-day{font-family:'Syne Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;}
+/* CARD */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:16px; margin-bottom:10px; }
+.card.rest-card { border-color:rgba(100,80,255,0.15); }
+.card-title { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted2); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.dot { width:5px; height:5px; border-radius:50%; display:inline-block; }
 
-/* WEEKLY PLAN */
-.week-plan{display:flex;flex-direction:column;gap:8px;}
-.plan-day{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
-.plan-day:hover{border-color:var(--border2);}
-.plan-day.today-day{border-color:rgba(255,220,0,0.3);}
-.plan-day.active-day{border-color:var(--blue);background:rgba(41,121,255,0.06);}
-.plan-day.done-day{border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.04);}
-.plan-day-header{display:flex;align-items:center;gap:10px;}
-.plan-day-icon{font-size:22px;flex-shrink:0;}
-.plan-day-info{flex:1;}
-.plan-day-name{font-size:13px;font-weight:600;}
-.plan-day-sub{font-size:11px;color:var(--muted2);margin-top:1px;}
-.plan-day-badge{font-family:'Syne Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;letter-spacing:1px;}
-.badge-run{background:rgba(62,255,206,0.1);color:#3effce;border:1px solid rgba(62,255,206,0.2);}
-.badge-gym{background:rgba(255,107,53,0.1);color:var(--fire2);border:1px solid rgba(255,107,53,0.2);}
-.badge-rest{background:rgba(107,107,128,0.1);color:var(--muted);border:1px solid var(--border);}
-.badge-done{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2);}
-.plan-day-progress{margin-top:8px;}
-.plan-mini-bar-bg{background:var(--border);border-radius:99px;height:3px;overflow:hidden;}
-.plan-mini-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#00bfa5);transition:width 0.4s ease;}
+/* GOAL */
+.goal-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+.goal-label { font-size:11px; color:var(--muted2); }
+.goal-val { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--text); }
+.goal-bar-bg { background:var(--border2); border-radius:99px; height:6px; overflow:hidden; }
+.goal-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#ff4d00,#ff8c00); }
+.goal-bar-fill.rest-fill { background:linear-gradient(90deg,#6060cc,#9090ff); }
 
-/* DAY DETAIL PANEL */
-.day-detail-panel{background:rgba(41,121,255,0.05);border:1px solid rgba(41,121,255,0.2);border-radius:14px;padding:14px;margin-top:8px;display:none;animation:fadeIn 0.2s ease;}
-.day-detail-panel.open{display:block;}
-.checklist{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-.check-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.2s;}
-.check-item.checked{background:rgba(0,230,118,0.05);border-color:rgba(0,230,118,0.25);}
-.check-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;font-size:12px;}
-.check-item.checked .check-box{background:var(--green);border-color:var(--green);color:#000;}
-.check-text{flex:1;}
-.check-name{font-size:13px;font-weight:500;}
-.check-item.checked .check-name{text-decoration:line-through;color:var(--muted);}
-.check-detail{font-size:11px;color:var(--muted2);margin-top:1px;}
-.check-note{font-size:10px;color:var(--muted);font-style:italic;}
-.no-checklist{font-size:12px;color:var(--muted);text-align:center;padding:12px;font-style:italic;}
+/* RECAP */
+.recap-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.rstat { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:11px 6px; text-align:center; }
+.rstat.rest-stat { background:#0c0c20; border-color:#1a1a38; }
+.rstat-val { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.rstat-val.fire { color:#ff4d00; } .rstat-val.green { color:#00e676; } .rstat-val.blue { color:#2979ff; } .rstat-val.purple { color:#8888ff; }
+.rstat-lbl { font-size:8px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
 
-/* LOG FORM */
-.log-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;}
-.day-select{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
-.day-btn{flex:1;min-width:40px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 4px;color:var(--muted2);font-family:'Syne Mono',monospace;font-size:10px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.day-btn.selected{background:rgba(41,121,255,0.1);border-color:var(--blue);color:var(--blue);}
-.day-btn.logged{background:rgba(0,230,118,0.08);border-color:rgba(0,230,118,0.3);color:var(--green);}
-.type-toggle{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
-.type-btn{flex:1;min-width:80px;padding:9px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--muted2);font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;text-align:center;}
-.type-btn.active{background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.4);color:#82b1ff;}
-.input-group{margin-bottom:10px;}
-.input-label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:block;}
-.input-row{display:flex;gap:8px;}
-.inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:border 0.2s;}
-.inp:focus{border-color:var(--blue);}
-.inp::placeholder{color:var(--muted);}
-.km-row{display:none;}
-.km-row.visible{display:flex;}
-.log-btn{width:100%;background:linear-gradient(135deg,var(--fire),var(--fire2));border:none;border-radius:12px;padding:13px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 20px rgba(255,77,0,0.3);}
-.backup-row{display:flex;gap:8px;margin-top:12px;}
-.backup-btn{flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--muted2);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;text-align:center;}
+/* WEEK BARS */
+.week-bars { display:flex; gap:4px; align-items:flex-end; height:50px; margin-top:10px; }
+.bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; height:100%; justify-content:flex-end; }
+.bar { width:100%; border-radius:3px 3px 0 0; background:var(--border2); min-height:4px; }
+.bar.has-data { background:linear-gradient(180deg,#ff8c00,#ff4d00); }
+.bar.today-bar { background:linear-gradient(180deg,#ffcc00,#ff8c00); box-shadow:0 0 7px rgba(255,140,0,0.5); }
+.bar-day { font-family:'Syne Mono',monospace; font-size:7px; color:var(--muted); text-transform:uppercase; }
 
-/* HISTORY */
-.session-list{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;}
-.session-list::-webkit-scrollbar{width:3px;}
-.session-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.session-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;}
-.session-icon{font-size:18px;flex-shrink:0;}
-.session-info{flex:1;min-width:0;}
-.session-day{font-size:13px;font-weight:600;}
-.session-meta{font-size:11px;color:var(--muted2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.session-kcal{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--fire2);white-space:nowrap;}
-.session-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:4px;flex-shrink:0;}
-.empty-state{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
-.empty-state .emoji{font-size:30px;display:block;margin-bottom:8px;}
+/* PLAN */
+.week-plan { display:flex; flex-direction:column; gap:6px; }
+.plan-day { background:var(--surface2); border:1px solid var(--border); border-radius:13px; padding:10px 12px; }
+.plan-day.today-day { border-color:rgba(255,220,0,0.3); }
+.plan-day.done-day { border-color:rgba(0,230,118,0.3); background:rgba(0,230,118,0.03); }
+.plan-day-header { display:flex; align-items:center; gap:8px; }
+.plan-day-icon { font-size:18px; }
+.plan-day-info { flex:1; }
+.plan-day-name { font-size:11px; font-weight:600; color:var(--text); }
+.plan-day-sub { font-size:9px; color:var(--muted2); margin-top:1px; }
+.plan-day-badge { font-family:'Syne Mono',monospace; font-size:7px; padding:2px 6px; border-radius:4px; letter-spacing:1px; }
+.badge-run { background:rgba(62,255,206,0.1); color:#3effce; border:1px solid rgba(62,255,206,0.2); }
+.badge-gym { background:rgba(255,107,53,0.1); color:#ff8c00; border:1px solid rgba(255,107,53,0.2); }
+.badge-rest { background:rgba(100,80,255,0.1); color:#9090ff; border:1px solid rgba(100,80,255,0.2); }
+.badge-done { background:rgba(0,230,118,0.1); color:#00e676; border:1px solid rgba(0,230,118,0.2); }
 
-/* SETTINGS */
-.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;}
-.settings-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px;}
-.settings-sub{font-size:12px;color:var(--muted2);margin-bottom:18px;}
-.setting-section{margin-bottom:22px;}
-.setting-section-title{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.setting-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-.day-editor{display:flex;flex-direction:column;gap:6px;}
-.day-edit-row{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-.day-edit-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;}
-.day-edit-name{font-size:13px;font-weight:600;flex:1;}
-.day-type-select{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;outline:none;cursor:pointer;}
-.day-edit-toggle{font-size:11px;color:var(--muted2);cursor:pointer;padding:4px 8px;background:var(--border);border-radius:6px;border:none;color:var(--muted2);}
-.day-checklist-editor{padding:0 14px 12px;display:none;border-top:1px solid var(--border);margin-top:2px;}
-.day-checklist-editor.open{display:block;}
-.ex-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
-.ex-row{display:flex;gap:6px;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
-.ex-inputs{flex:1;display:flex;flex-direction:column;gap:4px;}
-.ex-inp{background:transparent;border:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;outline:none;width:100%;}
-.ex-inp::placeholder{color:var(--muted);}
-.ex-inp.sub{font-size:11px;color:var(--muted2);}
-.ex-inp.sub::placeholder{color:var(--border2);}
-.ex-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px;flex-shrink:0;}
-.add-ex-btn{width:100%;padding:8px;background:transparent;border:1px dashed var(--border2);border-radius:8px;color:var(--muted);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;margin-top:6px;}
-.activity-list{display:flex;flex-direction:column;gap:6px;}
-.activity-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;}
-.activity-emoji-input{width:40px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px;color:var(--text);font-size:16px;text-align:center;outline:none;}
-.activity-name-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;outline:none;}
-.activity-has-km{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted2);white-space:nowrap;}
-.activity-has-km input{accent-color:var(--blue);}
-.activity-del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px;}
-.add-activity-btn{width:100%;padding:9px;background:var(--surface2);border:1px dashed var(--border2);border-radius:10px;color:var(--muted2);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;margin-top:6px;}
-.goal-input-row{display:flex;align-items:center;gap:12px;}
-.goal-input-row label{font-size:13px;color:var(--muted2);flex:1;}
-.goal-num-input{width:65px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'Syne',sans-serif;font-size:16px;font-weight:700;text-align:center;outline:none;}
-.save-btn{width:100%;background:linear-gradient(135deg,var(--blue),#1565c0);border:none;border-radius:12px;padding:13px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(41,121,255,0.3);margin-top:6px;}
+/* MESE */
+.month-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
+.mstat { background:#0c0c20; border:1px solid #1a1a38; border-radius:11px; padding:10px 6px; text-align:center; }
+.mstat-val { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; color:#8888ff; }
+.mstat-lbl { font-size:8px; color:#55557a; margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+.month-days { display:flex; gap:3px; flex-wrap:wrap; }
+.mday { width:26px; height:26px; border-radius:5px; background:#0c0c20; border:1px solid #1a1a38; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'Syne Mono',monospace; color:#55557a; }
+.mday.has-session { background:rgba(100,80,255,0.15); border-color:rgba(100,80,255,0.3); color:#9090ff; }
+.mday.is-rest { background:rgba(60,40,150,0.06); border-color:rgba(80,60,200,0.12); color:#333355; }
+.mday.is-today { border-color:#8080ff; box-shadow:0 0 5px rgba(120,100,255,0.4); color:#aaaaff; }
 
-/* INSTALL */
-.install-banner{background:linear-gradient(135deg,rgba(41,121,255,0.1),rgba(170,0,255,0.08));border:1px solid rgba(41,121,255,0.3);border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;cursor:pointer;}
-.install-banner.hidden{display:none;}
-.install-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;}
-
-/* TOAST */
-.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:11px 18px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,0.4);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);z-index:100;white-space:nowrap;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.toast.success{border-color:rgba(0,230,118,0.3);color:var(--green);}
-.toast.fire{border-color:rgba(255,77,0,0.3);color:var(--fire2);}
-
-@keyframes slideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.page { display:none; }
+.page.active { display:block; }
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- HOME -->
-  <div class="page active" id="pageHome">
-    <div class="header">
-      <div class="logo">Fit<span>Track</span></div>
-      <div class="date-badge" id="dateBadge"></div>
-    </div>
-    <div class="install-banner hidden" id="installBanner">
-      <div style="font-size:22px">📲</div>
-      <div style="flex:1"><strong style="font-size:13px;display:block">Installa FitTrack</strong><span style="font-size:11px;color:var(--muted2)">Aggiungila alla schermata home!</span></div>
-      <button class="install-close" onclick="dismissInstall()">✕</button>
-    </div>
-    <!-- Streak -->
-    <div class="streak-card" style="animation:slideUp 0.6s ease 0.05s both">
-      <div class="streak-flame" id="streakFlame">🔥</div>
-      <div style="flex:1">
-        <div class="streak-num" id="streakNum">0</div>
-        <div class="streak-label">giorni di fila</div>
-        <div class="streak-best" id="streakBest">Record: 0 giorni</div>
-        <div class="streak-dots" id="streakDots"></div>
-      </div>
-    </div>
-    <!-- Goal -->
-    <div class="card" style="animation:slideUp 0.6s ease 0.1s both">
-      <div class="goal-row">
-        <div class="goal-label">🎯 Obiettivo settimana</div>
-        <div class="goal-val"><span id="goalCurrent">0</span>/<span id="goalTarget">5</span></div>
-      </div>
-      <div class="goal-bar-bg"><div class="goal-bar-fill" id="goalBar" style="width:0%"></div></div>
-    </div>
-    <!-- Recap -->
-    <div class="card" style="animation:slideUp 0.6s ease 0.15s both">
-      <div class="card-title"><span class="dot" style="background:var(--green)"></span>Recap Settimana</div>
-      <div class="recap-stats">
-        <div class="rstat"><div class="rstat-val fire" id="totalKcal">0</div><div class="rstat-lbl">kcal</div></div>
-        <div class="rstat"><div class="rstat-val green" id="totalSessions">0</div><div class="rstat-lbl">sessioni</div></div>
-        <div class="rstat"><div class="rstat-val blue" id="totalKm">0</div><div class="rstat-lbl">km</div></div>
-      </div>
-      <div class="week-bars" id="weekBars"></div>
-    </div>
-    <!-- Weekly Plan -->
-    <div class="card" style="animation:slideUp 0.6s ease 0.2s both">
-      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Piano Settimana</div>
-      <div class="week-plan" id="weekPlan"></div>
-    </div>
+<div class="preview-title">Fit<span>Track</span> <span style="font-size:15px;color:#44446a">v7 PREVIEW</span></div>
+<div class="preview-sub">Clicca le tab per navigare · Cambia modalità per vedere il giorno di riposo</div>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <button class="ctrl-btn active" id="btnWork" onclick="setMode('work')">🔥 Allenamento</button>
+    <button class="ctrl-btn rest" id="btnRest" onclick="setMode('rest')">🌙 Riposo</button>
   </div>
+  <div class="ctrl-group">
+    <button class="ctrl-btn active" id="tabHome" onclick="showPage('home')">🏠 Home</button>
+    <button class="ctrl-btn" id="tabLog" onclick="showPage('log')">⚡ Registra</button>
+    <button class="ctrl-btn" id="tabSettings" onclick="showPage('settings')">⚙️ Impostazioni</button>
+  </div>
+</div>
+<div class="mode-label" id="modeLabel">MODALITÀ ALLENAMENTO — Lunedì, 9 Mar</div>
 
-  <!-- LOG -->
-  <div class="page" id="pageLog">
-    <div class="header">
-      <div class="logo">Fit<span>Track</span></div>
-      <div class="date-badge" id="dateBadge2"></div>
-    </div>
-    <div class="log-card">
-      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Aggiungi Sessione</div>
-      <div class="day-select" id="daySelect"></div>
-      <div class="type-toggle" id="typeToggle"></div>
-      <div class="input-group">
-        <label class="input-label">Calorie Bruciate (kcal)</label>
-        <input class="inp" type="number" id="kcalInput" placeholder="es. 320" min="0" max="2000">
+<div class="phone-wrap">
+<div class="phone" id="phone">
+  <div class="phone-notch"><div class="notch-speaker"></div><div class="notch-cam"></div></div>
+  <div class="status-bar"><span>9:41</span><span>▊▊▊ 📶 🔋</span></div>
+
+  <div class="app-frame" id="appFrame">
+
+    <!-- HOME ALLENAMENTO -->
+    <div class="page active" id="page-home-work">
+      <div class="header">
+        <div class="logo">Fit<span class="fire">Track</span></div>
+        <div class="date-badge" id="dateBadgeWork"></div>
       </div>
-      <div class="input-group km-row" id="kmRow">
-        <label class="input-label">Distanza Percorsa</label>
-        <div class="input-row">
-          <input class="inp" type="number" id="kmInput" placeholder="es. 3.5" min="0" step="0.1">
-          <select class="inp" id="kmUnit" style="max-width:76px"><option value="km">km</option><option value="m">m</option></select>
+      <div class="streak-card">
+        <div class="streak-flame">🔥</div>
+        <div style="flex:1">
+          <div class="streak-num">7</div>
+          <div class="streak-label">giorni di fila</div>
+          <div class="streak-best">Record: 12 giorni</div>
+          <div class="streak-dots">
+            <div class="sdot active"></div><div class="sdot active"></div>
+            <div class="sdot active"></div><div class="sdot active"></div>
+            <div class="sdot active"></div><div class="sdot active"></div>
+            <div class="sdot today"></div>
+          </div>
         </div>
       </div>
-      <div class="input-group">
-        <label class="input-label">Note (opzionale)</label>
-        <input class="inp" type="text" id="noteInput" placeholder="es. Corsa al parco...">
+      <div class="card">
+        <div class="goal-row"><div class="goal-label">🎯 Obiettivo settimana</div><div class="goal-val">2/5</div></div>
+        <div class="goal-bar-bg"><div class="goal-bar-fill" style="width:40%"></div></div>
       </div>
-      <button class="log-btn" onclick="logSession()">⚡ REGISTRA SESSIONE</button>
-      <div class="backup-row">
-        <button class="backup-btn" onclick="exportData()">💾 Backup</button>
-        <button class="backup-btn" onclick="document.getElementById('importFile').click()">📂 Importa</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title" style="justify-content:space-between">
-        <span style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:var(--purple)"></span>Storico</span>
-        <span style="font-size:10px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="confirmClear()">Azzera tutto</span>
-      </div>
-      <div class="session-list" id="sessionList"></div>
-    </div>
-  </div>
-
-  <!-- SETTINGS -->
-  <div class="page" id="pageSettings">
-    <div class="header">
-      <div class="logo">Fit<span>Track</span></div>
-      <div style="font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted2)">Impostazioni</div>
-    </div>
-    <div class="settings-card">
-      <div class="settings-title">⚙️ Personalizza</div>
-      <div class="settings-sub">Configura piano, attività e checklist</div>
-
-      <div class="setting-section">
-        <div class="setting-section-title">🎯 Obiettivo Settimanale</div>
-        <div class="goal-input-row">
-          <label>Sessioni da completare ogni settimana</label>
-          <input class="goal-num-input" type="number" id="goalInput" min="1" max="14" value="5">
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:#00e676"></span>Recap Settimana</div>
+        <div class="recap-stats">
+          <div class="rstat"><div class="rstat-val fire">840</div><div class="rstat-lbl">kcal</div></div>
+          <div class="rstat"><div class="rstat-val green">2</div><div class="rstat-lbl">sessioni</div></div>
+          <div class="rstat"><div class="rstat-val blue">6.4</div><div class="rstat-lbl">km</div></div>
+        </div>
+        <div class="week-bars">
+          <div class="bar-wrap"><div class="bar" style="height:4px"></div><div class="bar-day">Lu</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:4px"></div><div class="bar-day">Ma</div></div>
+          <div class="bar-wrap"><div class="bar has-data" style="height:36px"></div><div class="bar-day">Me</div></div>
+          <div class="bar-wrap"><div class="bar has-data" style="height:48px"></div><div class="bar-day">Gi</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:4px"></div><div class="bar-day">Ve</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:4px"></div><div class="bar-day">Sa</div></div>
+          <div class="bar-wrap"><div class="bar today-bar" style="height:18px"></div><div class="bar-day">Do</div></div>
         </div>
       </div>
-
-      <div class="setting-section">
-        <div class="setting-section-title">🏃 Tipi di Attività</div>
-        <div class="activity-list" id="activityList"></div>
-        <button class="add-activity-btn" onclick="addActivity()">+ Aggiungi attività</button>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:#2979ff"></span>Piano Settimana</div>
+        <div class="week-plan">
+          <div class="plan-day today-day"><div class="plan-day-header"><div class="plan-day-icon">😴</div><div class="plan-day-info"><div class="plan-day-name">Lunedì <span style="font-size:8px;color:#ffcc00">● oggi</span></div><div class="plan-day-sub">Giorno di riposo</div></div><span class="plan-day-badge badge-rest">RIPOSO</span></div></div>
+          <div class="plan-day"><div class="plan-day-header"><div class="plan-day-icon">😴</div><div class="plan-day-info"><div class="plan-day-name">Martedì</div><div class="plan-day-sub">Giorno di riposo</div></div><span class="plan-day-badge badge-rest">RIPOSO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏃</div><div class="plan-day-info"><div class="plan-day-name">Mercoledì</div><div class="plan-day-sub">Corsa · 1 esercizio</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏃</div><div class="plan-day-info"><div class="plan-day-name">Giovedì</div><div class="plan-day-sub">Corsa · 1 esercizio</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+          <div class="plan-day"><div class="plan-day-header"><div class="plan-day-icon">🏋️</div><div class="plan-day-info"><div class="plan-day-name">Venerdì</div><div class="plan-day-sub">Palestra · 3 esercizi</div></div><span class="plan-day-badge badge-gym">PALESTRA</span></div></div>
+          <div class="plan-day"><div class="plan-day-header"><div class="plan-day-icon">🏋️</div><div class="plan-day-info"><div class="plan-day-name">Sabato</div><div class="plan-day-sub">Palestra · 3 esercizi</div></div><span class="plan-day-badge badge-gym">PALESTRA</span></div></div>
+          <div class="plan-day"><div class="plan-day-header"><div class="plan-day-icon">🏋️</div><div class="plan-day-info"><div class="plan-day-name">Domenica</div><div class="plan-day-sub">Palestra · 3 esercizi</div></div><span class="plan-day-badge badge-gym">PALESTRA</span></div></div>
+        </div>
       </div>
-
-      <div class="setting-section">
-        <div class="setting-section-title">📅 Piano & Checklist Giorni</div>
-        <div class="day-editor" id="dayEditor"></div>
-      </div>
-
-      <button class="save-btn" onclick="saveSettings()">✅ SALVA IMPOSTAZIONI</button>
     </div>
+
+    <!-- HOME RIPOSO -->
+    <div class="page" id="page-home-rest">
+      <div class="header">
+        <div class="logo">Fit<span class="rest">Track</span></div>
+        <div class="date-badge" id="dateBadgeRest"></div>
+      </div>
+      <div class="rest-streak-card">
+        <div class="rest-moon">🌙</div>
+        <div style="flex:1">
+          <div class="rest-streak-num">3</div>
+          <div class="rest-streak-label">settimane consecutive</div>
+          <div class="rest-streak-best">Record: 5 settimane</div>
+          <div class="streak-dots">
+            <div class="rdot active"></div><div class="rdot active"></div>
+            <div class="rdot today"></div><div class="rdot"></div>
+            <div class="rdot"></div><div class="rdot"></div><div class="rdot"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="goal-row"><div class="goal-label">🎯 Obiettivo settimana</div><div class="goal-val" style="color:#8888ff">5/5</div></div>
+        <div class="goal-bar-bg"><div class="goal-bar-fill rest-fill" style="width:100%"></div></div>
+      </div>
+      <div class="rest-quote-card">
+        <div class="rest-quote">"Il riposo non è ozio — è il momento in cui il corpo diventa più forte."</div>
+        <div class="rest-quote-author">— Scienza dello sport</div>
+      </div>
+      <div class="card rest-card">
+        <div class="card-title"><span class="dot" style="background:#8080ff"></span>Recap Settimana</div>
+        <div class="recap-stats">
+          <div class="rstat rest-stat"><div class="rstat-val purple">1.240</div><div class="rstat-lbl">kcal</div></div>
+          <div class="rstat rest-stat"><div class="rstat-val purple">5</div><div class="rstat-lbl">sessioni</div></div>
+          <div class="rstat rest-stat"><div class="rstat-val purple">12.3</div><div class="rstat-lbl">km</div></div>
+        </div>
+      </div>
+      <div class="card rest-card">
+        <div class="card-title"><span class="dot" style="background:#8080ff"></span>Questo Mese</div>
+        <div class="month-stat-grid">
+          <div class="mstat"><div class="mstat-val">4.820</div><div class="mstat-lbl">kcal</div></div>
+          <div class="mstat"><div class="mstat-val">18</div><div class="mstat-lbl">sessioni</div></div>
+          <div class="mstat"><div class="mstat-val">42.1</div><div class="mstat-lbl">km</div></div>
+        </div>
+        <div class="month-days" id="monthDaysPreview"></div>
+      </div>
+      <div class="card rest-card">
+        <div class="card-title"><span class="dot" style="background:#2979ff"></span>Piano Settimana</div>
+        <div class="week-plan">
+          <div class="plan-day today-day" style="border-color:rgba(120,100,255,0.3)"><div class="plan-day-header"><div class="plan-day-icon">😴</div><div class="plan-day-info"><div class="plan-day-name">Lunedì <span style="font-size:8px;color:#aaaaff">● oggi</span></div><div class="plan-day-sub">Giorno di riposo</div></div><span class="plan-day-badge badge-rest">RIPOSO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏃</div><div class="plan-day-info"><div class="plan-day-name">Mercoledì</div><div class="plan-day-sub">Corsa · fatto!</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏃</div><div class="plan-day-info"><div class="plan-day-name">Giovedì</div><div class="plan-day-sub">Corsa · fatto!</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏋️</div><div class="plan-day-info"><div class="plan-day-name">Venerdì</div><div class="plan-day-sub">Palestra · fatto!</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏋️</div><div class="plan-day-info"><div class="plan-day-name">Sabato</div><div class="plan-day-sub">Palestra · fatto!</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+          <div class="plan-day done-day"><div class="plan-day-header"><div class="plan-day-icon">🏋️</div><div class="plan-day-info"><div class="plan-day-name">Domenica</div><div class="plan-day-sub">Palestra · fatto!</div></div><span class="plan-day-badge badge-done">FATTO</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="page" id="page-log">
+      <div class="header">
+        <div class="logo">Fit<span id="logoLog" class="fire">Track</span></div>
+        <div class="date-badge" id="dateBadgeLog"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:#2979ff"></span>Aggiungi Sessione</div>
+        <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">
+          <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#55557a;display:flex;flex-direction:column;align-items:center;gap:1px"><span>LU</span><span>😴</span></div>
+          <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#55557a;display:flex;flex-direction:column;align-items:center;gap:1px"><span>MA</span><span>😴</span></div>
+          <div style="flex:1;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.3);border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#00e676;display:flex;flex-direction:column;align-items:center;gap:1px"><span>ME</span><span>✅</span></div>
+          <div style="flex:1;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.3);border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#00e676;display:flex;flex-direction:column;align-items:center;gap:1px"><span>GI</span><span>✅</span></div>
+          <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#55557a;display:flex;flex-direction:column;align-items:center;gap:1px"><span>VE</span><span>🏋️</span></div>
+          <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#55557a;display:flex;flex-direction:column;align-items:center;gap:1px"><span>SA</span><span>🏋️</span></div>
+          <div style="flex:1;background:rgba(41,121,255,0.1);border:1px solid #2979ff;border-radius:7px;padding:5px 2px;font-family:'Syne Mono',monospace;font-size:8px;text-align:center;color:#2979ff;display:flex;flex-direction:column;align-items:center;gap:1px"><span>DO</span><span>🏋️</span></div>
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:10px">
+          <div style="flex:1;padding:7px 4px;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.4);border-radius:9px;color:#82b1ff;font-size:10px;text-align:center">🏃 Corsa</div>
+          <div style="flex:1;padding:7px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:#55557a;font-size:10px;text-align:center">🏋️ Palestra</div>
+        </div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Calorie Bruciate (kcal)</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:#55557a;font-size:12px;margin-bottom:9px">es. 320</div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Distanza Percorsa</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:#55557a;font-size:12px;margin-bottom:9px">es. 3.5 km</div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Note (opzionale)</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:#55557a;font-size:12px;margin-bottom:9px">es. Corsa al parco...</div>
+        <div style="width:100%;background:linear-gradient(135deg,#ff4d00,#ff8c00);border:none;border-radius:11px;padding:12px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-align:center;letter-spacing:1px">⚡ REGISTRA SESSIONE</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <div style="flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:#55557a;font-size:10px;text-align:center">💾 Backup</div>
+          <div style="flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:#55557a;font-size:10px;text-align:center">📂 Importa</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:#aa00ff"></span>Storico</div>
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:11px"><span style="font-size:24px;display:block;margin-bottom:6px">📊</span>Le sessioni appariranno qui</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="header">
+        <div class="logo">Fit<span id="logoSettings" class="fire">Track</span></div>
+        <div style="font-family:'Syne Mono',monospace;font-size:9px;color:#8888aa">Impostazioni</div>
+      </div>
+      <div class="card">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:2px;color:var(--text)">⚙️ Personalizza</div>
+        <div style="font-size:10px;color:var(--muted2);margin-bottom:14px">Configura piano, attività e checklist</div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:2px;margin-bottom:7px;display:flex;align-items:center;gap:6px">🎯 Obiettivo Settimanale <span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+          <span style="font-size:11px;color:var(--muted2);flex:1">Sessioni da completare ogni settimana</span>
+          <div style="width:50px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-align:center">5</div>
+        </div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:2px;margin-bottom:7px;display:flex;align-items:center;gap:6px">🏃 Tipi di Attività <span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
+        <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 11px;margin-bottom:5px">
+          <div style="width:30px;background:var(--bg,#060610);border:1px solid var(--border);border-radius:6px;padding:3px;font-size:12px;text-align:center">🏃</div>
+          <div style="flex:1;font-size:11px;color:var(--text)">Corsa</div>
+          <div style="font-size:9px;color:var(--muted2)">📍 km</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 11px;margin-bottom:14px">
+          <div style="width:30px;background:var(--bg,#060610);border:1px solid var(--border);border-radius:6px;padding:3px;font-size:12px;text-align:center">🏋️</div>
+          <div style="flex:1;font-size:11px;color:var(--text)">Palestra</div>
+        </div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:2px;margin-bottom:7px;display:flex;align-items:center;gap:6px">📅 Piano & Checklist <span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:4px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Lunedì</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">😴 Riposo</div></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:4px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Martedì</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">😴 Riposo</div></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:4px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Mercoledì</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">🏃 Corsa</div></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:4px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Giovedì</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">🏃 Corsa</div></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:4px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Venerdì</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">🏋️ Palestra</div></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:4px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Sabato</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">🏋️ Palestra</div></div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:14px"><div style="font-size:11px;font-weight:600;flex:1;color:var(--text)">Domenica</div><div style="font-size:9px;color:var(--muted2);background:#060610;border:1px solid var(--border);padding:2px 7px;border-radius:5px">🏋️ Palestra</div></div>
+        <div style="width:100%;background:linear-gradient(135deg,#2979ff,#1565c0);border:none;border-radius:11px;padding:12px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-align:center;letter-spacing:1px">✅ SALVA IMPOSTAZIONI</div>
+      </div>
+    </div>
+
+  </div><!-- app-frame -->
+
+  <div class="phone-tabbar" id="tabbar">
+    <button class="phone-tab active" id="ptHome" onclick="showPage('home')"><span class="ti">🏠</span>Home</button>
+    <button class="phone-tab" id="ptLog" onclick="showPage('log')"><span class="ti">⚡</span>Registra</button>
+    <button class="phone-tab" id="ptSettings" onclick="showPage('settings')"><span class="ti">⚙️</span>Impostazioni</button>
   </div>
-
 </div>
-
-<!-- TAB BAR -->
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('Home')" id="tabHome"><span class="ti">🏠</span>Home</button>
-  <button class="tab-btn" onclick="switchTab('Log')" id="tabLog"><span class="ti">⚡</span>Registra</button>
-  <button class="tab-btn" onclick="switchTab('Settings')" id="tabSettings"><span class="ti">⚙️</span>Impostazioni</button>
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
-const KEY='fittrack_v4';
-const DEFAULT_DAYS=[
-  {abbr:'Lun',label:'Lunedì',type:'rest',exercises:[]},
-  {abbr:'Mar',label:'Martedì',type:'rest',exercises:[]},
-  {abbr:'Mer',label:'Mercoledì',type:'run',exercises:[{id:'e1',name:'Corsa',sets:'30 min',note:'7-9 km/h'}]},
-  {abbr:'Gio',label:'Giovedì',type:'run',exercises:[{id:'e2',name:'Corsa',sets:'30 min',note:'7-9 km/h'}]},
-  {abbr:'Ven',label:'Venerdì',type:'gym',exercises:[{id:'e3',name:'Panca Piana',sets:'4x10',note:''},{id:'e4',name:'Trazioni',sets:'3x8',note:''},{id:'e5',name:'Shoulder Press',sets:'3x12',note:''}]},
-  {abbr:'Sab',label:'Sabato',type:'gym',exercises:[{id:'e6',name:'Squat',sets:'4x10',note:''},{id:'e7',name:'Leg Press',sets:'3x12',note:''},{id:'e8',name:'Affondi',sets:'3x10',note:''}]},
-  {abbr:'Dom',label:'Domenica',type:'gym',exercises:[{id:'e9',name:'Stacchi',sets:'4x8',note:''},{id:'e10',name:'Rematore',sets:'3x10',note:''},{id:'e11',name:'Curl Bicipiti',sets:'3x12',note:''}]},
-];
-const DEFAULT_ACTIVITIES=[
-  {id:'run',name:'Corsa',icon:'🏃',hasKm:true},
-  {id:'gym',name:'Palestra',icon:'🏋️',hasKm:false},
-  {id:'rest',name:'Riposo',icon:'😴',hasKm:false}
-];
+  let currentMode = 'work';
+  let currentPage = 'home';
 
-function loadData(){
-  try{
-    const d=JSON.parse(localStorage.getItem(KEY));
-    // Se non ci sono dati salvati, usa i default
-    if(!d) return getDefault();
-    // Aggiungi solo i campi MANCANTI — non sovrascrivere mai dati esistenti
-    if(!d.activities) d.activities=JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
-    if(!d.days) d.days=JSON.parse(JSON.stringify(DEFAULT_DAYS));
-    if(!d.goalSessions) d.goalSessions=5;
-    if(!d.checks) d.checks={};
-    if(!d.sessions) d.sessions=[];
-    // Assicura che ogni giorno abbia il campo exercises (retrocompatibilità)
-    d.days.forEach(day=>{if(!day.exercises)day.exercises=[];});
-    // Salva subito per persistere eventuali migrazioni
-    localStorage.setItem(KEY,JSON.stringify(d));
-    return d;
-  }catch{return getDefault();}
-}
-function getDefault(){return{sessions:[],streak:0,bestStreak:0,lastDate:null,days:JSON.parse(JSON.stringify(DEFAULT_DAYS)),activities:JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES)),goalSessions:5,checks:{}};}
-function saveData(d){localStorage.setItem(KEY,JSON.stringify(d));}
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('it-IT', {weekday:'short', day:'numeric', month:'short'});
+  document.getElementById('dateBadgeWork').textContent = dateStr;
+  document.getElementById('dateBadgeRest').textContent = dateStr;
+  document.getElementById('dateBadgeLog').textContent = dateStr;
 
-let data=loadData();
-let selectedDay=((new Date().getDay()+6)%7);
-let selectedType='';
-let openPlanDay=-1;
-let deferredPrompt=null;
-let openDayEditor=-1;
+  // Genera calendario mese
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayNum = now.getDate();
+  const restDays = [0, 1]; // Lun, Mar = indice 0,1
+  const el = document.getElementById('monthDaysPreview');
+  const trainedDays = [3,4,6,8,10,11,13,15,17,18,20,22,24,25];
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateObj = new Date(y, m, day);
+    const dayIdx = (dateObj.getDay() + 6) % 7;
+    const isRest = restDays.includes(dayIdx);
+    const hasSession = trainedDays.includes(day);
+    const div = document.createElement('div');
+    div.className = 'mday' + (hasSession ? ' has-session' : isRest ? ' is-rest' : '') + (day === todayNum ? ' is-today' : '');
+    div.textContent = day;
+    el.appendChild(div);
+  }
 
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.remove('hidden');});
-function dismissInstall(){document.getElementById('installBanner').classList.add('hidden');}
+  function setMode(mode) {
+    currentMode = mode;
+    const isRest = mode === 'rest';
+    document.getElementById('btnWork').className = 'ctrl-btn' + (!isRest ? ' active' : '');
+    document.getElementById('btnRest').className = 'ctrl-btn rest' + (isRest ? ' active' : '');
+    document.getElementById('modeLabel').textContent = isRest
+      ? '🌙 MODALITÀ RIPOSO — ' + dateStr.toUpperCase()
+      : '🔥 MODALITÀ ALLENAMENTO — ' + dateStr.toUpperCase();
+    document.getElementById('phone').className = 'phone' + (isRest ? ' rest-mode' : '');
+    // Tab color
+    document.querySelectorAll('.phone-tab').forEach(t => {
+      t.className = t.className.replace(' rest-tab','');
+      if (isRest) t.className += ' rest-tab';
+    });
+    showPage(currentPage);
+  }
 
-function switchTab(tab){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page'+tab).classList.add('active');
-  document.getElementById('tab'+tab).classList.add('active');
-  if(tab==='Settings') renderSettingsPage();
-}
+  function showPage(page) {
+    currentPage = page;
+    const isRest = currentMode === 'rest';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
-function getWeekKey(){
-  const now=new Date();
-  const sow=new Date(now);
-  sow.setDate(now.getDate()-((now.getDay()+6)%7));
-  sow.setHours(0,0,0,0);
-  return sow.toISOString().split('T')[0];
-}
-
-function getCheckKey(dayIndex){return getWeekKey()+'_'+dayIndex;}
-
-function init(){
-  const dateStr=new Date().toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
-  document.getElementById('dateBadge').textContent=dateStr;
-  document.getElementById('dateBadge2').textContent=dateStr;
-  buildDaySelect();buildTypeToggle();buildWeekBars();
-  renderStreak();renderRecap();renderGoal();renderHistory();renderWeekPlan();
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
-// ── WEEK PLAN ──
-function renderWeekPlan(){
-  const el=document.getElementById('weekPlan');el.innerHTML='';
-  const today=((new Date().getDay()+6)%7);
-  data.days.forEach((d,i)=>{
-    const act=data.activities.find(a=>a.id===d.type)||{icon:'😴',name:'Riposo'};
-    const hasLog=data.sessions.some(s=>s.dayIndex===i&&isThisWeek(s.date));
-    const checks=data.checks[getCheckKey(i)]||{};
-    const total=d.exercises.length;
-    const done=Object.values(checks).filter(Boolean).length;
-    const isRest=d.type==='rest';
-
-    const wrap=document.createElement('div');
-    let cls='plan-day'+(i===today?' today-day':'')+(i===openPlanDay?' active-day':'')+(hasLog?' done-day':'');
-    wrap.className=cls;
-    wrap.id='planDay_'+i;
-
-    let badgeClass=d.type==='run'?'badge-run':d.type==='gym'?'badge-gym':'badge-rest';
-    let badgeText=hasLog?'FATTO':act.name.toUpperCase();
-    if(hasLog) badgeClass='badge-done';
-
-    let progressHtml='';
-    if(!isRest&&total>0){
-      const pct=Math.round((done/total)*100);
-      progressHtml=`<div class="plan-day-progress"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10px;color:var(--muted2)">Checklist</span><span style="font-family:'Syne Mono',monospace;font-size:10px;color:${done===total?'var(--green)':'var(--muted2)'}">${done}/${total}</span></div><div class="plan-mini-bar-bg"><div class="plan-mini-bar-fill" style="width:${pct}%"></div></div></div>`;
+    if (page === 'home') {
+      document.getElementById(isRest ? 'page-home-rest' : 'page-home-work').classList.add('active');
+    } else {
+      document.getElementById('page-' + page).classList.add('active');
     }
 
-    wrap.innerHTML=`
-      <div class="plan-day-header" onclick="togglePlanDay(${i})">
-        <div class="plan-day-icon">${act.icon}</div>
-        <div class="plan-day-info">
-          <div class="plan-day-name">${d.label}${i===today?' <span style="font-size:10px;color:#ffcc00">● oggi</span>':''}</div>
-          <div class="plan-day-sub">${isRest?'Giorno di riposo':act.name+(d.exercises.length>0?' · '+d.exercises.length+' esercizi':'')}</div>
-        </div>
-        <span class="plan-day-badge ${badgeClass}">${badgeText}</span>
-      </div>
-      ${progressHtml}
-      <div class="day-detail-panel${i===openPlanDay?' open':''}" id="panel_${i}"></div>`;
-    el.appendChild(wrap);
-    if(i===openPlanDay) fillPanel(i);
-  });
-}
+    // Top tabs
+    ['Home','Log','Settings'].forEach(t => {
+      const btn = document.getElementById('tab' + t);
+      btn.className = 'ctrl-btn' + (t.toLowerCase() === page ? ' active' : '');
+    });
+    // Phone tabs
+    ['Home','Log','Settings'].forEach(t => {
+      const btn = document.getElementById('pt' + t);
+      btn.className = 'phone-tab' + (t.toLowerCase() === page ? ' active' : '') + (isRest ? ' rest-tab' : '');
+    });
 
-function togglePlanDay(i){
-  const day=data.days[i];
-  if(day.type==='rest'&&day.exercises.length===0){showToast('Giorno di riposo 😴','');return;}
-  openPlanDay=(openPlanDay===i)?-1:i;
-  renderWeekPlan();
-}
-
-function fillPanel(i){
-  const panel=document.getElementById('panel_'+i);
-  if(!panel) return;
-  const day=data.days[i];
-  const checks=data.checks[getCheckKey(i)]||{};
-
-  if(day.exercises.length===0){
-    panel.innerHTML=`<div class="no-checklist">Nessun esercizio configurato.<br>Aggiungili nelle Impostazioni!</div>`;
-    return;
+    document.getElementById('appFrame').scrollTop = 0;
   }
-
-  let html='<div class="checklist">';
-  day.exercises.forEach(ex=>{
-    const checked=!!checks[ex.id];
-    html+=`<div class="check-item${checked?' checked':''}" onclick="toggleCheck(${i},'${ex.id}')">
-      <div class="check-box">${checked?'✓':''}</div>
-      <div class="check-text">
-        <div class="check-name">${ex.name}</div>
-        ${ex.sets?`<div class="check-detail">${ex.sets}</div>`:''}
-        ${ex.note?`<div class="check-note">${ex.note}</div>`:''}
-      </div>
-    </div>`;
-  });
-  html+='</div>';
-
-  const total=day.exercises.length;
-  const done=Object.values(checks).filter(Boolean).length;
-  if(done===total&&total>0){
-    html+=`<div style="text-align:center;font-size:12px;color:var(--green);padding:6px 0">✅ Tutti gli esercizi completati!</div>`;
-  }
-  panel.innerHTML=html;
-}
-
-function toggleCheck(dayIndex,exId){
-  const key=getCheckKey(dayIndex);
-  if(!data.checks[key]) data.checks[key]={};
-  data.checks[key][exId]=!data.checks[key][exId];
-  saveData(data);
-  fillPanel(dayIndex);
-  // update mini bar
-  const day=data.days[dayIndex];
-  const checks=data.checks[key]||{};
-  const done=Object.values(checks).filter(Boolean).length;
-  const total=day.exercises.length;
-  const pct=total>0?Math.round((done/total)*100):0;
-  const miniBar=document.querySelector(`#planDay_${dayIndex} .plan-mini-bar-fill`);
-  if(miniBar) miniBar.style.width=pct+'%';
-  const miniCount=document.querySelector(`#planDay_${dayIndex} .plan-day-progress span:last-child`);
-  if(miniCount){miniCount.textContent=done+'/'+total;miniCount.style.color=done===total?'var(--green)':'var(--muted2)';}
-}
-
-// ── DAY SELECT (LOG) ──
-function buildDaySelect(){
-  const el=document.getElementById('daySelect');el.innerHTML='';
-  const today=((new Date().getDay()+6)%7);
-  data.days.forEach((d,i)=>{
-    const hasLog=data.sessions.some(s=>s.dayIndex===i&&isThisWeek(s.date));
-    const act=data.activities.find(a=>a.id===d.type)||data.activities[0];
-    const btn=document.createElement('button');
-    btn.className='day-btn'+(i===selectedDay?' selected':'')+(hasLog?' logged':'');
-    btn.innerHTML=`<span style="font-size:9px;text-transform:uppercase">${d.abbr}</span><span style="font-size:13px">${hasLog?'✅':act.icon}</span>`;
-    btn.onclick=()=>selectDay(i);
-    if(i===today) btn.style.boxShadow='0 0 0 1px rgba(255,220,0,0.3)';
-    el.appendChild(btn);
-  });
-}
-
-function selectDay(i){
-  selectedDay=i;buildDaySelect();
-  const nonRest=data.activities.filter(a=>a.id!=='rest');
-  const act=nonRest.find(a=>a.id===data.days[i].type);
-  setType(act?act.id:nonRest[0]?.id||'');
-}
-
-function buildTypeToggle(){
-  const el=document.getElementById('typeToggle');el.innerHTML='';
-  data.activities.filter(a=>a.id!=='rest').forEach(a=>{
-    const btn=document.createElement('button');
-    btn.className='type-btn'+(selectedType===a.id?' active':'');
-    btn.id='typeBtn_'+a.id;
-    btn.textContent=a.icon+' '+a.name;
-    btn.onclick=()=>setType(a.id);
-    el.appendChild(btn);
-  });
-  if(!selectedType){const nr=data.activities.filter(a=>a.id!=='rest');if(nr.length)setType(nr[0].id);}
-}
-
-function setType(id){
-  selectedType=id;
-  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
-  const btn=document.getElementById('typeBtn_'+id);if(btn)btn.classList.add('active');
-  const act=data.activities.find(a=>a.id===id);
-  document.getElementById('kmRow').className='input-group km-row'+(act&&act.hasKm?' visible':'');
-}
-
-function logSession(){
-  const kcal=parseFloat(document.getElementById('kcalInput').value);
-  if(!kcal||kcal<=0){showToast('Inserisci le calorie bruciate!','fire');return;}
-  const act=data.activities.find(a=>a.id===selectedType);
-  const km=(act&&act.hasKm)?parseFloat(document.getElementById('kmInput').value)||0:0;
-  const kmUnit=document.getElementById('kmUnit').value;
-  const note=document.getElementById('noteInput').value.trim();
-  const today=new Date().toISOString().split('T')[0];
-  data.sessions.unshift({id:Date.now(),date:today,dayIndex:selectedDay,dayLabel:data.days[selectedDay].label,type:selectedType,typeLabel:act?act.name:selectedType,typeIcon:act?act.icon:'🏃',kcal:Math.round(kcal),km:kmUnit==='m'?km/1000:km,note});
-  updateStreak(today);saveData(data);
-  document.getElementById('kcalInput').value='';
-  document.getElementById('kmInput').value='';
-  document.getElementById('noteInput').value='';
-  buildDaySelect();buildWeekBars();renderStreak();renderRecap();renderGoal();renderHistory();renderWeekPlan();
-  showToast('Sessione registrata! 💪','success');
-}
-
-function updateStreak(todayStr){
-  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
-  if(data.lastDate===todayStr)return;
-  data.streak=(data.lastDate===yesterday.toISOString().split('T')[0])?data.streak+1:1;
-  data.lastDate=todayStr;
-  if(data.streak>data.bestStreak)data.bestStreak=data.streak;
-}
-
-function renderStreak(){
-  document.getElementById('streakNum').textContent=data.streak;
-  document.getElementById('streakBest').textContent=`Record: ${data.bestStreak} giorni`;
-  document.getElementById('streakFlame').textContent=data.streak>=30?'🔥🔥🔥':data.streak>=14?'🔥🔥':'🔥';
-  const dotsEl=document.getElementById('streakDots');dotsEl.innerHTML='';
-  const today=new Date().toISOString().split('T')[0];
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];const has=data.sessions.some(s=>s.date===ds);const dot=document.createElement('div');dot.className='sdot'+(has?(ds===today?' today':' active'):'');dotsEl.appendChild(dot);}
-}
-
-function isThisWeek(dateStr){
-  const d=new Date(dateStr),now=new Date();
-  const sow=new Date(now);sow.setDate(now.getDate()-((now.getDay()+6)%7));sow.setHours(0,0,0,0);
-  return d>=sow;
-}
-
-function renderRecap(){
-  const w=data.sessions.filter(s=>isThisWeek(s.date));
-  document.getElementById('totalKcal').textContent=w.reduce((a,s)=>a+s.kcal,0).toLocaleString('it');
-  document.getElementById('totalSessions').textContent=w.length;
-  const km=w.reduce((a,s)=>a+s.km,0);
-  document.getElementById('totalKm').textContent=km>0?km.toFixed(1):'0';
-}
-
-function renderGoal(){
-  const w=data.sessions.filter(s=>isThisWeek(s.date)).length;
-  const goal=data.goalSessions||5;
-  const pct=Math.min(100,Math.round((w/goal)*100));
-  document.getElementById('goalCurrent').textContent=w;
-  document.getElementById('goalTarget').textContent=goal;
-  const bar=document.getElementById('goalBar');
-  bar.style.width=pct+'%';
-  bar.className='goal-bar-fill'+(pct>=100?' done':'');
-}
-
-function buildWeekBars(){
-  const el=document.getElementById('weekBars');el.innerHTML='';
-  const today=((new Date().getDay()+6)%7);
-  const kcalPerDay=data.days.map((_,i)=>{const d=new Date();d.setDate(d.getDate()+(i-today));const ds=d.toISOString().split('T')[0];return data.sessions.filter(s=>s.date===ds).reduce((a,s)=>a+s.kcal,0);});
-  const maxKcal=Math.max(...kcalPerDay,1);
-  data.days.forEach((day,i)=>{
-    const wrap=document.createElement('div');wrap.className='bar-wrap';
-    const pct=Math.round((kcalPerDay[i]/maxKcal)*46);
-    const bar=document.createElement('div');
-    bar.className='bar'+(kcalPerDay[i]>0?' has-data':'')+(i===today?' today-bar':'');
-    bar.style.height=(pct||4)+'px';
-    const label=document.createElement('div');label.className='bar-day';label.textContent=day.abbr.substring(0,2);
-    wrap.appendChild(bar);wrap.appendChild(label);el.appendChild(wrap);
-  });
-}
-
-function renderHistory(){
-  const el=document.getElementById('sessionList');
-  if(!data.sessions.length){el.innerHTML=`<div class="empty-state"><span class="emoji">📊</span>Nessuna sessione ancora.<br>Registra il tuo primo allenamento!</div>`;return;}
-  el.innerHTML='';
-  data.sessions.slice(0,30).forEach(s=>{
-    const item=document.createElement('div');item.className='session-item';
-    const kmText=s.km>0?` · ${s.km.toFixed(1)} km`:'';
-    const noteText=s.note?` · "${s.note}"`:'';
-    const dateStr=new Date(s.date).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
-    item.innerHTML=`<div class="session-icon">${s.typeIcon||'🏃'}</div><div class="session-info"><div class="session-day">${s.dayLabel} <span style="color:var(--muted);font-size:11px;font-weight:400">${dateStr}</span></div><div class="session-meta">${s.typeLabel||s.type}${kmText}${noteText}</div></div><div class="session-kcal">${s.kcal.toLocaleString()}<span style="font-size:10px;color:var(--muted);font-weight:400"> kcal</span></div><button class="session-del" onclick="deleteSession(${s.id})">✕</button>`;
-    el.appendChild(item);
-  });
-}
-
-function deleteSession(id){data.sessions=data.sessions.filter(s=>s.id!==id);saveData(data);buildDaySelect();buildWeekBars();renderRecap();renderGoal();renderHistory();renderWeekPlan();showToast('Eliminata','');}
-function confirmClear(){if(confirm('Cancellare tutto?')){data={...data,sessions:[],streak:0,bestStreak:0,lastDate:null,checks:{}};saveData(data);init();showToast('Dati azzerati','');}}
-
-// ── SETTINGS ──
-function renderSettingsPage(){
-  document.getElementById('goalInput').value=data.goalSessions||5;
-  renderActivityList();
-  renderDayEditor();
-}
-
-function renderActivityList(){
-  const el=document.getElementById('activityList');el.innerHTML='';
-  data.activities.filter(a=>a.id!=='rest').forEach(a=>{
-    const row=document.createElement('div');row.className='activity-row';
-    row.innerHTML=`<input class="activity-emoji-input" type="text" value="${a.icon}" maxlength="2" oninput="updateActivity('${a.id}','icon',this.value)"><input class="activity-name-input" type="text" value="${a.name}" oninput="updateActivity('${a.id}','name',this.value)" placeholder="Nome"><label class="activity-has-km"><input type="checkbox" ${a.hasKm?'checked':''} onchange="updateActivity('${a.id}','hasKm',this.checked)"> km</label><button class="activity-del-btn" onclick="removeActivity('${a.id}')">✕</button>`;
-    el.appendChild(row);
-  });
-}
-
-function updateActivity(id,field,val){const a=data.activities.find(a=>a.id===id);if(a)a[field]=val;}
-function addActivity(){const nid='act_'+Date.now();data.activities.splice(data.activities.length-1,0,{id:nid,name:'Nuova',icon:'💪',hasKm:false});renderActivityList();}
-function removeActivity(id){if(data.activities.filter(a=>a.id!=='rest').length<=1){showToast('Serve almeno un\'attività!','fire');return;}data.activities=data.activities.filter(a=>a.id!==id);renderActivityList();}
-
-function renderDayEditor(){
-  const el=document.getElementById('dayEditor');el.innerHTML='';
-  data.days.forEach((d,i)=>{
-    const wrap=document.createElement('div');wrap.className='day-edit-row';
-    const opts=data.activities.map(a=>`<option value="${a.id}"${a.id===d.type?' selected':''}>${a.icon} ${a.name}</option>`).join('');
-    const isOpen=(openDayEditor===i);
-    wrap.innerHTML=`
-      <div class="day-edit-header">
-        <div class="day-edit-name">${d.label}</div>
-        <select class="day-type-select" onchange="data.days[${i}].type=this.value;renderDayEditor()">${opts}</select>
-        <button class="day-edit-toggle" onclick="toggleDayEditor(${i})">${isOpen?'▲ chiudi':'▼ esercizi'}</button>
-      </div>
-      <div class="day-checklist-editor${isOpen?' open':''}" id="dayEditor_${i}"></div>`;
-    el.appendChild(wrap);
-    if(isOpen) renderExerciseEditor(i);
-  });
-}
-
-function toggleDayEditor(i){openDayEditor=(openDayEditor===i)?-1:i;renderDayEditor();}
-
-function renderExerciseEditor(i){
-  const el=document.getElementById('dayEditor_'+i);if(!el)return;
-  const day=data.days[i];
-  let html='<div class="ex-list" id="exList_'+i+'">';
-  day.exercises.forEach((ex,j)=>{
-    html+=`<div class="ex-row">
-      <div class="ex-inputs">
-        <input class="ex-inp" type="text" value="${ex.name}" placeholder="Esercizio (es. Squat)" oninput="data.days[${i}].exercises[${j}].name=this.value">
-        <input class="ex-inp sub" type="text" value="${ex.sets}" placeholder="Serie/rip (es. 4x10)" oninput="data.days[${i}].exercises[${j}].sets=this.value">
-        <input class="ex-inp sub" type="text" value="${ex.note}" placeholder="Note (es. 80kg)" oninput="data.days[${i}].exercises[${j}].note=this.value">
-      </div>
-      <button class="ex-del" onclick="removeExercise(${i},${j})">✕</button>
-    </div>`;
-  });
-  html+='</div>';
-  html+=`<button class="add-ex-btn" onclick="addExercise(${i})">+ Aggiungi esercizio</button>`;
-  el.innerHTML=html;
-}
-
-function addExercise(i){
-  data.days[i].exercises.push({id:'ex_'+Date.now(),name:'',sets:'',note:''});
-  renderExerciseEditor(i);
-}
-
-function removeExercise(i,j){
-  data.days[i].exercises.splice(j,1);
-  renderExerciseEditor(i);
-}
-
-function saveSettings(){
-  data.goalSessions=parseInt(document.getElementById('goalInput').value)||5;
-  saveData(data);
-  buildDaySelect();buildTypeToggle();buildWeekBars();renderGoal();renderWeekPlan();
-  showToast('Salvato! ✅','success');
-  setTimeout(()=>switchTab('Home'),700);
-}
-
-function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`fittrack_${new Date().toISOString().split('T')[0]}.json`;a.click();showToast('Backup esportato 💾','success');}
-function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const imp=JSON.parse(ev.target.result);if(imp.sessions){data=imp;if(!data.checks)data.checks={};saveData(data);init();showToast('Importato! ✅','success');}else showToast('File non valido','fire');}catch{showToast('Errore','fire');}};reader.readAsText(file);}
-
-function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),2800);}
-
-init();
 </script>
 </body>
 </html>
