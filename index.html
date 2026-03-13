@@ -324,7 +324,6 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
       <div style="flex:1">
         <div class="streak-num" id="streakNum">0</div>
         <div class="streak-label">giorni di fila</div>
-        <div class="streak-best" id="streakBest">Record: 0 giorni</div>
         <div class="streak-dots" id="streakDots"></div>
       </div>
     </div>
@@ -465,6 +464,21 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
           <div class="weight-badge-lbl" style="color:#336644">TARGET</div>
           <div class="weight-badge-val" id="targetValDisplay" style="color:var(--green)">— kg</div>
           <div class="weight-badge-sub" id="bmiDiff" style="color:#336644">—</div>
+        </div>
+      </div>
+
+      <!-- BARRA PROGRESSO PESO -->
+      <div id="weightProgressBar" style="display:none;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-family:'Syne Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Progresso verso l'obiettivo</span>
+          <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--green)" id="weightProgressPct">0%</span>
+        </div>
+        <div style="position:relative;background:var(--border2);border-radius:99px;height:8px;overflow:visible">
+          <div id="weightProgressFill" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--fire),var(--fire2),#ffcc00,var(--green));transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px">
+          <span style="font-family:'Syne Mono',monospace;font-size:9px;color:var(--muted)" id="weightProgressStart">— kg</span>
+          <span style="font-family:'Syne Mono',monospace;font-size:9px;color:var(--green)" id="weightProgressEnd">— kg</span>
         </div>
       </div>
 
@@ -694,6 +708,28 @@ function applyRestTheme(){
 }
 
 // ── STREAK ──
+function getActiveStreak(){
+  // Calcola la streak reale al momento attuale controllando i giorni a ritroso
+  const today=new Date().toISOString().split('T')[0];
+  let streak=0;
+  let checkDate=new Date();
+  while(true){
+    const ds=checkDate.toISOString().split('T')[0];
+    const dayIdx=((checkDate.getDay()+6)%7);
+    const isRestDay=data.days[dayIdx]?.type==='rest';
+    const hasSession=data.sessions.some(s=>s.date===ds);
+    if(isRestDay||hasSession){
+      streak++;
+      checkDate.setDate(checkDate.getDate()-1);
+    } else {
+      // Se è oggi e non ancora registrato, non rompe la streak
+      if(ds===today) checkDate.setDate(checkDate.getDate()-1);
+      else break;
+    }
+    if(streak>365) break; // safety
+  }
+  return streak;
+}
 function updateStreak(todayStr){
   const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
   const yStr=yesterday.toISOString().split('T')[0];
@@ -720,6 +756,26 @@ function checkWeekStreak(){
   }
 }
 
+function getActiveStreak(){
+  const today=new Date().toISOString().split('T')[0];
+  let streak=0;
+  let check=new Date();
+  for(let i=0;i<365;i++){
+    const ds=check.toISOString().split('T')[0];
+    const idx=((check.getDay()+6)%7);
+    const isRest=data.days[idx]?.type==='rest';
+    const hasSession=data.sessions.some(s=>s.date===ds);
+    if(isRest||hasSession){
+      streak++;
+    } else {
+      if(ds===today){check.setDate(check.getDate()-1);continue;}
+      break;
+    }
+    check.setDate(check.getDate()-1);
+  }
+  return streak;
+}
+
 function renderStreak(){
   if(isRestDay()){
     document.getElementById('restStreakNum').textContent=data.weekStreak||0;
@@ -730,9 +786,10 @@ function renderStreak(){
     document.getElementById('restQuoteText').textContent='"'+q.q+'"';
     document.getElementById('restQuoteAuthor').textContent=q.a;
   } else {
-    document.getElementById('streakNum').textContent=data.streak;
-    document.getElementById('streakBest').textContent=`Record: ${data.bestStreak} giorni`;
-    document.getElementById('streakFlame').textContent=data.streak>=30?'🔥🔥🔥':data.streak>=14?'🔥🔥':'🔥';
+    const currentStreak=getActiveStreak();
+    document.getElementById('streakNum').textContent=currentStreak;
+    document.getElementById('streakBest').textContent='';
+    document.getElementById('streakFlame').textContent=currentStreak>=30?'🔥🔥🔥':currentStreak>=14?'🔥🔥':'🔥';
     const dotsEl=document.getElementById('streakDots');dotsEl.innerHTML='';
     const today=new Date().toISOString().split('T')[0];
     for(let i=6;i>=0;i--){
@@ -819,6 +876,7 @@ function logWeight(){
   saveData(data);
   document.getElementById('newWeightInput').value='';
   renderWeightPage();
+  renderWeightProgressBar();
   showToast(`Peso ${w} kg registrato! ⚖️`,'success');
 }
 
@@ -833,8 +891,34 @@ function renderWeightPage(){
     if(subEl) subEl.textContent='Altezza '+(data.height||'—')+' cm';
   }
   updateBMI();
+  renderWeightProgressBar();
   renderWeightChart();
   renderWeightHistory();
+}
+
+function renderWeightProgressBar(){
+  const bar=document.getElementById('weightProgressBar');
+  if(!bar) return;
+  const goal=data.goalWeight;
+  const current=data.currentWeight;
+  // Calcola il peso iniziale: il più alto registrato nel weightLog
+  const startWeight=data.weightLog.length>0
+    ? Math.max(...data.weightLog.map(l=>l.weight))
+    : null;
+  if(!goal||!current||!startWeight||startWeight<=goal){
+    bar.style.display='none';
+    return;
+  }
+  bar.style.display='block';
+  const totalToLose=startWeight-goal;
+  const lostSoFar=startWeight-current;
+  const pct=Math.min(100,Math.max(0,Math.round((lostSoFar/totalToLose)*100)));
+  document.getElementById('weightProgressFill').style.width=pct+'%';
+  document.getElementById('weightProgressPct').textContent=pct+'%';
+  document.getElementById('weightProgressStart').textContent=startWeight.toFixed(1)+' kg';
+  document.getElementById('weightProgressEnd').textContent=goal+' kg 🎯';
+  // Colore testo percentuale: verde se >50%, arancione altrimenti
+  document.getElementById('weightProgressPct').style.color=pct>=100?'#ffcc00':pct>=50?'var(--green)':'var(--fire2)';
 }
 
 function renderWeightChart(){
