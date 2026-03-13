@@ -1424,7 +1424,9 @@ function renderDayEditor(){
     const wrap=document.createElement('div');wrap.className='day-edit-row';
     const opts=data.activities.map(a=>`<option value="${a.id}"${a.id===d.type?' selected':''}>${a.icon} ${a.name}</option>`).join('');
     const isOpen=(openDayEditor===i);
-    wrap.innerHTML=`<div class="day-edit-header"><div class="day-edit-name">${d.label}</div><select class="day-type-select" onchange="data.days[${i}].type=this.value;renderDayEditor()">${opts}</select><button class="day-edit-toggle" onclick="toggleDayEditor(${i})">${isOpen?'▲ chiudi':'▼ esercizi'}</button></div><div class="day-checklist-editor${isOpen?' open':''}" id="dayEditor_${i}"></div>`;
+    const isRest=d.type==='rest';
+    // Se diventa riposo, svuota gli esercizi esistenti
+    wrap.innerHTML=`<div class="day-edit-header"><div class="day-edit-name">${d.label}</div><select class="day-type-select" onchange="data.days[${i}].type=this.value;if(this.value==='rest')data.days[${i}].exercises=[];renderDayEditor()">${opts}</select>${!isRest?`<button class="day-edit-toggle" onclick="toggleDayEditor(${i})">${isOpen?'▲ chiudi':'▼ esercizi'}</button>`:''}</div>${!isRest?`<div class="day-checklist-editor${isOpen?' open':''}" id="dayEditor_${i}"></div>`:''}`;
     el.appendChild(wrap);
     if(isOpen) renderExerciseEditor(i);
   });
