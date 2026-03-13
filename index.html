@@ -32,7 +32,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tab-btn .ti{font-size:18px;}
 .tab-btn.active{color:var(--fire2);}
 body.rest-day .tab-btn.active{color:#8888ff;}
-.page{display:none;}.page.active{display:block;}
+.page{
+  display:none;
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity 0.28s ease, transform 0.28s ease;
+}
+.page.active{
+  display:block;
+  animation:pageIn 0.28s ease forwards;
+}
+@keyframes pageIn{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
 
 /* HEADER */
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;animation:slideDown 0.6s ease both;}
@@ -54,9 +67,11 @@ body.rest-day .logo span{color:#7070ff;}
 .streak-label{font-size:12px;color:var(--muted2);margin-top:2px;}
 .streak-best{font-family:'Syne Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;}
 .streak-dots{display:flex;gap:4px;margin-top:8px;}
-.sdot{width:24px;height:5px;border-radius:3px;background:var(--border2);}
-.sdot.active{background:linear-gradient(90deg,var(--fire),var(--fire2));}
-.sdot.today{background:var(--fire);box-shadow:0 0 8px var(--fire);}
+.sdot{width:24px;height:5px;border-radius:3px;background:#0e0e1e;opacity:0.5;}
+.sdot.active{background:linear-gradient(90deg,#ff3300,#ff6600);opacity:1;}
+.sdot.rest{background:linear-gradient(90deg,#4466ff,#7799ff);opacity:1;}
+.sdot.today{background:transparent;border:1px solid #cc3300;opacity:1;}
+.sdot.missed{background:#0e0e1e;opacity:0.4;}
 
 /* STREAK RIPOSO */
 .rest-streak-card{background:linear-gradient(135deg,#06060f,#0a0818,#060610);border:1px solid rgba(100,80,255,0.25);border-radius:20px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;animation:slideUp 0.6s ease 0.1s both;}
@@ -120,6 +135,11 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .plan-day.today-day{border-color:rgba(255,220,0,0.3);}
 .plan-day.active-day{border-color:var(--blue);background:rgba(41,121,255,0.06);}
 .plan-day.done-day{border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.04);}
+.plan-day.missed-day{border-color:rgba(255,50,50,0.3);background:rgba(255,30,30,0.04);opacity:0.75;}
+.badge-missed{background:rgba(255,50,50,0.12);color:#ff5555;border:1px solid rgba(255,50,50,0.3);}
+.check-item.locked{opacity:0.5;cursor:not-allowed;pointer-events:none;}
+.check-item.locked .check-box{background:rgba(255,50,50,0.15);border-color:rgba(255,50,50,0.4);color:#ff5555;}
+.missed-overlay{text-align:center;padding:10px 0 4px;font-size:12px;color:#ff5555;font-family:'Syne Mono',monospace;letter-spacing:1px;}
 .plan-day-header{display:flex;align-items:center;gap:10px;}
 .plan-day-icon{font-size:22px;flex-shrink:0;}
 .plan-day-info{flex:1;}
@@ -788,7 +808,7 @@ function renderStreak(){
   } else {
     const currentStreak=getActiveStreak();
     document.getElementById('streakNum').textContent=currentStreak;
-    document.getElementById('streakBest').textContent='';
+    const sb=document.getElementById('streakBest');if(sb)sb.textContent='';
     document.getElementById('streakFlame').textContent=currentStreak>=30?'🔥🔥🔥':currentStreak>=14?'🔥🔥':'🔥';
     const dotsEl=document.getElementById('streakDots');dotsEl.innerHTML='';
     const today=new Date().toISOString().split('T')[0];
@@ -797,8 +817,20 @@ function renderStreak(){
       const dayIdx=((new Date(ds).getDay()+6)%7);
       const wasRest=data.days[dayIdx]?.type==='rest';
       const hasSession=data.sessions.some(s=>s.date===ds);
+      const isPast=ds<today;
+      const isMissed=isPast&&!wasRest&&!hasSession;
       const dot=document.createElement('div');
-      dot.className='sdot'+((hasSession||wasRest)?(ds===today?' today':' active'):'');
+      if(ds===today){
+        // Oggi: solo bordo rosso, pieno se già allenato
+        dot.className=hasSession?'sdot active':'sdot today';
+      } else if(wasRest){
+        dot.className='sdot rest';
+      } else if(hasSession){
+        dot.className='sdot active';
+      } else {
+        // Saltato o futuro: entrambi scuri
+        dot.className='sdot';
+      }
       dotsEl.appendChild(dot);
     }
   }
@@ -1047,15 +1079,52 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 function dismissInstall(){document.getElementById('installBanner').classList.add('hidden');}
 
 function switchTab(tab){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const current=document.querySelector('.page.active');
+  const next=document.getElementById('page'+tab);
+  if(current===next) return;
+  // Fade out pagina corrente
+  if(current){
+    current.style.opacity='0';
+    current.style.transform='translateY(-8px)';
+    current.style.transition='opacity 0.18s ease, transform 0.18s ease';
+  }
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page'+tab).classList.add('active');
   document.getElementById('tab'+tab).classList.add('active');
-  if(tab==='Settings') renderSettingsPage();
-  if(tab==='Weight') renderWeightPage();
+  setTimeout(()=>{
+    document.querySelectorAll('.page').forEach(p=>{
+      p.classList.remove('active');
+      p.style.opacity='';p.style.transform='';p.style.transition='';
+    });
+    next.classList.add('active');
+    if(tab==='Settings') renderSettingsPage();
+    if(tab==='Weight') renderWeightPage();
+  },150);
 }
 
 function getWeekKey(){const now=new Date();const sow=new Date(now);sow.setDate(now.getDate()-((now.getDay()+6)%7));sow.setHours(0,0,0,0);return sow.toISOString().split('T')[0];}
+
+function getDayDateThisWeek(dayIndex){
+  // Ritorna la data ISO del giorno dayIndex (0=Lun) nella settimana corrente
+  const now=new Date();
+  const todayIdx=((now.getDay()+6)%7);
+  const diff=dayIndex-todayIdx;
+  const d=new Date(now);
+  d.setDate(now.getDate()+diff);
+  d.setHours(0,0,0,0);
+  return d.toISOString().split('T')[0];
+}
+
+function isDayMissed(dayIndex){
+  // Un giorno è "saltato" se: era questa settimana, è già passato (non oggi),
+  // non è riposo, e non è stato loggato
+  const day=data.days[dayIndex];
+  if(!day||day.type==='rest') return false;
+  const todayIdx=((new Date().getDay()+6)%7);
+  if(dayIndex>=todayIdx) return false; // oggi o futuro: non ancora saltato
+  const dayDate=getDayDateThisWeek(dayIndex);
+  const hasLog=data.sessions.some(s=>s.dayIndex===dayIndex&&s.date===dayDate);
+  return !hasLog;
+}
 function getCheckKey(dayIndex){return getWeekKey()+'_'+dayIndex;}
 
 function init(){
@@ -1077,23 +1146,38 @@ function renderWeekPlan(){
   const today=((new Date().getDay()+6)%7);
   data.days.forEach((d,i)=>{
     const act=data.activities.find(a=>a.id===d.type)||{icon:'😴',name:'Riposo'};
-    const hasLog=data.sessions.some(s=>s.dayIndex===i&&isThisWeek(s.date));
+    const dayDate=getDayDateThisWeek(i);
+    const hasLog=data.sessions.some(s=>s.dayIndex===i&&s.date===dayDate);
+    const missed=isDayMissed(i);
     const checks=data.checks[getCheckKey(i)]||{};
     const total=d.exercises.length;
     const done=Object.values(checks).filter(Boolean).length;
     const isRest=d.type==='rest';
     const wrap=document.createElement('div');
-    let cls='plan-day'+(i===today?' today-day':'')+(i===openPlanDay?' active-day':'')+(hasLog?' done-day':'');
+    let cls='plan-day';
+    if(i===today) cls+=' today-day';
+    else if(missed) cls+=' missed-day';
+    else if(hasLog) cls+=' done-day';
+    if(i===openPlanDay) cls+=' active-day';
     wrap.className=cls;wrap.id='planDay_'+i;
-    let badgeClass=d.type==='run'?'badge-run':d.type==='gym'?'badge-gym':'badge-rest';
-    let badgeText=hasLog?'FATTO':act.name.toUpperCase();
-    if(hasLog) badgeClass='badge-done';
+
+    // Badge
+    let badgeClass,badgeText;
+    if(hasLog){badgeClass='badge-done';badgeText='FATTO';}
+    else if(missed){badgeClass='badge-missed';badgeText='SALTATO';}
+    else{
+      badgeClass=d.type==='run'?'badge-run':d.type==='gym'?'badge-gym':'badge-rest';
+      badgeText=act.name.toUpperCase();
+    }
+
+    // Progress bar (solo se non saltato e non riposo)
     let progressHtml='';
-    if(!isRest&&total>0){
+    if(!isRest&&!missed&&total>0){
       const pct=Math.round((done/total)*100);
       progressHtml=`<div class="plan-day-progress"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10px;color:var(--muted2)">Checklist</span><span style="font-family:'Syne Mono',monospace;font-size:10px;color:${done===total?'var(--green)':'var(--muted2)'}">${done}/${total}</span></div><div class="plan-mini-bar-bg"><div class="plan-mini-bar-fill" style="width:${pct}%"></div></div></div>`;
     }
-    // Quick log form
+
+    // Quick log form (solo se non saltato, non riposo, non già loggato)
     const quickLog=`<div class="quick-log-form" id="quickLog_${i}">
       <div class="quick-log-row">
         <input class="inp" type="number" id="qKcal_${i}" placeholder="kcal" style="font-size:13px;padding:8px 10px">
@@ -1101,18 +1185,19 @@ function renderWeekPlan(){
         <button onclick="quickLogSession(${i})" style="background:linear-gradient(135deg,var(--fire),var(--fire2));border:none;border-radius:10px;padding:8px 12px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">⚡ LOG</button>
       </div>
     </div>`;
+
     wrap.innerHTML=`
       <div class="plan-day-header" onclick="togglePlanDay(${i})">
-        <div class="plan-day-icon">${act.icon}</div>
+        <div class="plan-day-icon">${missed?'❌':act.icon}</div>
         <div class="plan-day-info">
           <div class="plan-day-name">${d.label}${i===today?' <span style="font-size:10px;color:#ffcc00">● oggi</span>':''}</div>
-          <div class="plan-day-sub">${isRest?'Giorno di riposo':act.name+(d.exercises.length>0?' · '+d.exercises.length+' esercizi':'')}</div>
+          <div class="plan-day-sub">${missed?'Giorno saltato':isRest?'Giorno di riposo':act.name+(d.exercises.length>0?' · '+d.exercises.length+' esercizi':'')}</div>
         </div>
         <span class="plan-day-badge ${badgeClass}">${badgeText}</span>
       </div>
       ${progressHtml}
       <div class="day-detail-panel${i===openPlanDay?' open':''}" id="panel_${i}"></div>
-      ${!isRest&&!hasLog?`<button class="quick-log-btn" onclick="toggleQuickLog(event,${i})">⚡ Registra veloce</button>${quickLog}`:''}`;
+      ${!isRest&&!hasLog&&!missed?`<button class="quick-log-btn" onclick="toggleQuickLog(event,${i})">⚡ Registra veloce</button>${quickLog}`:''}`;
     el.appendChild(wrap);
     if(i===openPlanDay) fillPanel(i);
   });
@@ -1153,6 +1238,7 @@ function spawnConfetti(){
 function togglePlanDay(i){
   const day=data.days[i];
   if(day.type==='rest'&&day.exercises.length===0){showToast('Giorno di riposo 😴','');return;}
+  // Se saltato, apre il pannello ma in sola lettura (per vedere le X)
   openPlanDay=(openPlanDay===i)?-1:i;
   renderWeekPlan();
 }
@@ -1161,23 +1247,38 @@ function fillPanel(i){
   const panel=document.getElementById('panel_'+i);if(!panel)return;
   const day=data.days[i];
   const checks=data.checks[getCheckKey(i)]||{};
+  const missed=isDayMissed(i);
   if(day.exercises.length===0){panel.innerHTML=`<div class="no-checklist">Nessun esercizio configurato.<br>Aggiungili nelle Impostazioni!</div>`;return;}
   let html='<div class="checklist">';
-  day.exercises.forEach(ex=>{
-    const checked=!!checks[ex.id];
-    html+=`<div class="check-item${checked?' checked':''}" onclick="toggleCheck(${i},'${ex.id}')">
-      <div class="check-box">${checked?'✓':''}</div>
-      <div class="check-text">
-        <div class="check-name">${ex.name}</div>
-        ${ex.sets?`<div class="check-detail">${ex.sets}</div>`:''}
-        ${ex.note?`<div class="check-note">${ex.note}</div>`:''}
-      </div>
-    </div>`;
-  });
+  if(missed){
+    // Mostra overlay giorno saltato + tutti gli item con X rossa e bloccati
+    html+=`<div class="missed-overlay">❌ Giorno saltato — riprendi dalla prossima settimana</div>`;
+    day.exercises.forEach(ex=>{
+      html+=`<div class="check-item locked">
+        <div class="check-box" style="background:rgba(255,50,50,0.15);border-color:rgba(255,50,50,0.4);color:#ff5555;font-size:14px">✕</div>
+        <div class="check-text">
+          <div class="check-name" style="text-decoration:line-through;color:var(--muted)">${ex.name}</div>
+          ${ex.sets?`<div class="check-detail">${ex.sets}</div>`:''}
+        </div>
+      </div>`;
+    });
+  } else {
+    day.exercises.forEach(ex=>{
+      const checked=!!checks[ex.id];
+      html+=`<div class="check-item${checked?' checked':''}" onclick="toggleCheck(${i},'${ex.id}')">
+        <div class="check-box">${checked?'✓':''}</div>
+        <div class="check-text">
+          <div class="check-name">${ex.name}</div>
+          ${ex.sets?`<div class="check-detail">${ex.sets}</div>`:''}
+          ${ex.note?`<div class="check-note">${ex.note}</div>`:''}
+        </div>
+      </div>`;
+    });
+    const total=day.exercises.length;
+    const done=Object.values(checks).filter(Boolean).length;
+    if(done===total&&total>0) html+=`<div style="text-align:center;font-size:12px;color:var(--green);padding:6px 0;animation:fadeIn 0.3s ease">🎉 Tutti gli esercizi completati!</div>`;
+  }
   html+='</div>';
-  const total=day.exercises.length;
-  const done=Object.values(checks).filter(Boolean).length;
-  if(done===total&&total>0) html+=`<div style="text-align:center;font-size:12px;color:var(--green);padding:6px 0;animation:fadeIn 0.3s ease">🎉 Tutti gli esercizi completati!</div>`;
   panel.innerHTML=html;
 }
 
@@ -1350,6 +1451,32 @@ function saveSettings(){
 function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`fittrack_${new Date().toISOString().split('T')[0]}.json`;a.click();showToast('Backup esportato 💾','success');}
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const imp=JSON.parse(ev.target.result);if(imp.sessions){data=imp;if(!data.checks)data.checks={};if(!data.weekStreak)data.weekStreak=0;if(!data.bestWeekStreak)data.bestWeekStreak=0;if(!data.weightLog)data.weightLog=[];saveData(data);init();showToast('Importato! ✅','success');}else showToast('File non valido','fire');}catch{showToast('Errore','fire');}};reader.readAsText(file);}
 function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ── SWIPE NAVIGATION ──
+(function(){
+  const TABS=['Home','Log','Weight','Settings'];
+  let startX=0,startY=0,startTime=0;
+
+  document.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;
+    startY=e.touches[0].clientY;
+    startTime=Date.now();
+  },{passive:true});
+
+  document.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX - startX;
+    const dy=e.changedTouches[0].clientY - startY;
+    const dt=Date.now()-startTime;
+    // Swipe valido: orizzontale > 60px, più largo che alto, meno di 400ms
+    if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx)*0.6||dt>400) return;
+    const current=TABS.findIndex(t=>document.getElementById('page'+t)?.classList.contains('active'));
+    if(current===-1) return;
+    const next=dx<0
+      ? Math.min(current+1, TABS.length-1)  // swipe sinistra → tab successiva
+      : Math.max(current-1, 0);             // swipe destra → tab precedente
+    if(next!==current) switchTab(TABS[next]);
+  },{passive:true});
+})();
 
 init();
 </script>
