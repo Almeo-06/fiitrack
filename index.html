@@ -101,9 +101,9 @@ body.rest-day .logo span{color:#7070ff;}
 .cal-grid{
   display:grid;
   grid-template-columns:repeat(7,1fr);
+  grid-auto-rows:auto;
+  align-items:start;
   gap:4px;
-  /* Permette alle celle espanse di uscire dal loro slot */
-  position:relative;
 }
 .mday{
   width:100%;aspect-ratio:1;border-radius:8px;
@@ -137,91 +137,50 @@ body.rest-day .logo span{color:#7070ff;}
   box-shadow:0 0 14px rgba(255,100,0,0.5);
 }
 /* Cella espansa */
-.mday.expanded{
-  /* Occupa 3 colonne x 2 righe nella griglia */
-  grid-column:span 3;
-  grid-row:span 2;
-  aspect-ratio:unset;
-  height:auto;
-  border-radius:14px;
-  background:linear-gradient(145deg,#0f0800,#0c0c1e) !important;
-  border:1px solid rgba(255,100,0,0.35) !important;
-  box-shadow:0 4px 24px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,120,0,0.08);
-  display:flex;flex-direction:column;align-items:flex-start;
-  padding:11px 12px 10px;
-  cursor:default;
-  color:var(--text);
-  animation:cellOpen 0.3s cubic-bezier(0.34,1.1,0.64,1) both;
-  overflow:hidden;
-}
-@keyframes cellOpen{
-  from{opacity:0;transform:scale(0.85);}
-  to{opacity:1;transform:scale(1);}
-}
-.mday.expanded .cell-num{
+/* Cella espansa — occupa 4 colonne nella griglia */
+/* Intestazione data */
+.mday.expanded .ex-date{
   font-family:'Syne Mono',monospace;font-size:9px;
-  color:#ff7700;letter-spacing:1.5px;
-  text-transform:uppercase;margin-bottom:8px;
+  color:#ff7700;letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:7px;white-space:nowrap;
 }
-.mday.expanded .cell-row{
-  display:flex;align-items:center;gap:5px;
-  width:100%;margin-bottom:3px;
+/* Riga stat (km o kcal) */
+.mday.expanded .ex-stat{
+  display:flex;align-items:baseline;gap:3px;margin-bottom:3px;
 }
-.mday.expanded .cell-icon{font-size:12px;flex-shrink:0;line-height:1;}
-.mday.expanded .cell-val{
-  font-family:'Syne',sans-serif;font-size:14px;font-weight:800;
-  color:var(--text);line-height:1;
+.mday.expanded .ex-val{
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:800;line-height:1;
 }
-.mday.expanded .cell-lbl{
-  font-size:8px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:0.5px;margin-left:2px;
-  align-self:flex-end;padding-bottom:1px;
+.mday.expanded .ex-lbl{
+  font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;
 }
-.mday.expanded .cell-divider{
-  width:100%;height:1px;background:#181830;margin:6px 0 5px;
+.mday.expanded .ex-note{
+  font-size:9px;color:var(--muted2);font-style:italic;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:5px;
 }
-.mday.expanded .cell-check{
-  display:flex;align-items:center;gap:4px;
-  width:100%;margin-bottom:2px;
+/* Divider */
+.mday.expanded .ex-divider{
+  width:100%;height:1px;background:#1e1e38;margin:5px 0 4px;
 }
-.mday.expanded .cell-check-box{
+/* Check item */
+.mday.expanded .ex-check{
+  display:flex;align-items:center;gap:4px;margin-bottom:2px;
+}
+.mday.expanded .ex-chk{
   width:10px;height:10px;border-radius:3px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;font-size:6px;
 }
-.mday.expanded .ck-done{background:var(--green);color:#000;}
-.mday.expanded .ck-no{background:#151525;border:1px solid #252545;color:var(--muted);}
-.mday.expanded .cell-name{
+.mday.expanded .ex-chk.ck-done{background:var(--green);color:#000;}
+.mday.expanded .ex-chk.ck-no{background:#151525;border:1px solid #1e1e38;}
+.mday.expanded .ex-name{
   font-size:9px;color:var(--muted2);flex:1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;
 }
-.mday.expanded .cell-chk-summary{
-  font-size:8px;margin-top:3px;
-  font-family:'Syne Mono',monospace;letter-spacing:0.5px;
+.mday.expanded .ex-summary{
+  font-size:8px;margin-top:3px;font-family:'Syne Mono',monospace;
 }
-/* Calendario nella tab Log */
-.cal-card{
-  background:linear-gradient(145deg,#0a0a1a,#0e0e20);
-  border:1px solid #1a1a36;border-radius:22px;
-  padding:20px;margin-bottom:14px;
-  box-shadow:0 4px 32px rgba(0,0,0,0.4);
-}
-.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.cal-title{
-  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
-  background:linear-gradient(135deg,#fff,#aaaacc);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.cal-nav{
-  background:#0e0e22;border:1px solid #222244;border-radius:10px;
-  padding:6px 14px;color:#5566aa;font-size:16px;cursor:pointer;
-  transition:all 0.2s;
-}
-.cal-nav:hover{background:#161630;border-color:#3344aa;color:#aabbff;}
-.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;}
-.cal-wd{
-  font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
-  color:#2a2a50;text-align:center;text-transform:uppercase;letter-spacing:1px;
-}
+
 .cal-grid{
   display:grid;
   grid-template-columns:repeat(7,1fr);
@@ -572,6 +531,113 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .ob-sum-row:last-child{border-bottom:none;}
 .ob-sum-lbl{font-size:11px;color:var(--muted2);}
 .ob-sum-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
+
+/* ── CALENDARIO MENSILE ── */
+.cal-card{background:linear-gradient(145deg,#0a0a1a,#0e0e20);border:1px solid #1a1a36;border-radius:22px;padding:18px;margin-bottom:14px;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:linear-gradient(135deg,#fff,#aaaacc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.cal-nav{background:#0e0e22;border:1px solid #222244;border-radius:10px;padding:5px 13px;color:#5566aa;font-size:15px;cursor:pointer;transition:all 0.2s;}
+.cal-nav:hover{background:#161630;color:#aabbff;}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px;}
+.cal-wd{font-family:'Syne',sans-serif;font-size:8px;font-weight:700;color:#2a2a50;text-align:center;text-transform:uppercase;letter-spacing:0.5px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:auto;align-items:start;gap:3px;}
+.cal-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+.cal-stat{background:#0c0c1e;border:1px solid #1a1a38;border-radius:12px;padding:10px 6px;text-align:center;position:relative;overflow:hidden;}
+.cal-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.cal-stat:nth-child(1)::before{background:linear-gradient(90deg,#ff3a00,#ff8c00);}
+.cal-stat:nth-child(2)::before{background:linear-gradient(90deg,#00e676,#00bfa5);}
+.cal-stat:nth-child(3)::before{background:linear-gradient(90deg,#2979ff,#0050cc);}
+.cal-stat-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
+.cal-stat-lbl{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
+.cal-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid #111126;}
+.cal-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#44446a;font-family:'Syne Mono',monospace;}
+.cal-legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+
+/* ── CELLA ESPANSA (position absolute, sopra la griglia) ── */
+.mday.has-session{cursor:pointer;}
+/* Il wrapper della griglia serve come reference per position:absolute */
+.cal-grid{position:relative;}
+/* Placeholder invisibile che mantiene lo spazio nella griglia */
+.mday.cell-placeholder{
+  visibility:hidden;
+  pointer-events:none;
+}
+/* La cella espansa fluttua sopra la griglia */
+.mday-floating{
+  position:absolute;
+  z-index:30;
+  border-radius:12px;
+  background:linear-gradient(145deg,#110900,#0a0a1a);
+  border:1px solid rgba(255,100,0,0.5);
+  box-shadow:0 6px 24px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,80,0,0.1);
+  display:flex;flex-direction:column;
+  padding:10px 12px;
+  cursor:default;
+  color:var(--text);
+  overflow:hidden;
+  transition:height 0.3s cubic-bezier(0.34,1.1,0.64,1),
+             box-shadow 0.3s ease;
+  min-width:0;
+}
+@keyframes cellOpen{
+  from{opacity:0;transform:scale(0.85);}
+  to{opacity:1;transform:scale(1);}
+}
+.mday-floating.opening{animation:cellOpen 0.25s cubic-bezier(0.34,1.1,0.64,1) both;}
+/* Info principali */
+.mday-floating .ex-date{
+  font-family:'Syne Mono',monospace;font-size:9px;
+  color:#ff7700;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:6px;white-space:nowrap;
+}
+.mday-floating .ex-name-sess{
+  font-size:12px;font-weight:600;margin-bottom:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mday-floating .ex-stats{display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+.mday-floating .ex-stat{display:flex;align-items:baseline;gap:2px;}
+.mday-floating .ex-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;line-height:1;}
+.mday-floating .ex-lbl{font-size:8px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.3px;}
+.mday-floating .ex-hint{
+  font-size:9px;color:rgba(255,100,0,0.4);
+  font-family:'Syne Mono',monospace;letter-spacing:2px;
+  margin-top:4px;text-align:center;
+}
+/* Checklist — nascosta nello stato 1 */
+.mday-floating .ex-checklist{
+  overflow:hidden;
+  max-height:0;
+  transition:max-height 0.3s cubic-bezier(0.34,1.1,0.64,1);
+  margin-top:0;
+}
+.mday-floating.detail .ex-checklist{
+  max-height:300px;
+  margin-top:8px;
+}
+.mday-floating .ex-divider{
+  width:100%;height:1px;background:#1e1e38;margin-bottom:8px;
+}
+.mday-floating .ex-check{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 0;border-bottom:1px solid #111126;
+}
+.mday-floating .ex-check:last-child{border-bottom:none;}
+.mday-floating .ex-chk{
+  width:14px;height:14px;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:8px;
+}
+.mday-floating .ex-chk.ck-done{background:var(--green);color:#000;}
+.mday-floating .ex-chk.ck-no{background:#151525;border:1px solid #252545;}
+.mday-floating .ex-check-name{
+  font-size:12px;font-weight:500;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mday-floating .ex-check-sets{
+  font-family:'Syne Mono',monospace;font-size:10px;color:var(--muted);
+}
+.mday-floating .ex-summary{
+  font-size:10px;margin-top:6px;font-family:'Syne Mono',monospace;text-align:center;
+}
 </style>
 </head>
 <body>
@@ -1588,9 +1654,9 @@ function renderCalendar(){
     cell.textContent=day;
     // Solo i giorni con sessione sono cliccabili
     if(hasSession){
-      cell.dataset.date=dateStr;
-      cell.dataset.day=day;
-      cell.onclick=(e)=>{e.stopPropagation();openDayPopup(dateStr,cell);};
+      cell.dataset.date = dateStr;
+      cell.dataset.day  = String(day);
+      cell.onclick = (e)=>{e.stopPropagation(); openDayPopup(dateStr, cell);};
     }
     grid.appendChild(cell);
   }
@@ -2067,121 +2133,175 @@ function showToast(msg,type){const t=document.getElementById('toast');t.textCont
 // ══════════════════════════════════════
 // EXPAND CELLA CALENDARIO
 // ══════════════════════════════════════
-let expandedCell=null;
+let expandedCell     = null; // cella placeholder originale
+let floatingEl       = null; // div flottante
+let expandedState    = 0;    // 0=chiuso 1=base 2=dettaglio
+let expandedDateStr  = null;
 
 function openDayPopup(dateStr, cellEl){
-  // Se era già aperta la stessa, chiudi
-  if(expandedCell&&expandedCell===cellEl){
-    closeDayPopup();return;
+  if(expandedDateStr === dateStr){
+    if(expandedState === 1){
+      // Apri dettaglio solo se c'è una checklist
+      if(floatingEl && floatingEl.dataset.noDetail === '1'){ closeDayPopup(); return; }
+      showDetail(); return;
+    }
+    if(expandedState === 2){ closeDayPopup(); return; }
   }
-  // Chiudi eventuale precedente
   if(expandedCell) closeDayPopup();
+  openBase(dateStr, cellEl);
+}
 
-  const dateObj=new Date(dateStr+'T12:00');
-  const dayIdx=((dateObj.getDay()+6)%7);
-  const sessions=data.sessions.filter(s=>s.date===dateStr);
+function openBase(dateStr, cellEl){
+  const dateObj  = new Date(dateStr+'T12:00');
+  const dayIdx   = ((dateObj.getDay()+6)%7);
+  const sessions = data.sessions.filter(s=>s.date===dateStr);
   if(!sessions.length) return;
 
-  const totKcal=sessions.reduce((a,s)=>a+s.kcal,0);
-  const totKm=sessions.reduce((a,s)=>a+(s.km||0),0);
-  const dayNum=dateObj.getDate();
+  const totKcal = sessions.reduce((a,s)=>a+s.kcal,0);
+  const totKm   = sessions.reduce((a,s)=>a+(s.km||0),0);
+  const dayNum  = dateObj.getDate();
+  const monthShort = dateObj.toLocaleDateString('it-IT',{month:'short'}).toUpperCase();
+  const s0 = sessions[0];
 
-  // Costruisci contenuto della cella espansa
-  let html=`<div class="cell-num">${String(dayNum).padStart(2,'0')} ${dateObj.toLocaleDateString('it-IT',{month:'short'}).toUpperCase()}</div>`;
+  // Salva posizione e dimensione della cella originale
+  const grid     = document.getElementById('calGrid');
+  const gridRect = grid.getBoundingClientRect();
+  const cellRect = cellEl.getBoundingClientRect();
 
-  // Sessioni — se ha km, mostra km in grande; altrimenti kcal
-  sessions.forEach(s=>{
-    if(s.km>0){
-      // Attività con distanza: km principale
-      html+=`<div class="cell-row">
-        <span class="cell-icon">📍</span>
-        <span class="cell-val">${s.km.toFixed(1)}</span>
-        <span class="cell-lbl">km</span>
-      </div>`;
-      html+=`<div class="cell-row">
-        <span class="cell-icon">${s.typeIcon||'🏃'}</span>
-        <span class="cell-val" style="font-size:11px">${s.kcal.toLocaleString()}</span>
-        <span class="cell-lbl">kcal</span>
-      </div>`;
-    } else {
-      // Palestra/altro: kcal principale
-      html+=`<div class="cell-row">
-        <span class="cell-icon">${s.typeIcon||'🏋️'}</span>
-        <span class="cell-val">${s.kcal.toLocaleString()}</span>
-        <span class="cell-lbl">kcal</span>
+  // Posizione relativa alla griglia
+  const relLeft = cellRect.left - gridRect.left;
+  const relTop  = cellRect.top  - gridRect.top;
+  const cellW   = cellRect.width;
+  const cellH   = cellRect.height;
+
+  // Larghezza del floating: occupa la cella + quella a destra (o sinistra)
+  // ma senza uscire dalla griglia
+  const gridW   = gridRect.width;
+  const floatW  = Math.min(cellW * 2.5, gridW * 0.55); // max 55% griglia
+  let   floatL  = relLeft;
+  // Se va fuori a destra, ancora a destra
+  if(floatL + floatW > gridW) floatL = gridW - floatW;
+  if(floatL < 0) floatL = 0;
+
+  // Crea elemento flottante
+  const el = document.createElement('div');
+  el.className = 'mday-floating opening';
+  el.id = 'calFloating';
+  el.style.left   = floatL + 'px';
+  el.style.top    = relTop + 'px';
+  el.style.width  = floatW + 'px';
+
+  // Contenuto base
+  let statsHtml = '';
+  if(totKm > 0){
+    statsHtml += `<div class="ex-stat"><span class="ex-val" style="color:#ff8c00">${totKm.toFixed(1)}</span><span class="ex-lbl">km</span></div>`;
+  }
+  statsHtml += `<div class="ex-stat"><span class="ex-val" style="color:#ff6600">${totKcal.toLocaleString()}</span><span class="ex-lbl">kcal</span></div>`;
+
+  // Checklist HTML (nascosta finché non è in stato 2)
+  let checkHtml = '';
+  const day = data.days[dayIdx];
+  if(day && day.exercises.length > 0){
+    const wk = new Date(dateStr+'T12:00');
+    wk.setDate(wk.getDate()-((wk.getDay()+6)%7)); wk.setHours(0,0,0,0);
+    const checkKey = wk.toISOString().split('T')[0]+'_'+dayIdx;
+    const checks   = data.checks[checkKey]||{};
+    if(Object.keys(checks).length > 0){
+      const done  = day.exercises.filter(ex=>checks[ex.id]).length;
+      const total = day.exercises.length;
+      checkHtml += `<div class="ex-divider"></div>`;
+      day.exercises.forEach(ex=>{
+        const isDone = !!checks[ex.id];
+        checkHtml += `<div class="ex-check">
+          <div class="ex-chk ${isDone?'ck-done':'ck-no'}">${isDone?'✓':''}</div>
+          <span class="ex-check-name" style="${isDone?'opacity:0.4':''}">${ex.name}</span>
+          ${ex.sets?`<span class="ex-check-sets">${ex.sets}</span>`:''}
+        </div>`;
+      });
+      checkHtml += `<div class="ex-summary" style="color:${done===total?'var(--green)':'var(--muted)'}">
+        ${done===total?'🎉 tutti completati':done+'/'+total+' completati'}
       </div>`;
     }
-    if(s.note){
-      html+=`<div class="cell-row" style="opacity:0.55;margin-top:1px">
-        <span class="cell-icon" style="font-size:10px">💬</span>
-        <span style="font-size:9px;color:var(--muted2);flex:1;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.note}</span>
-      </div>`;
+  }
+
+  // Mostra hint solo se c'è una checklist da mostrare
+  const hasChecklist = checkHtml.length > 0;
+
+  el.innerHTML = `
+    <div class="ex-date">${String(dayNum).padStart(2,'0')} ${monthShort}</div>
+    <div class="ex-name-sess">${s0.typeIcon||'🏃'} ${s0.typeLabel||''}</div>
+    <div class="ex-stats">${statsHtml}</div>
+    ${hasChecklist ? '<div class="ex-hint">▼ ▼</div>' : ''}
+    <div class="ex-checklist">${checkHtml}</div>
+  `;
+  
+  // Se non c'è checklist, disabilita il secondo click
+  if(!hasChecklist) el.dataset.noDetail = '1';
+
+  // Rendi la cella originale invisibile (placeholder)
+  cellEl.classList.add('cell-placeholder');
+  cellEl.dataset.origText = cellEl.textContent;
+  cellEl.textContent = '';
+
+  // Click sulla card flottante: stato 1 → dettaglio, stato 2 → chiudi
+  el.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if(expandedState === 1){
+      if(floatingEl && floatingEl.dataset.noDetail === '1'){ closeDayPopup(); return; }
+      showDetail();
+    } else if(expandedState === 2){
+      closeDayPopup();
     }
   });
 
-  // Checklist (solo se ci sono esercizi)
-  const day=data.days[dayIdx];
-  if(day&&day.exercises.length>0){
-    const weekStart=new Date(dateStr+'T12:00');
-    weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
-    weekStart.setHours(0,0,0,0);
-    const checkKey=weekStart.toISOString().split('T')[0]+'_'+dayIdx;
-    const checks=data.checks[checkKey]||{};
-    const doneCount=day.exercises.filter(ex=>checks[ex.id]).length;
-    const total=day.exercises.length;
+  grid.appendChild(el);
 
-    // Mostra solo se ha dati checklist
-    if(Object.keys(checks).length>0){
-      html+=`<div class="cell-divider"></div>`;
-      day.exercises.forEach(ex=>{
-        const done=!!checks[ex.id];
-        html+=`<div class="cell-check">
-          <div class="cell-check-box ${done?'ck-done':'ck-no'}">${done?'✓':'✕'}</div>
-          <span class="cell-name" style="${done?'opacity:0.45':''}">${ex.name}</span>
-        </div>`;
-      });
-      html+=`<div style="font-size:9px;color:${doneCount===total?'var(--green)':'var(--muted)'};margin-top:4px">${doneCount===total?'🎉 tutti':'✅ '+doneCount+'/'+total}</div>`;
-    }
-  }
+  expandedCell    = cellEl;
+  floatingEl      = el;
+  expandedState   = 1;
+  expandedDateStr = dateStr;
 
-  // Calcola quante colonne spanning usare (non uscire dalla griglia)
-  // Colonna del giorno: (offset + day - 1) % 7, 0-indexed
-  const grid=document.getElementById('calGrid');
-  const cells=Array.from(grid.children);
-  const cellIndex=cells.indexOf(cellEl);
-  const col=cellIndex%7; // 0-6
-
-  // Span di 3 colonne, ma aggiusta se siamo vicino al bordo destro
-  let colSpan=3;
-  if(col>4) colSpan=2; // ultime 2 colonne: span 2
-
-  cellEl.style.gridColumn='span '+colSpan;
-  cellEl.style.gridRow='span 2';
-  cellEl.classList.add('expanded');
-  cellEl.innerHTML=html;
-  expandedCell=cellEl;
-
-  // Click fuori chiude
-  setTimeout(()=>document.addEventListener('click',outsideClick),50);
+  setTimeout(()=>document.addEventListener('click', calOutsideClick), 50);
 }
 
-function outsideClick(e){
-  if(expandedCell&&!expandedCell.contains(e.target)){
-    closeDayPopup();
-  }
+function showDetail(){
+  if(!floatingEl) return;
+  floatingEl.classList.add('detail');
+  // Nascondi hint
+  const hint = floatingEl.querySelector('.ex-hint');
+  if(hint) hint.style.display = 'none';
+  expandedState = 2;
+}
+
+function calOutsideClick(e){
+  if(floatingEl && floatingEl.contains(e.target)) return;
+  if(expandedCell && expandedCell.contains(e.target)) return;
+  closeDayPopup();
 }
 
 function closeDayPopup(){
-  if(!expandedCell) return;
-  const dayNum=expandedCell.dataset.day;
-  expandedCell.classList.remove('expanded');
-  expandedCell.style.gridColumn='';
-  expandedCell.style.gridRow='';
-  expandedCell.textContent=dayNum;
-  expandedCell=null;
-  document.removeEventListener('click',outsideClick);
+  if(expandedCell){
+    expandedCell.classList.remove('cell-placeholder');
+    expandedCell.textContent = expandedCell.dataset.origText || '';
+    expandedCell = null;
+  }
+  if(floatingEl){
+    floatingEl.remove();
+    floatingEl = null;
+  }
+  expandedState   = 0;
+  expandedDateStr = null;
+  document.removeEventListener('click', calOutsideClick);
 }
 
+// ══════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════
+// ONBOARDING
 // ══════════════════════════════════════
 // ONBOARDING
 // ══════════════════════════════════════
