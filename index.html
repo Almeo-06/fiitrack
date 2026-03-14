@@ -399,9 +399,229 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes checkPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* ── ONBOARDING ── */
+#obOverlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;overflow:hidden;}
+#obOverlay::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 0%,rgba(255,77,0,0.07),transparent),radial-gradient(ellipse 50% 40% at 80% 100%,rgba(41,121,255,0.05),transparent);pointer-events:none;}
+.ob-progress{display:flex;gap:5px;justify-content:center;padding:14px 0 0;position:relative;z-index:5;}
+.ob-dot{height:3px;border-radius:99px;background:#1a1a34;transition:all 0.4s ease;}
+.ob-dot.done{background:linear-gradient(90deg,var(--fire),var(--fire2));width:20px;}
+.ob-dot.active{background:var(--fire2);width:28px;box-shadow:0 0 6px rgba(255,140,0,0.4);}
+.ob-dot.upcoming{width:8px;}
+.ob-screen{flex:1;position:relative;overflow:hidden;}
+.ob-step{position:absolute;inset:0;display:flex;flex-direction:column;padding:20px 20px 24px;opacity:0;pointer-events:none;background:transparent;}
+.ob-step.active{opacity:1 !important;transform:translateX(0) !important;pointer-events:all;transition:opacity 0.3s ease,transform 0.3s ease;}
+.ob-step-num{font-family:'Syne Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.ob-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px;}
+.ob-title .accent{background:linear-gradient(135deg,var(--fire),var(--fire2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ob-sub{font-size:12px;color:var(--muted2);margin-bottom:18px;line-height:1.5;}
+.ob-input-wrap{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:10px;transition:border-color 0.2s;}
+.ob-input-wrap:focus-within{border-color:var(--fire2);box-shadow:0 0 0 3px rgba(255,140,0,0.08);}
+.ob-input-wrap input{background:none;border:none;outline:none;color:var(--text);font-family:'Syne',sans-serif;font-size:16px;font-weight:700;width:100%;}
+.ob-input-wrap input::placeholder{color:var(--muted);font-weight:400;font-size:14px;}
+.ob-input-unit{font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;}
+.ob-input-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.ob-options{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+.ob-option{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.2s;}
+.ob-option:active{transform:scale(0.98);}
+.ob-option.selected{border-color:var(--fire2);background:rgba(255,140,0,0.06);}
+.ob-option.selected .ob-opt-check{background:var(--fire2);border-color:var(--fire2);color:#000;}
+.ob-opt-icon{font-size:20px;flex-shrink:0;}
+.ob-opt-label{font-size:13px;font-weight:600;}
+.ob-opt-sub{font-size:10px;color:var(--muted2);margin-top:1px;}
+.ob-opt-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all 0.2s;}
+.ob-sess-row{display:flex;gap:6px;margin-bottom:12px;}
+.ob-sess-btn{flex:1;padding:10px 4px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;color:var(--muted2);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-align:center;cursor:pointer;transition:all 0.2s;}
+.ob-sess-btn.sel{background:rgba(255,140,0,0.08);border-color:var(--fire2);color:var(--fire2);}
+.ob-levels{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
+.ob-level{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.2s;}
+.ob-level:active{transform:scale(0.98);}
+.ob-level.sel-beg{border-color:#00e676;background:rgba(0,230,118,0.05);}
+.ob-level.sel-int{border-color:var(--fire2);background:rgba(255,140,0,0.05);}
+.ob-level.sel-adv{border-color:#ff3333;background:rgba(255,50,50,0.05);}
+.ob-level-bars{display:flex;gap:2px;align-items:flex-end;}
+.ob-bar{width:5px;border-radius:2px;background:var(--border2);}
+.ob-level.sel-beg .ob-bar.b1{background:#00e676;}
+.ob-level.sel-int .ob-bar.b1,.ob-level.sel-int .ob-bar.b2{background:var(--fire2);}
+.ob-level.sel-adv .ob-bar{background:#ff3333;}
+.ob-nav{margin-top:auto;display:flex;gap:8px;padding-top:10px;}
+.ob-back{padding:12px 18px;background:var(--surface);border:1px solid var(--border);border-radius:14px;color:var(--muted2);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.ob-next{flex:1;padding:13px;background:linear-gradient(135deg,var(--fire),var(--fire2));border:none;border-radius:14px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:0.5px;cursor:pointer;box-shadow:0 4px 20px rgba(255,77,0,0.3);transition:all 0.2s;}
+.ob-next:active{transform:scale(0.98);}
+.ob-welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.ob-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;margin-bottom:4px;letter-spacing:-1px;}
+.ob-logo span{background:linear-gradient(135deg,var(--fire),var(--fire2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ob-flame{font-size:54px;margin-bottom:12px;filter:drop-shadow(0 0 18px rgba(255,100,0,0.5));animation:obFlame 2s ease-in-out infinite;}
+@keyframes obFlame{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.ob-features{display:flex;flex-direction:column;gap:6px;margin-top:16px;width:100%;text-align:left;}
+.ob-feat{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:9px 12px;font-size:12px;font-weight:500;}
+.ob-summary{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:8px;}
+.ob-sum-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.ob-sum-row:last-child{border-bottom:none;}
+.ob-sum-lbl{font-size:11px;color:var(--muted2);}
+.ob-sum-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
 </style>
 </head>
 <body>
+<!-- ── ONBOARDING OVERLAY ── -->
+<div id="obOverlay" style="display:none">
+  <div class="ob-progress" id="obProgress"></div>
+  <div class="ob-screen">
+
+    <!-- STEP 0: BENVENUTO -->
+    <div class="ob-step active" id="obStep0">
+      <div class="ob-welcome">
+        <div class="ob-flame">🔥</div>
+        <div class="ob-logo">Fit<span>Track</span></div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin:10px 0 6px;line-height:1.2">Il tuo allenamento,<br>tracciato.</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.6;max-width:240px">Configuriamo l'app in 1 minuto per adattarla perfettamente a te.</div>
+        <div class="ob-features">
+          <div class="ob-feat"><span style="font-size:16px">📊</span>Streak e progressi giornalieri</div>
+          <div class="ob-feat"><span style="font-size:16px">⚖️</span>Tracciamento peso e BMI</div>
+          <div class="ob-feat"><span style="font-size:16px">📅</span>Piano settimanale personalizzato</div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="ob-next" style="width:100%" onclick="obNext()">Iniziamo 🚀</button>
+      </div>
+    </div>
+
+    <!-- STEP 1: NOME -->
+    <div class="ob-step" id="obStep1">
+      <div class="ob-step-num">Passo 1 di 5</div>
+      <div class="ob-title">Come ti <span class="accent">chiami?</span></div>
+      <div class="ob-sub">Ti chiameremo così ogni volta che apri l'app.</div>
+      <div class="ob-input-wrap">
+        <span style="font-size:18px">👤</span>
+        <input type="text" id="obName" placeholder="Es. Marco" autocomplete="off">
+      </div>
+      <div class="ob-nav">
+        <button class="ob-back" onclick="obPrev()">‹</button>
+        <button class="ob-next" onclick="obNext()">Continua →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: OBIETTIVO -->
+    <div class="ob-step" id="obStep2">
+      <div class="ob-step-num">Passo 2 di 5</div>
+      <div class="ob-title">Qual è il tuo <span class="accent">obiettivo?</span></div>
+      <div class="ob-sub">Ti suggeriremo il piano più adatto.</div>
+      <div class="ob-options">
+        <div class="ob-option" onclick="obSelectGoal('lose',this)" id="obGoalLose">
+          <span class="ob-opt-icon">🔥</span>
+          <div style="flex:1"><div class="ob-opt-label">Perdere peso</div><div class="ob-opt-sub">Bruciare grassi e dimagrire</div></div>
+          <div class="ob-opt-check"></div>
+        </div>
+        <div class="ob-option" onclick="obSelectGoal('maintain',this)" id="obGoalMaintain">
+          <span class="ob-opt-icon">⚖️</span>
+          <div style="flex:1"><div class="ob-opt-label">Mantenersi in forma</div><div class="ob-opt-sub">Restare al peso attuale</div></div>
+          <div class="ob-opt-check"></div>
+        </div>
+        <div class="ob-option" onclick="obSelectGoal('gain',this)" id="obGoalGain">
+          <span class="ob-opt-icon">💪</span>
+          <div style="flex:1"><div class="ob-opt-label">Aumentare massa</div><div class="ob-opt-sub">Costruire muscolo</div></div>
+          <div class="ob-opt-check"></div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="ob-back" onclick="obPrev()">‹</button>
+        <button class="ob-next" onclick="obNext()">Continua →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: MISURE -->
+    <div class="ob-step" id="obStep3">
+      <div class="ob-step-num">Passo 3 di 5</div>
+      <div class="ob-title">Le tue <span class="accent">misure</span></div>
+      <div class="ob-sub">Calcoleremo il tuo BMI e imposteremo il tracker del peso.</div>
+      <div class="ob-input-row">
+        <div class="ob-input-wrap">
+          <span style="font-size:16px">📏</span>
+          <input type="number" id="obHeight" placeholder="175" min="100" max="250" oninput="obCalcBMI()">
+          <span class="ob-input-unit">cm</span>
+        </div>
+        <div class="ob-input-wrap">
+          <span style="font-size:16px">⚖️</span>
+          <input type="number" id="obWeight" placeholder="70" step="0.1" oninput="obCalcBMI()">
+          <span class="ob-input-unit">kg</span>
+        </div>
+      </div>
+      <div class="ob-input-wrap">
+        <span style="font-size:16px">🎯</span>
+        <input type="number" id="obGoalWeight" placeholder="Peso obiettivo (kg)" step="0.1">
+        <span class="ob-input-unit">kg</span>
+      </div>
+      <div id="obBmiPreview" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-top:4px;display:none;align-items:center;gap:10px">
+        <span style="font-size:16px">📊</span>
+        <div><div style="font-size:10px;color:var(--muted2)">BMI attuale</div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--fire2)" id="obBmiVal">—</div></div>
+        <div style="font-size:11px;font-weight:600;margin-left:auto" id="obBmiCat">—</div>
+      </div>
+      <div class="ob-nav" style="margin-top:12px">
+        <button class="ob-back" onclick="obPrev()">‹</button>
+        <button class="ob-next" onclick="obNext()">Continua →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: LIVELLO + SESSIONI -->
+    <div class="ob-step" id="obStep4">
+      <div class="ob-step-num">Passo 4 di 5</div>
+      <div class="ob-title">Il tuo <span class="accent">livello</span></div>
+      <div class="ob-sub">Quante volte ti alleni a settimana?</div>
+      <div class="ob-levels">
+        <div class="ob-level" id="obLvBeg" onclick="obSelectLevel('beg')">
+          <span style="font-size:20px">🌱</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">Principiante</div><div style="font-size:10px;color:var(--muted2)">Meno di 2 volte a settimana</div></div>
+          <div class="ob-level-bars"><div class="ob-bar b1" style="height:8px"></div><div class="ob-bar b2" style="height:13px"></div><div class="ob-bar b3" style="height:18px"></div></div>
+        </div>
+        <div class="ob-level" id="obLvInt" onclick="obSelectLevel('int')">
+          <span style="font-size:20px">⚡</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">Intermedio</div><div style="font-size:10px;color:var(--muted2)">2-4 volte a settimana</div></div>
+          <div class="ob-level-bars"><div class="ob-bar b1" style="height:8px"></div><div class="ob-bar b2" style="height:13px"></div><div class="ob-bar b3" style="height:18px"></div></div>
+        </div>
+        <div class="ob-level" id="obLvAdv" onclick="obSelectLevel('adv')">
+          <span style="font-size:20px">🔥</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">Avanzato</div><div style="font-size:10px;color:var(--muted2)">5+ volte a settimana</div></div>
+          <div class="ob-level-bars"><div class="ob-bar b1" style="height:8px"></div><div class="ob-bar b2" style="height:13px"></div><div class="ob-bar b3" style="height:18px"></div></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-family:'Syne Mono',monospace">Sessioni obiettivo / settimana</div>
+      <div class="ob-sess-row">
+        <div class="ob-sess-btn" onclick="obSelectSess(this,2)">2</div>
+        <div class="ob-sess-btn" onclick="obSelectSess(this,3)">3</div>
+        <div class="ob-sess-btn sel" onclick="obSelectSess(this,4)">4</div>
+        <div class="ob-sess-btn" onclick="obSelectSess(this,5)">5</div>
+        <div class="ob-sess-btn" onclick="obSelectSess(this,6)">6</div>
+      </div>
+      <div class="ob-nav">
+        <button class="ob-back" onclick="obPrev()">‹</button>
+        <button class="ob-next" onclick="obNext()">Continua →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: RIEPILOGO -->
+    <div class="ob-step" id="obStep5">
+      <div class="ob-step-num">Tutto pronto!</div>
+      <div class="ob-title">Riepilogo <span class="accent">profilo</span></div>
+      <div class="ob-sub">Potrai modificare tutto nelle impostazioni.</div>
+      <div class="ob-summary">
+        <div class="ob-sum-row"><span class="ob-sum-lbl">👤 Nome</span><span class="ob-sum-val" id="obSumName">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">🎯 Obiettivo</span><span class="ob-sum-val" id="obSumGoal">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">📏 Altezza</span><span class="ob-sum-val" id="obSumHeight">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">⚖️ Peso</span><span class="ob-sum-val" id="obSumWeight">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">🏆 Obiettivo peso</span><span class="ob-sum-val" id="obSumGoalW">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">📊 BMI</span><span class="ob-sum-val" id="obSumBmi">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">⚡ Livello</span><span class="ob-sum-val" id="obSumLevel">—</span></div>
+        <div class="ob-sum-row"><span class="ob-sum-lbl">📅 Sessioni/sett.</span><span class="ob-sum-val" id="obSumSess">—</span></div>
+      </div>
+      <div class="ob-nav">
+        <button class="ob-back" onclick="obPrev()">‹</button>
+        <button class="ob-next" style="background:linear-gradient(135deg,#00c853,#00e676);box-shadow:0 4px 20px rgba(0,200,80,0.3)" onclick="obFinish()">🚀 Inizia FitTrack</button>
+      </div>
+    </div>
+
+  </div><!-- ob-screen -->
+</div><!-- obOverlay -->
+
 <div class="app">
 
   <!-- HOME -->
@@ -526,7 +746,15 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 
     <div class="log-card">
       <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Aggiungi Sessione</div>
-      <div class="day-select" id="daySelect"></div>
+      <!-- Solo oggi — giorno fisso non modificabile -->
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid rgba(255,220,0,0.25);border-radius:12px;padding:10px 14px;margin-bottom:14px">
+        <span style="font-size:20px" id="todayIcon">🏋️</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600" id="todayLabel">Oggi</div>
+          <div style="font-size:11px;color:var(--muted2)" id="todayDate">—</div>
+        </div>
+        <span style="font-family:'Syne Mono',monospace;font-size:9px;padding:3px 8px;background:rgba(255,220,0,0.1);border:1px solid rgba(255,220,0,0.3);border-radius:5px;color:#ffcc00">OGGI</span>
+      </div>
       <div class="type-toggle" id="typeToggle"></div>
       <div class="input-group">
         <label class="input-label">Calorie Bruciate (kcal)</label>
@@ -1515,20 +1743,25 @@ function toggleCheck(dayIndex,exId){
 
 // ── LOG ──
 function buildDaySelect(){
-  const el=document.getElementById('daySelect');el.innerHTML='';
-  const today=((new Date().getDay()+6)%7);
-  data.days.forEach((d,i)=>{
-    const hasLog=data.sessions.some(s=>s.dayIndex===i&&isThisWeek(s.date));
-    const act=data.activities.find(a=>a.id===d.type)||data.activities[0];
-    const btn=document.createElement('button');
-    btn.className='day-btn'+(i===selectedDay?' selected':'')+(hasLog?' logged':'');
-    btn.innerHTML=`<span style="font-size:9px;text-transform:uppercase">${d.abbr}</span><span style="font-size:13px">${hasLog?'✅':act.icon}</span>`;
-    btn.onclick=()=>selectDay(i);
-    if(i===today) btn.style.boxShadow='0 0 0 1px rgba(255,220,0,0.3)';
-    el.appendChild(btn);
-  });
+  // Forza sempre il giorno corrente
+  const todayIdx=((new Date().getDay()+6)%7);
+  selectedDay=todayIdx;
+  const day=data.days[todayIdx];
+  const act=data.activities.find(a=>a.id===day?.type)||data.activities[0];
+  // Aggiorna il badge "oggi" nel form
+  const iconEl=document.getElementById('todayIcon');
+  const labelEl=document.getElementById('todayLabel');
+  const dateEl=document.getElementById('todayDate');
+  if(iconEl) iconEl.textContent=act?.icon||'🏋️';
+  if(labelEl) labelEl.textContent=day?.label||'Oggi';
+  if(dateEl) dateEl.textContent=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+  // Imposta il tipo attività corretto per oggi
+  const nonRest=data.activities.filter(a=>a.id!=='rest');
+  const todayAct=nonRest.find(a=>a.id===day?.type);
+  if(todayAct) setType(todayAct.id);
+  else if(nonRest.length) setType(nonRest[0].id);
 }
-function selectDay(i){selectedDay=i;buildDaySelect();const nonRest=data.activities.filter(a=>a.id!=='rest');const act=nonRest.find(a=>a.id===data.days[i].type);setType(act?act.id:nonRest[0]?.id||'');}
+function selectDay(i){/* disabilitato — solo oggi */}
 function buildTypeToggle(){
   const el=document.getElementById('typeToggle');el.innerHTML='';
   data.activities.filter(a=>a.id!=='rest').forEach(a=>{
@@ -1553,7 +1786,10 @@ function logSession(){
   const kmUnit=document.getElementById('kmUnit').value;
   const note=document.getElementById('noteInput').value.trim();
   const today=new Date().toISOString().split('T')[0];
-  data.sessions.unshift({id:Date.now(),date:today,dayIndex:selectedDay,dayLabel:data.days[selectedDay].label,type:selectedType,typeLabel:act?act.name:selectedType,typeIcon:act?act.icon:'🏃',kcal:Math.round(kcal),km:kmUnit==='m'?km/1000:km,note});
+  // Forza sempre il giorno di oggi
+  const todayIdx=((new Date().getDay()+6)%7);
+  selectedDay=todayIdx;
+  data.sessions.unshift({id:Date.now(),date:today,dayIndex:todayIdx,dayLabel:data.days[todayIdx].label,type:selectedType,typeLabel:act?act.name:selectedType,typeIcon:act?act.icon:'🏃',kcal:Math.round(kcal),km:kmUnit==='m'?km/1000:km,note});
   updateStreak(today);saveData(data);
   document.getElementById('kcalInput').value='';document.getElementById('kmInput').value='';document.getElementById('noteInput').value='';
   buildDaySelect();buildWeekBars();renderStreak();renderRecap();renderGoal();renderHistory();renderWeekPlan();checkWeekStreak();
@@ -1709,7 +1945,155 @@ function showToast(msg,type){const t=document.getElementById('toast');t.textCont
   },{passive:true});
 })();
 
-init();
+// ══════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════
+const OB_KEY='fittrack_onboarded';
+let obStep=0;
+const OB_TOTAL=6;
+let obGoal=null,obLevel=null,obSessions=4;
+
+function obCheckFirst(){
+  // Se fittrack_v4 esiste già → utente esistente, salta onboarding
+  const existing=localStorage.getItem('fittrack_v4');
+  if(existing){
+    init();
+    return;
+  }
+  // Prima volta → mostra onboarding
+  document.getElementById('obOverlay').style.display='flex';
+  document.getElementById('obOverlay').style.flexDirection='column';
+  obRenderDots();
+}
+
+function obRenderDots(){
+  const el=document.getElementById('obProgress');el.innerHTML='';
+  for(let i=0;i<OB_TOTAL;i++){
+    const d=document.createElement('div');
+    d.className='ob-dot '+(i<obStep?'done':i===obStep?'active':'upcoming');
+    el.appendChild(d);
+  }
+}
+
+function obGoTo(n){
+  document.querySelectorAll('.ob-step').forEach(s=>{s.classList.remove('active');});
+  obStep=n;
+  if(obStep===5) obFillSummary();
+  const next=document.getElementById('obStep'+obStep);
+  if(next) next.classList.add('active');
+  obRenderDots();
+}
+function obNext(){obGoTo(Math.min(obStep+1,OB_TOTAL-1));}
+function obPrev(){obGoTo(Math.max(obStep-1,0));}
+
+function obSelectGoal(goal,el){
+  obGoal=goal;
+  document.querySelectorAll('#obStep2 .ob-option').forEach(o=>{
+    o.classList.remove('selected');
+    o.querySelector('.ob-opt-check').textContent='';
+  });
+  el.classList.add('selected');
+  el.querySelector('.ob-opt-check').textContent='✓';
+}
+
+function obSelectLevel(lv){
+  obLevel=lv;
+  ['Beg','Int','Adv'].forEach(l=>document.getElementById('obLv'+l).className='ob-level');
+  document.getElementById('obLv'+lv.charAt(0).toUpperCase()+lv.slice(1)).className='ob-level sel-'+lv;
+  const suggest={beg:2,int:4,adv:6};
+  obSelectSessVal(suggest[lv]);
+}
+
+function obSelectSess(el,val){
+  obSessions=val;
+  document.querySelectorAll('.ob-sess-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function obSelectSessVal(val){
+  obSessions=val;
+  document.querySelectorAll('.ob-sess-btn').forEach(b=>{
+    b.classList.toggle('sel',parseInt(b.textContent)===val);
+  });
+}
+
+function obCalcBMI(){
+  const h=parseFloat(document.getElementById('obHeight').value);
+  const w=parseFloat(document.getElementById('obWeight').value);
+  const prev=document.getElementById('obBmiPreview');
+  if(h>100&&w>30){
+    const bmi=w/((h/100)**2);
+    const r=Math.round(bmi*10)/10;
+    let cat,col;
+    if(bmi<18.5){cat='Sottopeso';col='#ff8c00';}
+    else if(bmi<25){cat='Normale ✓';col='#00e676';}
+    else if(bmi<30){cat='Sovrappeso';col='#ff8c00';}
+    else{cat='Obesità';col='#ff4d00';}
+    document.getElementById('obBmiVal').textContent=r;
+    document.getElementById('obBmiVal').style.color=col;
+    document.getElementById('obBmiCat').textContent=cat;
+    document.getElementById('obBmiCat').style.color=col;
+    prev.style.display='flex';
+  } else {
+    prev.style.display='none';
+  }
+}
+
+const obGoalLabels={lose:'🔥 Perdere peso',maintain:'⚖️ Mantenersi',gain:'💪 Aumentare massa'};
+const obLevelLabels={beg:'🌱 Principiante',int:'⚡ Intermedio',adv:'🔥 Avanzato'};
+
+function obFillSummary(){
+  const name=document.getElementById('obName').value||'—';
+  const h=document.getElementById('obHeight').value;
+  const w=document.getElementById('obWeight').value;
+  const gw=document.getElementById('obGoalWeight').value;
+  let bmiStr='—';
+  if(h&&w){const bmi=parseFloat(w)/((parseFloat(h)/100)**2);bmiStr=Math.round(bmi*10)/10;}
+  document.getElementById('obSumName').textContent=name;
+  document.getElementById('obSumGoal').textContent=obGoalLabels[obGoal]||'—';
+  document.getElementById('obSumHeight').textContent=h?h+' cm':'—';
+  document.getElementById('obSumWeight').textContent=w?w+' kg':'—';
+  document.getElementById('obSumGoalW').textContent=gw?gw+' kg':'—';
+  document.getElementById('obSumBmi').textContent=bmiStr;
+  document.getElementById('obSumLevel').textContent=obLevelLabels[obLevel]||'—';
+  document.getElementById('obSumSess').textContent=obSessions+' sessioni';
+}
+
+function obFinish(){
+  // Salva profilo nei dati app
+  const name=document.getElementById('obName').value||'';
+  const h=parseFloat(document.getElementById('obHeight').value)||null;
+  const w=parseFloat(document.getElementById('obWeight').value)||null;
+  const gw=parseFloat(document.getElementById('obGoalWeight').value)||null;
+
+  // Crea dati base con profilo onboarding
+  const d=getDefault();
+  d.userName=name;
+  d.height=h;
+  d.currentWeight=w;
+  d.goalWeight=gw;
+  d.goalSessions=obSessions;
+  if(w) d.weightLog=[{date:new Date().toISOString().split('T')[0],weight:w}];
+  // Suggerisci sessioni in base al livello
+  if(obLevel==='beg') d.goalSessions=2;
+  else if(obLevel==='int') d.goalSessions=obSessions;
+  else if(obLevel==='adv') d.goalSessions=obSessions;
+
+  localStorage.setItem('fittrack_v4',JSON.stringify(d));
+
+  // Nascondi onboarding con fade
+  const ov=document.getElementById('obOverlay');
+  ov.style.transition='opacity 0.5s ease';
+  ov.style.opacity='0';
+  setTimeout(()=>{
+    ov.style.display='none';
+    data=loadData();
+    init();
+    // Saluto personalizzato
+    if(name) showToast(`Benvenuto in FitTrack, ${name}! 🔥`,'success');
+  },500);
+}
+
+obCheckFirst();
 </script>
 </body>
 </html>
