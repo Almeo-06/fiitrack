@@ -98,10 +98,84 @@ body.rest-day .logo span{color:#7070ff;}
 .mstat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#8888ff;}
 .mstat-lbl{font-size:10px;color:#55557a;margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
 .month-days{display:flex;gap:3px;flex-wrap:wrap;}
-.mday{width:28px;height:28px;border-radius:6px;background:#0c0c20;border:1px solid #1a1a38;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'Syne Mono',monospace;color:#55557a;}
-.mday.has-session{background:rgba(100,80,255,0.15);border-color:rgba(100,80,255,0.3);color:#9090ff;}
-.mday.is-rest{background:rgba(60,40,150,0.08);border-color:rgba(80,60,200,0.15);color:#444466;}
-.mday.today{border-color:#8080ff;box-shadow:0 0 6px rgba(120,100,255,0.4);}
+.mday{
+  width:100%;aspect-ratio:1;border-radius:8px;
+  background:#0a0a18;border:1px solid #141428;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-family:'Syne',sans-serif;font-weight:600;
+  color:#252540;cursor:default;transition:transform 0.15s;
+  position:relative;
+}
+.mday.has-session{
+  background:linear-gradient(135deg,#ff3a00,#ff7700);
+  border-color:rgba(255,80,0,0.6);color:#fff;
+  box-shadow:0 2px 10px rgba(255,60,0,0.35);
+}
+.mday.is-rest{
+  background:linear-gradient(135deg,#1a2aff22,#4466ff18);
+  border-color:#3355ff44;color:#5577ff;
+}
+.mday.is-missed{
+  background:#160808;border-color:#3a0a0a;color:#4a1515;
+}
+.mday.is-future{background:#08080f;border-color:#0e0e1e;color:#1a1a30;}
+.mday.today{
+  background:#0e0e1e;
+  border:2px solid #ffcc00;
+  color:#ffcc00;
+  box-shadow:0 0 10px rgba(255,200,0,0.2);
+}
+.mday.today.has-session{
+  background:linear-gradient(135deg,#ff3a00,#ff7700);
+  border:2px solid #ffcc00;color:#fff;
+  box-shadow:0 0 14px rgba(255,100,0,0.5);
+}
+/* Calendario nella tab Log */
+.cal-card{
+  background:linear-gradient(145deg,#0a0a1a,#0e0e20);
+  border:1px solid #1a1a36;border-radius:22px;
+  padding:20px;margin-bottom:14px;
+  box-shadow:0 4px 32px rgba(0,0,0,0.4);
+}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-title{
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  background:linear-gradient(135deg,#fff,#aaaacc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.cal-nav{
+  background:#0e0e22;border:1px solid #222244;border-radius:10px;
+  padding:6px 14px;color:#5566aa;font-size:16px;cursor:pointer;
+  transition:all 0.2s;
+}
+.cal-nav:hover{background:#161630;border-color:#3344aa;color:#aabbff;}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;}
+.cal-wd{
+  font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
+  color:#2a2a50;text-align:center;text-transform:uppercase;letter-spacing:1px;
+}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;}
+.cal-stat{
+  background:#0c0c1e;border:1px solid #1a1a38;
+  border-radius:14px;padding:12px 6px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.cal-stat::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;
+}
+.cal-stat:nth-child(1)::before{background:linear-gradient(90deg,#ff3a00,#ff8c00);}
+.cal-stat:nth-child(2)::before{background:linear-gradient(90deg,#00e676,#00bfa5);}
+.cal-stat:nth-child(3)::before{background:linear-gradient(90deg,#2979ff,#0050cc);}
+.cal-stat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
+.cal-stat-lbl{font-size:9px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:1px;}
+/* Legenda */
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid #111126;}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:9px;color:#44446a;font-family:'Syne Mono',monospace;}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+/* Streak card cliccabile */
+.streak-card{cursor:pointer;}
+.streak-card:active{transform:scale(0.98);}
 
 /* GOAL BAR */
 .goal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
@@ -126,6 +200,9 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .bar{width:100%;border-radius:4px 4px 0 0;background:var(--border2);transition:height 0.5s ease;min-height:4px;}
 .bar.has-data{background:linear-gradient(180deg,var(--fire2),var(--fire));}
 .bar.today-bar{background:linear-gradient(180deg,#ffcc00,var(--fire2));box-shadow:0 0 8px rgba(255,140,0,0.4);}
+.bar.rest-bar{background:linear-gradient(180deg,#6688ff,#3355cc);min-height:6px;}
+.bar.missed-bar{background:linear-gradient(180deg,#661111,#440000);opacity:0.7;}
+.bar.future-bar{background:var(--border2);opacity:0.4;}
 .bar-day{font-family:'Syne Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;}
 
 /* WEEKLY PLAN */
@@ -339,7 +416,7 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
       <button class="install-close" onclick="dismissInstall()">✕</button>
     </div>
 
-    <div class="streak-card" id="streakCardWork" style="animation:slideUp 0.6s ease 0.05s both">
+    <div class="streak-card" id="streakCardWork" style="animation:slideUp 0.6s ease 0.05s both" onclick="goToCalendar()">
       <div class="streak-flame" id="streakFlame">🔥</div>
       <div style="flex:1">
         <div class="streak-num" id="streakNum">0</div>
@@ -402,6 +479,32 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
     <div class="header">
       <div class="logo">Fit<span>Track</span></div>
       <div class="date-badge" id="dateBadge2"></div>
+    </div>
+
+    <!-- CALENDARIO MENSILE -->
+    <div class="cal-card" id="calCard">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="calChangeMonth(-1)">‹</button>
+        <div class="cal-title" id="calTitle">—</div>
+        <button class="cal-nav" onclick="calChangeMonth(1)">›</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-wd">Lun</div><div class="cal-wd">Mar</div><div class="cal-wd">Mer</div>
+        <div class="cal-wd">Gio</div><div class="cal-wd">Ven</div><div class="cal-wd">Sab</div>
+        <div class="cal-wd">Dom</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-stat-row">
+        <div class="cal-stat"><div class="cal-stat-val" style="color:#ff6600" id="calKcal">0</div><div class="cal-stat-lbl">kcal</div></div>
+        <div class="cal-stat"><div class="cal-stat-val" style="color:#00e676" id="calSess">0</div><div class="cal-stat-lbl">sessioni</div></div>
+        <div class="cal-stat"><div class="cal-stat-val" style="color:#4488ff" id="calKm">0</div><div class="cal-stat-lbl">km</div></div>
+      </div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(135deg,#ff3a00,#ff7700)"></div>Allenato</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:linear-gradient(135deg,#1a2aff33,#4466ff28);border:1px solid #3355ff44"></div>Riposo</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#160808;border:1px solid #3a0a0a"></div>Saltato</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="border:2px solid #ffcc00;background:#0e0e1e"></div>Oggi</div>
+      </div>
     </div>
 
     <!-- TIMER RECUPERO -->
@@ -853,7 +956,10 @@ function renderMonthRecap(){
     const isRest=data.days[dayIdx]?.type==='rest';
     const hasSession=data.sessions.some(s=>s.date===dateStr);
     const div=document.createElement('div');
-    div.className='mday'+(hasSession?' has-session':isRest?' is-rest':'')+(day===todayNum?' today':'');
+    const dateObjM=new Date(y,m,day);
+    const isFutureM=day>todayNum||(y>now.getFullYear())||(y===now.getFullYear()&&m>now.getMonth());
+    const isMissedM=!isFutureM&&day<todayNum&&!isRest&&!hasSession;
+    div.className='mday'+(hasSession?' has-session':isRest?' is-rest':isMissedM?' is-missed':isFutureM?' is-future':'')+(day===todayNum?' today':'');
     div.textContent=day;el.appendChild(div);
   }
 }
@@ -1078,6 +1184,88 @@ function deleteWeight(i){data.weightLog.splice(i,1);saveData(data);renderWeightP
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.remove('hidden');});
 function dismissInstall(){document.getElementById('installBanner').classList.add('hidden');}
 
+// ── CALENDARIO MENSILE ──
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+
+function calChangeMonth(delta){
+  calMonth+=delta;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const now=new Date();
+  const todayStr=now.toISOString().split('T')[0];
+  const todayIdx=((now.getDay()+6)%7);
+
+  // Titolo
+  const monthNames=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+    'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  document.getElementById('calTitle').textContent=monthNames[calMonth]+' '+calYear;
+
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+
+  const firstDay=new Date(calYear,calMonth,1);
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  // Primo giorno settimana (0=Lun)
+  const startOffset=((firstDay.getDay()+6)%7);
+
+  // Celle vuote prima del primo giorno
+  for(let s=0;s<startOffset;s++){
+    const empty=document.createElement('div');
+    empty.style.cssText='width:28px;height:28px;';
+    grid.appendChild(empty);
+  }
+
+  let monthKcal=0,monthSess=0,monthKm=0;
+
+  for(let day=1;day<=daysInMonth;day++){
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dateObj=new Date(calYear,calMonth,day);
+    const dayIdx=((dateObj.getDay()+6)%7);
+    const isRest=data.days[dayIdx]?.type==='rest';
+    const sessions=data.sessions.filter(s=>s.date===dateStr);
+    const hasSession=sessions.length>0;
+    const isToday=dateStr===todayStr;
+    const isFuture=dateStr>todayStr;
+    const isMissed=!isFuture&&!isToday&&!isRest&&!hasSession;
+
+    // Totali mese
+    sessions.forEach(s=>{monthKcal+=s.kcal;monthKm+=s.km||0;});
+    if(hasSession) monthSess++;
+
+    const cell=document.createElement('div');
+    cell.className='mday';
+    if(isToday)         cell.classList.add('today');
+    if(hasSession)      cell.classList.add('has-session');
+    else if(isRest)     cell.classList.add('is-rest');
+    else if(isMissed)   cell.classList.add('is-missed');
+    else if(isFuture)   cell.classList.add('is-future');
+    cell.textContent=day;
+    grid.appendChild(cell);
+  }
+
+  // Statistiche mese
+  document.getElementById('calKcal').textContent=monthKcal.toLocaleString('it');
+  document.getElementById('calSess').textContent=monthSess;
+  document.getElementById('calKm').textContent=monthKm>0?monthKm.toFixed(1):'0';
+}
+
+function goToCalendar(){
+  // Reset al mese corrente e vai alla tab Log con scroll al calendario
+  calYear=new Date().getFullYear();
+  calMonth=new Date().getMonth();
+  switchTab('Log');
+  renderCalendar();
+  setTimeout(()=>{
+    const cal=document.getElementById('calCard');
+    if(cal) cal.scrollIntoView({behavior:'smooth',block:'start'});
+  },200);
+}
+
 function switchTab(tab){
   const current=document.querySelector('.page.active');
   const next=document.getElementById('page'+tab);
@@ -1098,6 +1286,7 @@ function switchTab(tab){
     next.classList.add('active');
     if(tab==='Settings') renderSettingsPage();
     if(tab==='Weight') renderWeightPage();
+    if(tab==='Log') renderCalendar();
   },150);
 }
 
@@ -1134,6 +1323,7 @@ function init(){
   applyRestTheme();checkRestDayStreak();
   buildDaySelect();buildTypeToggle();buildWeekBars();
   renderStreak();renderRecap();renderGoal();renderHistory();renderWeekPlan();
+  renderCalendar();
   if(isRestDay()) renderMonthRecap();
   checkWeekStreak();
   updateTimerDisplay();
@@ -1143,41 +1333,59 @@ function init(){
 // ── WEEK PLAN ──
 function renderWeekPlan(){
   const el=document.getElementById('weekPlan');el.innerHTML='';
-  const today=((new Date().getDay()+6)%7);
+  const todayIdx=((new Date().getDay()+6)%7);
+  const todayStr=new Date().toISOString().split('T')[0];
+
   data.days.forEach((d,i)=>{
     const act=data.activities.find(a=>a.id===d.type)||{icon:'😴',name:'Riposo'};
+    const isRest=d.type==='rest';
+    const isToday=i===todayIdx;
+    const isFuture=i>todayIdx;
+    const isPast=i<todayIdx;
+
+    // hasLog: solo sessioni registrate nella data esatta di questo giorno questa settimana
     const dayDate=getDayDateThisWeek(i);
-    const hasLog=data.sessions.some(s=>s.dayIndex===i&&s.date===dayDate);
-    const missed=isDayMissed(i);
+    const hasLog=data.sessions.some(s=>s.date===dayDate&&s.dayIndex===i)
+      // fallback: se è oggi, basta che ci sia una sessione oggi con questo dayIndex
+      ||(isToday&&data.sessions.some(s=>s.date===todayStr&&s.dayIndex===i));
+
+    const missed=isPast&&!isRest&&!hasLog;
+
     const checks=data.checks[getCheckKey(i)]||{};
     const total=d.exercises.length;
     const done=Object.values(checks).filter(Boolean).length;
-    const isRest=d.type==='rest';
+
     const wrap=document.createElement('div');
+    // Classi: today-done se oggi e loggato, today-day se oggi non loggato,
+    // done-day se passato e loggato, missed se passato non loggato
     let cls='plan-day';
-    if(i===today) cls+=' today-day';
-    else if(missed) cls+=' missed-day';
-    else if(hasLog) cls+=' done-day';
+    if(isToday&&hasLog)      cls+=' done-day today-day';
+    else if(isToday)         cls+=' today-day';
+    else if(isPast&&hasLog)  cls+=' done-day';
+    else if(missed)          cls+=' missed-day';
+    // futuro: nessuna classe extra, aspetto normale
     if(i===openPlanDay) cls+=' active-day';
     wrap.className=cls;wrap.id='planDay_'+i;
 
     // Badge
     let badgeClass,badgeText;
-    if(hasLog){badgeClass='badge-done';badgeText='FATTO';}
-    else if(missed){badgeClass='badge-missed';badgeText='SALTATO';}
+    if(hasLog)       {badgeClass='badge-done';badgeText='FATTO';}
+    else if(missed)  {badgeClass='badge-missed';badgeText='SALTATO';}
+    else if(isFuture){badgeClass='badge-rest';badgeText='IN ARRIVO';}
     else{
       badgeClass=d.type==='run'?'badge-run':d.type==='gym'?'badge-gym':'badge-rest';
       badgeText=act.name.toUpperCase();
     }
 
-    // Progress bar (solo se non saltato e non riposo)
+    // Progress bar (solo oggi o passato non saltato, non riposo)
     let progressHtml='';
-    if(!isRest&&!missed&&total>0){
+    if(!isRest&&!missed&&!isFuture&&total>0){
       const pct=Math.round((done/total)*100);
       progressHtml=`<div class="plan-day-progress"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10px;color:var(--muted2)">Checklist</span><span style="font-family:'Syne Mono',monospace;font-size:10px;color:${done===total?'var(--green)':'var(--muted2)'}">${done}/${total}</span></div><div class="plan-mini-bar-bg"><div class="plan-mini-bar-fill" style="width:${pct}%"></div></div></div>`;
     }
 
-    // Quick log form (solo se non saltato, non riposo, non già loggato)
+    // Quick log: solo oggi, non riposo, non già loggato
+    const canQuickLog=isToday&&!isRest&&!hasLog;
     const quickLog=`<div class="quick-log-form" id="quickLog_${i}">
       <div class="quick-log-row">
         <input class="inp" type="number" id="qKcal_${i}" placeholder="kcal" style="font-size:13px;padding:8px 10px">
@@ -1190,14 +1398,14 @@ function renderWeekPlan(){
       <div class="plan-day-header" onclick="togglePlanDay(${i})">
         <div class="plan-day-icon">${missed?'❌':act.icon}</div>
         <div class="plan-day-info">
-          <div class="plan-day-name">${d.label}${i===today?' <span style="font-size:10px;color:#ffcc00">● oggi</span>':''}</div>
-          <div class="plan-day-sub">${missed?'Giorno saltato':isRest?'Giorno di riposo':act.name+(d.exercises.length>0?' · '+d.exercises.length+' esercizi':'')}</div>
+          <div class="plan-day-name">${d.label}${isToday?' <span style="font-size:10px;color:#ffcc00">● oggi</span>':''}</div>
+          <div class="plan-day-sub">${missed?'Giorno saltato':isRest?'Giorno di riposo':isFuture?act.name:act.name+(d.exercises.length>0?' · '+d.exercises.length+' esercizi':'')}</div>
         </div>
         <span class="plan-day-badge ${badgeClass}">${badgeText}</span>
       </div>
       ${progressHtml}
       <div class="day-detail-panel${i===openPlanDay?' open':''}" id="panel_${i}"></div>
-      ${!isRest&&!hasLog&&!missed?`<button class="quick-log-btn" onclick="toggleQuickLog(event,${i})">⚡ Registra veloce</button>${quickLog}`:''}`;
+      ${canQuickLog?`<button class="quick-log-btn" onclick="toggleQuickLog(event,${i})">⚡ Registra veloce</button>${quickLog}`:''}`;
     el.appendChild(wrap);
     if(i===openPlanDay) fillPanel(i);
   });
@@ -1373,16 +1581,37 @@ function renderGoal(){
 }
 function buildWeekBars(){
   const el=document.getElementById('weekBars');el.innerHTML='';
-  const today=((new Date().getDay()+6)%7);
-  const kcalPerDay=data.days.map((_,i)=>{const d=new Date();d.setDate(d.getDate()+(i-today));const ds=d.toISOString().split('T')[0];return data.sessions.filter(s=>s.date===ds).reduce((a,s)=>a+s.kcal,0);});
+  const todayIdx=((new Date().getDay()+6)%7);
+  const todayStr=new Date().toISOString().split('T')[0];
+  const kcalPerDay=data.days.map((_,i)=>{
+    const d=new Date();d.setDate(d.getDate()+(i-todayIdx));
+    const ds=d.toISOString().split('T')[0];
+    return data.sessions.filter(s=>s.date===ds).reduce((a,s)=>a+s.kcal,0);
+  });
   const maxKcal=Math.max(...kcalPerDay,1);
   data.days.forEach((day,i)=>{
+    const isRest=day.type==='rest';
+    const isToday=i===todayIdx;
+    const isFuture=i>todayIdx;
+    const isPast=i<todayIdx;
+    const hasKcal=kcalPerDay[i]>0;
+    const isMissed=isPast&&!isRest&&!hasKcal;
     const wrap=document.createElement('div');wrap.className='bar-wrap';
     const pct=Math.round((kcalPerDay[i]/maxKcal)*46);
     const bar=document.createElement('div');
-    bar.className='bar'+(kcalPerDay[i]>0?' has-data':'')+(i===today?' today-bar':'');
-    bar.style.height=(pct||4)+'px';
-    const label=document.createElement('div');label.className='bar-day';label.textContent=day.abbr.substring(0,2);
+    // Determina classe barra
+    let barClass='bar';
+    if(isRest)          barClass+=' rest-bar';
+    else if(isMissed)   barClass+=' missed-bar';
+    else if(isFuture)   barClass+=' future-bar';
+    else if(hasKcal)    barClass+=isToday?' has-data today-bar':' has-data';
+    else if(isToday)    barClass+=' today-bar';
+    bar.className=barClass;
+    bar.style.height=(isRest?6:pct||4)+'px';
+    const label=document.createElement('div');
+    label.className='bar-day';
+    label.style.color=isRest?'#6688ff':isMissed?'#882222':isToday?'var(--fire2)':'';
+    label.textContent=day.abbr.substring(0,2);
     wrap.appendChild(bar);wrap.appendChild(label);el.appendChild(wrap);
   });
 }
