@@ -98,37 +98,105 @@ body.rest-day .logo span{color:#7070ff;}
 .mstat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#8888ff;}
 .mstat-lbl{font-size:10px;color:#55557a;margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
 .month-days{display:flex;gap:3px;flex-wrap:wrap;}
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+  /* Permette alle celle espanse di uscire dal loro slot */
+  position:relative;
+}
 .mday{
   width:100%;aspect-ratio:1;border-radius:8px;
   background:#0a0a18;border:1px solid #141428;
   display:flex;align-items:center;justify-content:center;
   font-size:11px;font-family:'Syne',sans-serif;font-weight:600;
-  color:#252540;cursor:default;transition:transform 0.15s;
+  color:#252540;cursor:default;
   position:relative;
+  transition:none;
+  z-index:1;
 }
 .mday.has-session{
   background:linear-gradient(135deg,#ff3a00,#ff7700);
   border-color:rgba(255,80,0,0.6);color:#fff;
   box-shadow:0 2px 10px rgba(255,60,0,0.35);
+  cursor:pointer;
 }
 .mday.is-rest{
   background:linear-gradient(135deg,#1a2aff22,#4466ff18);
   border-color:#3355ff44;color:#5577ff;
 }
-.mday.is-missed{
-  background:#160808;border-color:#3a0a0a;color:#4a1515;
-}
+.mday.is-missed{background:#160808;border-color:#3a0a0a;color:#4a1515;}
 .mday.is-future{background:#08080f;border-color:#0e0e1e;color:#1a1a30;}
 .mday.today{
-  background:#0e0e1e;
-  border:2px solid #ffcc00;
-  color:#ffcc00;
-  box-shadow:0 0 10px rgba(255,200,0,0.2);
+  background:#0e0e1e;border:2px solid #ffcc00;
+  color:#ffcc00;box-shadow:0 0 10px rgba(255,200,0,0.2);
 }
 .mday.today.has-session{
   background:linear-gradient(135deg,#ff3a00,#ff7700);
   border:2px solid #ffcc00;color:#fff;
   box-shadow:0 0 14px rgba(255,100,0,0.5);
+}
+/* Cella espansa */
+.mday.expanded{
+  /* Occupa 3 colonne x 2 righe nella griglia */
+  grid-column:span 3;
+  grid-row:span 2;
+  aspect-ratio:unset;
+  height:auto;
+  border-radius:14px;
+  background:linear-gradient(145deg,#0f0800,#0c0c1e) !important;
+  border:1px solid rgba(255,100,0,0.35) !important;
+  box-shadow:0 4px 24px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,120,0,0.08);
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:11px 12px 10px;
+  cursor:default;
+  color:var(--text);
+  animation:cellOpen 0.3s cubic-bezier(0.34,1.1,0.64,1) both;
+  overflow:hidden;
+}
+@keyframes cellOpen{
+  from{opacity:0;transform:scale(0.85);}
+  to{opacity:1;transform:scale(1);}
+}
+.mday.expanded .cell-num{
+  font-family:'Syne Mono',monospace;font-size:9px;
+  color:#ff7700;letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.mday.expanded .cell-row{
+  display:flex;align-items:center;gap:5px;
+  width:100%;margin-bottom:3px;
+}
+.mday.expanded .cell-icon{font-size:12px;flex-shrink:0;line-height:1;}
+.mday.expanded .cell-val{
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:800;
+  color:var(--text);line-height:1;
+}
+.mday.expanded .cell-lbl{
+  font-size:8px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.5px;margin-left:2px;
+  align-self:flex-end;padding-bottom:1px;
+}
+.mday.expanded .cell-divider{
+  width:100%;height:1px;background:#181830;margin:6px 0 5px;
+}
+.mday.expanded .cell-check{
+  display:flex;align-items:center;gap:4px;
+  width:100%;margin-bottom:2px;
+}
+.mday.expanded .cell-check-box{
+  width:10px;height:10px;border-radius:3px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:6px;
+}
+.mday.expanded .ck-done{background:var(--green);color:#000;}
+.mday.expanded .ck-no{background:#151525;border:1px solid #252545;color:var(--muted);}
+.mday.expanded .cell-name{
+  font-size:9px;color:var(--muted2);flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mday.expanded .cell-chk-summary{
+  font-size:8px;margin-top:3px;
+  font-family:'Syne Mono',monospace;letter-spacing:0.5px;
 }
 /* Calendario nella tab Log */
 .cal-card{
@@ -154,7 +222,13 @@ body.rest-day .logo span{color:#7070ff;}
   font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
   color:#2a2a50;text-align:center;text-transform:uppercase;letter-spacing:1px;
 }
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  grid-auto-rows:auto;
+  gap:4px;
+  align-items:start;
+}
 .cal-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;}
 .cal-stat{
   background:#0c0c1e;border:1px solid #1a1a38;
@@ -173,6 +247,44 @@ body.rest-day .logo span{color:#7070ff;}
 .cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid #111126;}
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:9px;color:#44446a;font-family:'Syne Mono',monospace;}
 .cal-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+/* Giorno cliccabile */
+.mday.has-session{cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
+.mday.has-session:active{transform:scale(0.9);}
+/* Popup dettagli giorno */
+.day-popup-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:500;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.25s ease;
+  backdrop-filter:blur(4px);
+}
+.day-popup-overlay.open{opacity:1;pointer-events:all;}
+.day-popup{
+  background:linear-gradient(145deg,#0e0e20,#0a0a18);
+  border:1px solid #1e1e3a;border-radius:24px 24px 0 0;
+  width:100%;max-width:480px;padding:20px 20px 36px;
+  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.1,0.64,1);
+}
+.day-popup-overlay.open .day-popup{transform:translateY(0);}
+.day-popup-handle{width:36px;height:4px;background:#2a2a48;border-radius:99px;margin:0 auto 16px;}
+.day-popup-date{font-family:'Syne Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;}
+.day-popup-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:14px;}
+.day-popup-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.dp-stat{background:#060610;border:1px solid #181830;border-radius:12px;padding:10px 6px;text-align:center;}
+.dp-stat-val{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;}
+.dp-stat-lbl{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
+.day-popup-sessions{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.dp-session{background:#060610;border:1px solid #181830;border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;}
+.dp-session-icon{font-size:18px;flex-shrink:0;}
+.dp-session-name{font-size:13px;font-weight:600;}
+.dp-session-meta{font-size:11px;color:var(--muted2);margin-top:1px;}
+.day-popup-checklist{margin-top:4px;}
+.dp-check-title{font-family:'Syne Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.dp-check-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #111126;font-size:12px;}
+.dp-check-item:last-child{border-bottom:none;}
+.dp-check-box{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+.dp-check-done{background:var(--green);color:#000;}
+.dp-check-no{background:#1a1a30;color:var(--muted);}
+.day-popup-close{width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--muted2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
 /* Streak card cliccabile */
 .streak-card{cursor:pointer;}
 .streak-card:active{transform:scale(0.98);}
@@ -242,7 +354,7 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .check-item.checked .check-box{background:var(--green);border-color:var(--green);color:#000;}
 .check-text{flex:1;}
 .check-name{font-size:13px;font-weight:500;transition:all 0.2s;}
-.check-item.checked .check-name{text-decoration:line-through;color:var(--muted);}
+.check-item.checked .check-name{color:var(--muted2);}
 .check-detail{font-size:11px;color:var(--muted2);margin-top:1px;}
 .check-note{font-size:10px;color:var(--muted);font-style:italic;}
 .no-checklist{font-size:12px;color:var(--muted);text-align:center;padding:12px;font-style:italic;}
@@ -916,6 +1028,7 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 
 </div>
 
+
 <!-- TAB BAR -->
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('Home')" id="tabHome"><span class="ti">🏠</span>Home</button>
@@ -1473,6 +1586,12 @@ function renderCalendar(){
     else if(isMissed)   cell.classList.add('is-missed');
     else if(isFuture)   cell.classList.add('is-future');
     cell.textContent=day;
+    // Solo i giorni con sessione sono cliccabili
+    if(hasSession){
+      cell.dataset.date=dateStr;
+      cell.dataset.day=day;
+      cell.onclick=(e)=>{e.stopPropagation();openDayPopup(dateStr,cell);};
+    }
     grid.appendChild(cell);
   }
 
@@ -1693,7 +1812,7 @@ function fillPanel(i){
       html+=`<div class="check-item locked">
         <div class="check-box" style="background:rgba(255,50,50,0.15);border-color:rgba(255,50,50,0.4);color:#ff5555;font-size:14px">✕</div>
         <div class="check-text">
-          <div class="check-name" style="text-decoration:line-through;color:var(--muted)">${ex.name}</div>
+          <div class="check-name" style="color:var(--muted)">${ex.name}</div>
           ${ex.sets?`<div class="check-detail">${ex.sets}</div>`:''}
         </div>
       </div>`;
@@ -1944,6 +2063,124 @@ function showToast(msg,type){const t=document.getElementById('toast');t.textCont
     if(next!==current) switchTab(TABS[next]);
   },{passive:true});
 })();
+
+// ══════════════════════════════════════
+// EXPAND CELLA CALENDARIO
+// ══════════════════════════════════════
+let expandedCell=null;
+
+function openDayPopup(dateStr, cellEl){
+  // Se era già aperta la stessa, chiudi
+  if(expandedCell&&expandedCell===cellEl){
+    closeDayPopup();return;
+  }
+  // Chiudi eventuale precedente
+  if(expandedCell) closeDayPopup();
+
+  const dateObj=new Date(dateStr+'T12:00');
+  const dayIdx=((dateObj.getDay()+6)%7);
+  const sessions=data.sessions.filter(s=>s.date===dateStr);
+  if(!sessions.length) return;
+
+  const totKcal=sessions.reduce((a,s)=>a+s.kcal,0);
+  const totKm=sessions.reduce((a,s)=>a+(s.km||0),0);
+  const dayNum=dateObj.getDate();
+
+  // Costruisci contenuto della cella espansa
+  let html=`<div class="cell-num">${String(dayNum).padStart(2,'0')} ${dateObj.toLocaleDateString('it-IT',{month:'short'}).toUpperCase()}</div>`;
+
+  // Sessioni — se ha km, mostra km in grande; altrimenti kcal
+  sessions.forEach(s=>{
+    if(s.km>0){
+      // Attività con distanza: km principale
+      html+=`<div class="cell-row">
+        <span class="cell-icon">📍</span>
+        <span class="cell-val">${s.km.toFixed(1)}</span>
+        <span class="cell-lbl">km</span>
+      </div>`;
+      html+=`<div class="cell-row">
+        <span class="cell-icon">${s.typeIcon||'🏃'}</span>
+        <span class="cell-val" style="font-size:11px">${s.kcal.toLocaleString()}</span>
+        <span class="cell-lbl">kcal</span>
+      </div>`;
+    } else {
+      // Palestra/altro: kcal principale
+      html+=`<div class="cell-row">
+        <span class="cell-icon">${s.typeIcon||'🏋️'}</span>
+        <span class="cell-val">${s.kcal.toLocaleString()}</span>
+        <span class="cell-lbl">kcal</span>
+      </div>`;
+    }
+    if(s.note){
+      html+=`<div class="cell-row" style="opacity:0.55;margin-top:1px">
+        <span class="cell-icon" style="font-size:10px">💬</span>
+        <span style="font-size:9px;color:var(--muted2);flex:1;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.note}</span>
+      </div>`;
+    }
+  });
+
+  // Checklist (solo se ci sono esercizi)
+  const day=data.days[dayIdx];
+  if(day&&day.exercises.length>0){
+    const weekStart=new Date(dateStr+'T12:00');
+    weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+    weekStart.setHours(0,0,0,0);
+    const checkKey=weekStart.toISOString().split('T')[0]+'_'+dayIdx;
+    const checks=data.checks[checkKey]||{};
+    const doneCount=day.exercises.filter(ex=>checks[ex.id]).length;
+    const total=day.exercises.length;
+
+    // Mostra solo se ha dati checklist
+    if(Object.keys(checks).length>0){
+      html+=`<div class="cell-divider"></div>`;
+      day.exercises.forEach(ex=>{
+        const done=!!checks[ex.id];
+        html+=`<div class="cell-check">
+          <div class="cell-check-box ${done?'ck-done':'ck-no'}">${done?'✓':'✕'}</div>
+          <span class="cell-name" style="${done?'opacity:0.45':''}">${ex.name}</span>
+        </div>`;
+      });
+      html+=`<div style="font-size:9px;color:${doneCount===total?'var(--green)':'var(--muted)'};margin-top:4px">${doneCount===total?'🎉 tutti':'✅ '+doneCount+'/'+total}</div>`;
+    }
+  }
+
+  // Calcola quante colonne spanning usare (non uscire dalla griglia)
+  // Colonna del giorno: (offset + day - 1) % 7, 0-indexed
+  const grid=document.getElementById('calGrid');
+  const cells=Array.from(grid.children);
+  const cellIndex=cells.indexOf(cellEl);
+  const col=cellIndex%7; // 0-6
+
+  // Span di 3 colonne, ma aggiusta se siamo vicino al bordo destro
+  let colSpan=3;
+  if(col>4) colSpan=2; // ultime 2 colonne: span 2
+
+  cellEl.style.gridColumn='span '+colSpan;
+  cellEl.style.gridRow='span 2';
+  cellEl.classList.add('expanded');
+  cellEl.innerHTML=html;
+  expandedCell=cellEl;
+
+  // Click fuori chiude
+  setTimeout(()=>document.addEventListener('click',outsideClick),50);
+}
+
+function outsideClick(e){
+  if(expandedCell&&!expandedCell.contains(e.target)){
+    closeDayPopup();
+  }
+}
+
+function closeDayPopup(){
+  if(!expandedCell) return;
+  const dayNum=expandedCell.dataset.day;
+  expandedCell.classList.remove('expanded');
+  expandedCell.style.gridColumn='';
+  expandedCell.style.gridRow='';
+  expandedCell.textContent=dayNum;
+  expandedCell=null;
+  document.removeEventListener('click',outsideClick);
+}
 
 // ══════════════════════════════════════
 // ONBOARDING
