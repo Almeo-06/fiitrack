@@ -580,10 +580,11 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
   min-width:0;
 }
 @keyframes cellOpen{
-  from{opacity:0;transform:scale(0.85);}
-  to{opacity:1;transform:scale(1);}
+  0%  {opacity:0;transform:scale(0.82) translateY(4px);}
+  60% {opacity:1;transform:scale(1.03) translateY(-1px);}
+  100%{opacity:1;transform:scale(1)   translateY(0);}
 }
-.mday-floating.opening{animation:cellOpen 0.25s cubic-bezier(0.34,1.1,0.64,1) both;}
+.mday-floating.opening{animation:cellOpen 0.45s cubic-bezier(0.34,1.1,0.64,1) both;}
 /* Info principali */
 .mday-floating .ex-date{
   font-family:'Syne Mono',monospace;font-size:9px;
@@ -607,7 +608,7 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .mday-floating .ex-checklist{
   overflow:hidden;
   max-height:0;
-  transition:max-height 0.3s cubic-bezier(0.34,1.1,0.64,1);
+  transition:max-height 0.45s cubic-bezier(0.34,1.1,0.64,1);
   margin-top:0;
 }
 .mday-floating.detail .ex-checklist{
