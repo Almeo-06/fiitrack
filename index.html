@@ -1718,14 +1718,16 @@ function getDayDateThisWeek(dayIndex){
 }
 
 function isDayMissed(dayIndex){
-  // Un giorno è "saltato" se: era questa settimana, è già passato (non oggi),
-  // non è riposo, e non è stato loggato
   const day=data.days[dayIndex];
   if(!day||day.type==='rest') return false;
   const todayIdx=((new Date().getDay()+6)%7);
-  if(dayIndex>=todayIdx) return false; // oggi o futuro: non ancora saltato
+  if(dayIndex>=todayIdx) return false;
   const dayDate=getDayDateThisWeek(dayIndex);
-  const hasLog=data.sessions.some(s=>s.dayIndex===dayIndex&&s.date===dayDate);
+  // Cerca per data esatta O per dayIndex questa settimana
+  const hasLog=data.sessions.some(s=>
+    s.date===dayDate ||
+    (s.dayIndex===dayIndex && isThisWeek(s.date))
+  );
   return !hasLog;
 }
 function getCheckKey(dayIndex){return getWeekKey()+'_'+dayIndex;}
@@ -1757,11 +1759,12 @@ function renderWeekPlan(){
     const isFuture=i>todayIdx;
     const isPast=i<todayIdx;
 
-    // hasLog: solo sessioni registrate nella data esatta di questo giorno questa settimana
+    // hasLog: cerca per data esatta O per dayIndex questa settimana
     const dayDate=getDayDateThisWeek(i);
-    const hasLog=data.sessions.some(s=>s.date===dayDate&&s.dayIndex===i)
-      // fallback: se è oggi, basta che ci sia una sessione oggi con questo dayIndex
-      ||(isToday&&data.sessions.some(s=>s.date===todayStr&&s.dayIndex===i));
+    const hasLog=data.sessions.some(s=>
+      s.date===dayDate ||
+      (s.dayIndex===i && isThisWeek(s.date))
+    );
 
     const missed=isPast&&!isRest&&!hasLog;
 
