@@ -524,6 +524,30 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .ob-logo span{background:linear-gradient(135deg,var(--fire),var(--fire2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .ob-flame{font-size:54px;margin-bottom:12px;filter:drop-shadow(0 0 18px rgba(255,100,0,0.5));animation:obFlame 2s ease-in-out infinite;}
 @keyframes obFlame{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+/* ── AUTH / SYNC ── */
+.auth-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:10px 14px;margin-bottom:14px;
+  animation:slideDown 0.4s ease both;
+}
+.auth-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--fire2);}
+.auth-avatar-placeholder{width:32px;height:32px;border-radius:50%;background:var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.auth-name{font-size:13px;font-weight:600;flex:1;}
+.auth-sub{font-size:10px;color:var(--muted2);}
+.auth-btn{padding:7px 14px;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.auth-btn-login{background:linear-gradient(135deg,#4285f4,#1a73e8);color:#fff;}
+.auth-btn-logout{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
+.sync-badge{font-family:'Syne Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;letter-spacing:1px;}
+.sync-ok{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2);}
+.sync-no{background:rgba(255,77,0,0.1);color:var(--fire2);border:1px solid rgba(255,77,0,0.2);}
+
+/* ── FEEDBACK ── */
+.feedback-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;}
+.feedback-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;resize:none;outline:none;min-height:80px;transition:border 0.2s;}
+.feedback-textarea:focus{border-color:var(--blue);}
+.feedback-send-btn{width:100%;margin-top:8px;padding:11px;background:linear-gradient(135deg,var(--blue),#1565c0);border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;}
 .ob-features{display:flex;flex-direction:column;gap:6px;margin-top:16px;width:100%;text-align:left;}
 .ob-feat{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:9px 12px;font-size:12px;font-weight:500;}
 .ob-summary{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:8px;}
@@ -640,6 +664,56 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
   font-size:10px;margin-top:6px;font-family:'Syne Mono',monospace;text-align:center;
 }
 </style>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD3kvEKJw3vBVZGT3VJqolnsDwQeCFvZSM",
+  authDomain: "fittrack-c95c6.firebaseapp.com",
+  projectId: "fittrack-c95c6",
+  storageBucket: "fittrack-c95c6.firebasestorage.app",
+  messagingSenderId: "502254449477",
+  appId: "1:502254449477:web:0e38cddc20a8eb28ba442c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ── Rendi funzioni disponibili globalmente ──
+window._fbAuth = auth;
+window._fbDb = db;
+window._fbGoogleProvider = new GoogleAuthProvider();
+window._fbSignIn = () => signInWithPopup(auth, window._fbGoogleProvider);
+window._fbSignOut = () => signOut(auth);
+window._fbSaveData = async (uid, data) => {
+  await setDoc(doc(db, 'users', uid), { data: JSON.stringify(data), updatedAt: serverTimestamp() });
+};
+window._fbLoadData = async (uid) => {
+  const snap = await getDoc(doc(db, 'users', uid));
+  if(snap.exists()) return JSON.parse(snap.data().data);
+  return null;
+};
+window._fbSendFeedback = async (uid, name, msg) => {
+  await addDoc(collection(db, 'feedbacks'), {
+    uid: uid || 'anonymous',
+    name: name || 'Anonimo',
+    message: msg,
+    createdAt: serverTimestamp()
+  });
+};
+
+// ── Ascolta cambio stato auth ──
+onAuthStateChanged(auth, (user) => {
+  if(typeof window.onFirebaseAuthChange === 'function'){
+    window.onFirebaseAuthChange(user);
+  }
+});
+</script>
 </head>
 <body>
 <!-- ── ONBOARDING OVERLAY ── -->
@@ -809,6 +883,17 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
       <div class="logo">Fit<span>Track</span></div>
       <div class="date-badge" id="dateBadge"></div>
     </div>
+    <!-- AUTH BAR -->
+    <div class="auth-bar" id="authBar">
+      <div class="auth-avatar-placeholder" id="authAvatar">👤</div>
+      <div style="flex:1">
+        <div class="auth-name" id="authName">Non connesso</div>
+        <div class="auth-sub" id="authSub">Accedi per salvare i dati nel cloud</div>
+      </div>
+      <span class="sync-badge sync-no" id="syncBadge">LOCALE</span>
+      <button class="auth-btn auth-btn-login" id="authBtn" onclick="handleAuthClick()">Google</button>
+    </div>
+
     <div class="install-banner hidden" id="installBanner">
       <div style="font-size:22px">📲</div>
       <div style="flex:1"><strong style="font-size:13px;display:block">Installa FitTrack</strong><span style="font-size:11px;color:var(--muted2)">Aggiungila alla schermata home!</span></div>
@@ -1090,6 +1175,14 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
         <div class="day-editor" id="dayEditor"></div>
       </div>
       <button class="save-btn" onclick="saveSettings()">✅ SALVA IMPOSTAZIONI</button>
+
+      <!-- FEEDBACK -->
+      <div class="setting-section" style="margin-top:22px">
+        <div class="setting-section-title">💬 Feedback</div>
+        <div style="font-size:12px;color:var(--muted2);margin-bottom:10px">Hai un suggerimento o hai trovato un bug? Scrivilo qui!</div>
+        <textarea class="feedback-textarea" id="feedbackText" placeholder="Es. Sarebbe bello avere... / Ho notato che..."></textarea>
+        <button class="feedback-send-btn" onclick="sendFeedback()">📨 Invia Feedback</button>
+      </div>
     </div>
   </div>
 
@@ -1718,16 +1811,14 @@ function getDayDateThisWeek(dayIndex){
 }
 
 function isDayMissed(dayIndex){
+  // Un giorno è "saltato" se: era questa settimana, è già passato (non oggi),
+  // non è riposo, e non è stato loggato
   const day=data.days[dayIndex];
   if(!day||day.type==='rest') return false;
   const todayIdx=((new Date().getDay()+6)%7);
-  if(dayIndex>=todayIdx) return false;
+  if(dayIndex>=todayIdx) return false; // oggi o futuro: non ancora saltato
   const dayDate=getDayDateThisWeek(dayIndex);
-  // Cerca per data esatta O per dayIndex questa settimana
-  const hasLog=data.sessions.some(s=>
-    s.date===dayDate ||
-    (s.dayIndex===dayIndex && isThisWeek(s.date))
-  );
+  const hasLog=data.sessions.some(s=>s.dayIndex===dayIndex&&s.date===dayDate);
   return !hasLog;
 }
 function getCheckKey(dayIndex){return getWeekKey()+'_'+dayIndex;}
@@ -1759,12 +1850,11 @@ function renderWeekPlan(){
     const isFuture=i>todayIdx;
     const isPast=i<todayIdx;
 
-    // hasLog: cerca per data esatta O per dayIndex questa settimana
+    // hasLog: solo sessioni registrate nella data esatta di questo giorno questa settimana
     const dayDate=getDayDateThisWeek(i);
-    const hasLog=data.sessions.some(s=>
-      s.date===dayDate ||
-      (s.dayIndex===i && isThisWeek(s.date))
-    );
+    const hasLog=data.sessions.some(s=>s.date===dayDate&&s.dayIndex===i)
+      // fallback: se è oggi, basta che ci sia una sessione oggi con questo dayIndex
+      ||(isToday&&data.sessions.some(s=>s.date===todayStr&&s.dayIndex===i));
 
     const missed=isPast&&!isRest&&!hasLog;
 
@@ -2452,6 +2542,146 @@ function obFinish(){
     // Saluto personalizzato
     if(name) showToast(`Benvenuto in FitTrack, ${name}! 🔥`,'success');
   },500);
+}
+
+// ══════════════════════════════════════
+// FIREBASE AUTH & SYNC
+// ══════════════════════════════════════
+let currentUser = null;
+let syncEnabled = false;
+
+// Chiamata da Firebase quando cambia lo stato di autenticazione
+window.onFirebaseAuthChange = async function(user) {
+  currentUser = user;
+  if(user) {
+    syncEnabled = true;
+    // Aggiorna UI
+    updateAuthUI(user);
+    // Carica dati dal cloud
+    await loadFromCloud();
+  } else {
+    syncEnabled = false;
+    updateAuthUI(null);
+  }
+};
+
+function updateAuthUI(user) {
+  const nameEl   = document.getElementById('authName');
+  const subEl    = document.getElementById('authSub');
+  const avatarEl = document.getElementById('authAvatar');
+  const btnEl    = document.getElementById('authBtn');
+  const badgeEl  = document.getElementById('syncBadge');
+
+  if(user) {
+    if(nameEl)   nameEl.textContent   = user.displayName || 'Utente';
+    if(subEl)    subEl.textContent    = user.email;
+    if(avatarEl) {
+      if(user.photoURL) {
+        avatarEl.innerHTML = `<img class="auth-avatar" src="${user.photoURL}" alt="avatar">`;
+      } else {
+        avatarEl.textContent = user.displayName?.[0]?.toUpperCase() || '👤';
+      }
+    }
+    if(btnEl)   { btnEl.textContent = 'Esci'; btnEl.className = 'auth-btn auth-btn-logout'; }
+    if(badgeEl) { badgeEl.textContent = 'CLOUD'; badgeEl.className = 'sync-badge sync-ok'; }
+  } else {
+    if(nameEl)   nameEl.textContent   = 'Non connesso';
+    if(subEl)    subEl.textContent    = 'Accedi per salvare i dati nel cloud';
+    if(avatarEl) avatarEl.textContent = '👤';
+    if(btnEl)   { btnEl.textContent = 'Google'; btnEl.className = 'auth-btn auth-btn-login'; }
+    if(badgeEl) { badgeEl.textContent = 'LOCALE'; badgeEl.className = 'sync-badge sync-no'; }
+  }
+}
+
+async function handleAuthClick() {
+  if(currentUser) {
+    // Logout
+    if(window._fbSignOut) {
+      await window._fbSignOut();
+      showToast('Disconnesso', '');
+    }
+  } else {
+    // Login Google
+    if(window._fbSignIn) {
+      try {
+        await window._fbSignIn();
+        // onFirebaseAuthChange viene chiamato automaticamente
+      } catch(e) {
+        showToast('Errore login: ' + e.message, 'fire');
+      }
+    } else {
+      showToast('Firebase non ancora caricato, riprova', 'fire');
+    }
+  }
+}
+
+async function saveToCloud() {
+  if(!syncEnabled || !currentUser || !window._fbSaveData) return;
+  try {
+    await window._fbSaveData(currentUser.uid, data);
+    // Badge verde lampeggia brevemente
+    const badge = document.getElementById('syncBadge');
+    if(badge) { badge.textContent = 'SALVATO'; setTimeout(()=>{ if(badge) badge.textContent = 'CLOUD'; }, 1500); }
+  } catch(e) {
+    console.error('Errore sync cloud:', e);
+  }
+}
+
+async function loadFromCloud() {
+  if(!currentUser || !window._fbLoadData) return;
+  try {
+    const cloudData = await window._fbLoadData(currentUser.uid);
+    if(cloudData) {
+      // Merge: usa il più recente tra locale e cloud
+      const localRaw = localStorage.getItem(KEY);
+      const local    = localRaw ? JSON.parse(localRaw) : null;
+      const cloudSessions = cloudData.sessions?.length || 0;
+      const localSessions = local?.sessions?.length   || 0;
+      // Usa il dataset con più sessioni (più dati = più recente)
+      if(cloudSessions >= localSessions) {
+        data = cloudData;
+        // Assicura campi obbligatori
+        if(!data.checks)       data.checks = {};
+        if(!data.weightLog)    data.weightLog = [];
+        if(!data.activities)   data.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+        if(!data.days)         data.days = JSON.parse(JSON.stringify(DEFAULT_DAYS));
+        localStorage.setItem(KEY, JSON.stringify(data));
+        showToast('Dati sincronizzati dal cloud ☁️', 'success');
+        init();
+      } else {
+        // Locale ha più dati — salva locale sul cloud
+        await saveToCloud();
+      }
+    } else {
+      // Primo accesso — salva i dati locali sul cloud
+      await saveToCloud();
+    }
+  } catch(e) {
+    console.error('Errore caricamento cloud:', e);
+  }
+}
+
+async function sendFeedback() {
+  const textEl = document.getElementById('feedbackText');
+  const msg    = textEl?.value?.trim();
+  if(!msg) { showToast('Scrivi un messaggio prima!', 'fire'); return; }
+  if(!window._fbSendFeedback) { showToast('Firebase non caricato', 'fire'); return; }
+  try {
+    const name = currentUser?.displayName || data?.userName || 'Anonimo';
+    const uid  = currentUser?.uid || 'anonymous';
+    await window._fbSendFeedback(uid, name, msg);
+    textEl.value = '';
+    showToast('Feedback inviato! Grazie 🙏', 'success');
+  } catch(e) {
+    showToast('Errore invio: ' + e.message, 'fire');
+  }
+}
+
+// Wrap saveData per sincronizzare anche sul cloud
+const _originalSaveData = saveData;
+function saveData(d) {
+  _originalSaveData(d);
+  saveToCloud(); // asincrono, non blocca
 }
 
 obCheckFirst();
