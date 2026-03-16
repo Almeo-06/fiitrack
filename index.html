@@ -2631,33 +2631,24 @@ async function loadFromCloud() {
   if(!currentUser || !window._fbLoadData) return;
   try {
     const cloudData = await window._fbLoadData(currentUser.uid);
-    if(cloudData) {
-      // Merge: usa il più recente tra locale e cloud
-      const localRaw = localStorage.getItem(KEY);
-      const local    = localRaw ? JSON.parse(localRaw) : null;
-      const cloudSessions = cloudData.sessions?.length || 0;
-      const localSessions = local?.sessions?.length   || 0;
-      // Usa il dataset con più sessioni (più dati = più recente)
-      if(cloudSessions >= localSessions) {
-        data = cloudData;
-        // Assicura campi obbligatori
-        if(!data.checks)       data.checks = {};
-        if(!data.weightLog)    data.weightLog = [];
-        if(!data.activities)   data.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
-        if(!data.days)         data.days = JSON.parse(JSON.stringify(DEFAULT_DAYS));
-        localStorage.setItem(KEY, JSON.stringify(data));
-        showToast('Dati sincronizzati dal cloud ☁️', 'success');
-        init();
-      } else {
-        // Locale ha più dati — salva locale sul cloud
-        await saveToCloud();
-      }
+    if(cloudData && cloudData.sessions) {
+      // Cloud ha dati → cloud vince sempre (è la fonte di verità)
+      data = cloudData;
+      if(!data.checks)     data.checks = {};
+      if(!data.weightLog)  data.weightLog = [];
+      if(!data.activities) data.activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+      if(!data.days)       data.days = JSON.parse(JSON.stringify(DEFAULT_DAYS));
+      localStorage.setItem(KEY, JSON.stringify(data));
+      showToast('Dati sincronizzati dal cloud ☁️', 'success');
+      init();
     } else {
-      // Primo accesso — salva i dati locali sul cloud
+      // Primo accesso con questo account → salva i dati locali sul cloud
       await saveToCloud();
+      showToast('Dati locali salvati nel cloud ☁️', 'success');
     }
   } catch(e) {
     console.error('Errore caricamento cloud:', e);
+    showToast('Errore sync, riprova', 'fire');
   }
 }
 
