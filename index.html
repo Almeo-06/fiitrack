@@ -525,6 +525,121 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
 .ob-flame{font-size:54px;margin-bottom:12px;filter:drop-shadow(0 0 18px rgba(255,100,0,0.5));animation:obFlame 2s ease-in-out infinite;}
 @keyframes obFlame{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 
+/* ── SHARE CARD ── */
+.share-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  z-index:400;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.25s ease;
+  backdrop-filter:blur(8px);
+}
+.share-overlay.open{opacity:1;pointer-events:all;}
+.share-card{
+  background:linear-gradient(145deg,#0e0e1e,#06060f);
+  border:1px solid rgba(255,100,0,0.3);border-radius:24px;
+  padding:28px 24px;width:320px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.8);
+  animation:shareCardIn 0.35s cubic-bezier(0.34,1.1,0.64,1) both;
+}
+@keyframes shareCardIn{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
+.share-card-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:16px;letter-spacing:-0.5px;}
+.share-card-logo span{color:var(--fire);}
+.share-card-icon{font-size:48px;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(255,140,0,0.5));}
+.share-card-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px;}
+.share-card-sub{font-size:13px;color:var(--muted2);margin-bottom:20px;}
+.share-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+.share-stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 6px;}
+.share-stat-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
+.share-stat-lbl{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.share-streak-badge{background:linear-gradient(135deg,#ff3a00,#ff8c00);border-radius:12px;padding:10px 16px;margin-bottom:20px;display:inline-block;}
+.share-streak-badge span{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;}
+.share-btns{display:flex;gap:8px;}
+.share-btn{flex:1;padding:11px;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.5px;}
+.share-btn-main{background:linear-gradient(135deg,var(--fire),var(--fire2));color:#fff;}
+.share-btn-close{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);}
+
+/* ── NOTIFICHE ── */
+.notif-settings{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px;}
+.notif-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;}
+.notif-label{font-size:13px;}
+.notif-sub{font-size:11px;color:var(--muted2);margin-top:1px;}
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:24px;cursor:pointer;transition:0.3s;}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;}
+input:checked + .toggle-slider{background:var(--fire2);}
+input:checked + .toggle-slider:before{transform:translateX(20px);}
+
+/* ── LIGHT MODE ── */
+body.light-mode{
+  --bg:#f0f0f8;--surface:#ffffff;--surface2:#f4f4fc;
+  --border:#ddddf0;--border2:#ccccee;
+  --text:#1a1a2e;--muted:#8888aa;--muted2:#6666aa;
+}
+body.light-mode::before{background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(41,121,255,0.06),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(255,77,0,0.04),transparent);}
+
+/* Counter animation */
+@keyframes countUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.counting{animation:countUp 0.4s ease both;}
+
+/* ── POPUP REGISTRAZIONE ── */
+.log-popup-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  z-index:200;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.25s ease;
+  backdrop-filter:blur(6px);
+}
+.log-popup-overlay.open{opacity:1;pointer-events:all;}
+.log-popup{
+  background:linear-gradient(145deg,#0c0c1e,#080814);
+  border:1px solid var(--border2);border-radius:24px 24px 0 0;
+  width:100%;max-width:480px;padding:20px 20px 36px;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.34,1.1,0.64,1);
+  max-height:90vh;overflow-y:auto;
+}
+.log-popup-overlay.open .log-popup{transform:translateY(0);}
+.log-popup-handle{width:36px;height:4px;background:#2a2a48;border-radius:99px;margin:0 auto 16px;}
+.log-popup-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.log-popup-sub{font-size:12px;color:var(--muted2);margin-bottom:18px;}
+
+/* Upload zona immagine */
+.img-upload-zone{
+  border:2px dashed var(--border2);border-radius:14px;
+  padding:20px;text-align:center;cursor:pointer;
+  transition:all 0.2s;margin-bottom:14px;position:relative;
+  background:var(--surface2);
+}
+.img-upload-zone:active{border-color:var(--fire2);background:rgba(255,140,0,0.05);}
+.img-upload-zone.has-img{border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.03);}
+.img-upload-zone.analyzing{border-color:var(--blue);animation:borderPulse 1s infinite;}
+@keyframes borderPulse{0%,100%{border-color:var(--blue);}50%{border-color:rgba(41,121,255,0.3);}}
+.img-preview{width:100%;max-height:140px;object-fit:cover;border-radius:10px;margin-bottom:8px;display:none;}
+.img-upload-zone.has-img .img-preview{display:block;}
+.img-upload-icon{font-size:28px;margin-bottom:6px;}
+.img-upload-text{font-size:13px;font-weight:600;color:var(--muted2);}
+.img-upload-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.ai-status{font-size:11px;font-weight:600;margin-top:6px;display:none;}
+.ai-status.loading{color:var(--blue);display:block;}
+.ai-status.done{color:var(--green);display:block;}
+.ai-status.error{color:var(--fire2);display:block;}
+
+/* Campi dati sessione */
+.log-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.log-field{display:flex;flex-direction:column;gap:4px;}
+.log-field-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;font-family:'Syne Mono',monospace;}
+.log-field-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-family:'Syne',sans-serif;font-size:16px;font-weight:700;outline:none;transition:border 0.2s;width:100%;}
+.log-field-input:focus{border-color:var(--blue);}
+.log-field-input.ai-filled{border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.04);}
+.log-field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.log-popup-btn{width:100%;background:linear-gradient(135deg,var(--fire),var(--fire2));border:none;border-radius:14px;padding:14px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 20px rgba(255,77,0,0.3);}
+.log-popup-btn:active{transform:scale(0.98);}
+
+/* Foto espandibile nello storico */
+.session-photo-toggle{font-size:11px;color:var(--muted2);background:none;border:none;cursor:pointer;padding:2px 6px;font-family:'Syne Mono',monospace;}
+.session-photo-expand{display:none;margin-top:8px;}
+.session-photo-expand.open{display:block;}
+.session-photo-expand img{width:100%;border-radius:10px;max-height:200px;object-fit:cover;}
+
 /* ── AUTH / SYNC ── */
 .auth-bar{
   display:flex;align-items:center;gap:10px;
@@ -664,6 +779,9 @@ body.rest-day .goal-bar-fill.done{background:linear-gradient(90deg,#6060cc,#aaaa
   font-size:10px;margin-top:6px;font-family:'Syne Mono',monospace;text-align:center;
 }
 </style>
+
+<!-- html2canvas per share card -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Firebase SDK -->
 <script type="module">
@@ -942,14 +1060,13 @@ onAuthStateChanged(auth, (user) => {
       <div class="week-bars" id="weekBars"></div>
     </div>
 
-    <div class="month-recap-card" id="monthCalCard" style="display:none">
-      <div class="card-title"><span class="dot" style="background:#8080ff"></span>Questo Mese</div>
-      <div class="month-stat-grid">
+    <div class="month-recap-card" id="monthCalCard" style="display:none;cursor:pointer" onclick="goToCalendar()">
+      <div class="card-title"><span class="dot" style="background:#8080ff"></span>Questo Mese <span style="font-size:10px;color:#6666aa;margin-left:auto">Vedi calendario →</span></div>
+      <div class="month-stat-grid" style="margin-bottom:0">
         <div class="mstat"><div class="mstat-val" id="mKcal">0</div><div class="mstat-lbl">kcal</div></div>
         <div class="mstat"><div class="mstat-val" id="mSess">0</div><div class="mstat-lbl">sessioni</div></div>
         <div class="mstat"><div class="mstat-val" id="mKm">0</div><div class="mstat-lbl">km</div></div>
       </div>
-      <div class="month-days" id="monthDays"></div>
     </div>
 
     <div class="card" style="animation:slideUp 0.6s ease 0.2s both">
@@ -1178,6 +1295,38 @@ onAuthStateChanged(auth, (user) => {
 
       <!-- FEEDBACK -->
       <div class="setting-section" style="margin-top:22px">
+        <div class="setting-section-title">🌓 Tema</div>
+        <div class="notif-settings">
+          <div class="notif-row">
+            <div><div class="notif-label">Modalità chiara</div><div class="notif-sub">Passa al tema light</div></div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="lightModeToggle" onchange="toggleLightMode(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section" style="margin-top:22px">
+        <div class="setting-section-title">🔔 Notifiche</div>
+        <div class="notif-settings">
+          <div class="notif-row">
+            <div><div class="notif-label">Reminder allenamento</div><div class="notif-sub">Ti avvisa di allenarti</div></div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifToggle" onchange="toggleNotifications(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="notif-row" id="notifTimeRow" style="display:none">
+            <div class="notif-label">Orario reminder</div>
+            <input type="time" id="notifTime" value="18:00"
+              style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;outline:none;"
+              onchange="saveNotifTime(this.value)">
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-section" style="margin-top:22px">
         <div class="setting-section-title">💬 Feedback</div>
         <div style="font-size:12px;color:var(--muted2);margin-bottom:10px">Hai un suggerimento o hai trovato un bug? Scrivilo qui!</div>
         <textarea class="feedback-textarea" id="feedbackText" placeholder="Es. Sarebbe bello avere... / Ho notato che..."></textarea>
@@ -1188,6 +1337,78 @@ onAuthStateChanged(auth, (user) => {
 
 </div>
 
+
+<!-- SHARE CARD -->
+<div class="share-overlay" id="shareOverlay" onclick="closeShareCard(event)">
+  <div class="share-card" id="shareCard">
+    <div class="share-card-logo">Fit<span>Track</span></div>
+    <div class="share-card-icon" id="shareIcon">🔥</div>
+    <div class="share-card-title" id="shareTitle">Sessione completata!</div>
+    <div class="share-card-sub" id="shareSub">—</div>
+    <div class="share-card-stats" id="shareStats"></div>
+    <div class="share-streak-badge" id="shareStreakBadge">
+      <span id="shareStreakNum">0</span> 🔥 giorni di fila
+    </div>
+    <div class="share-btns">
+      <button class="share-btn share-btn-main" onclick="downloadShareCard()">📸 Salva immagine</button>
+      <button class="share-btn share-btn-close" onclick="closeShareCard()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP REGISTRAZIONE SESSIONE -->
+<div class="log-popup-overlay" id="logPopupOverlay" onclick="closeLogPopup(event)">
+  <div class="log-popup" id="logPopup">
+    <div class="log-popup-handle"></div>
+    <div class="log-popup-title">
+      <span id="logPopupIcon">🏋️</span>
+      <span id="logPopupTitle">Registra sessione</span>
+    </div>
+    <div class="log-popup-sub" id="logPopupSub">Inserisci i dati manualmente o carica un'immagine</div>
+
+    <!-- Upload immagine -->
+    <div class="img-upload-zone" id="imgUploadZone" onclick="triggerImgUpload()">
+      <img class="img-preview" id="imgPreview" src="" alt="">
+      <div class="img-upload-icon">📸</div>
+      <div class="img-upload-text">Carica screenshot Strava o fitness</div>
+      <div class="img-upload-sub">L'AI leggerà i dati automaticamente</div>
+      <div class="ai-status" id="aiStatus"></div>
+    </div>
+    <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(event)">
+
+    <!-- Campi dati — mostrati in base all'attività -->
+    <div class="log-fields" id="logFields">
+      <!-- Kcal — sempre -->
+      <div class="log-field">
+        <div class="log-field-label">🔥 Calorie bruciate</div>
+        <input class="log-field-input" type="number" id="lf-kcal" placeholder="es. 420" min="0">
+      </div>
+      <!-- Km + Passo — solo se attività con km -->
+      <div class="log-field-row" id="lf-km-row" style="display:none">
+        <div class="log-field">
+          <div class="log-field-label">📍 Distanza</div>
+          <input class="log-field-input" type="number" id="lf-km" placeholder="es. 5.2" step="0.1" min="0">
+        </div>
+        <div class="log-field">
+          <div class="log-field-label">⚡ Passo /km</div>
+          <input class="log-field-input" type="text" id="lf-pace" placeholder="es. 5:30">
+        </div>
+      </div>
+      <!-- Durata — sempre -->
+      <div class="log-field">
+        <div class="log-field-label">⏱ Durata</div>
+        <input class="log-field-input" type="text" id="lf-duration" placeholder="es. 45 min">
+      </div>
+      <!-- Note -->
+      <div class="log-field">
+        <div class="log-field-label">📝 Note</div>
+        <input class="log-field-input" type="text" id="lf-note" placeholder="es. Corsa mattutina...">
+      </div>
+    </div>
+
+    <button class="log-popup-btn" onclick="submitLogPopup()">⚡ REGISTRA SESSIONE</button>
+  </div>
+</div>
 
 <!-- TAB BAR -->
 <div class="tab-bar">
@@ -1246,7 +1467,10 @@ function loadData(){
   }catch{return getDefault();}
 }
 function getDefault(){return{sessions:[],streak:0,bestStreak:0,lastDate:null,weekStreak:0,bestWeekStreak:0,lastWeekKey:null,days:JSON.parse(JSON.stringify(DEFAULT_DAYS)),activities:JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES)),goalSessions:5,checks:{},weightLog:[],height:null,goalWeight:null,currentWeight:null};}
-function saveData(d){localStorage.setItem(KEY,JSON.stringify(d));}
+function saveData(d){
+  localStorage.setItem(KEY,JSON.stringify(d));
+  if(typeof saveToCloud==='function' && typeof currentUser!=='undefined' && currentUser) saveToCloud();
+}
 
 let data=loadData();
 let selectedDay=((new Date().getDay()+6)%7);
@@ -1411,7 +1635,7 @@ function renderStreak(){
     document.getElementById('restQuoteAuthor').textContent=q.a;
   } else {
     const currentStreak=getActiveStreak();
-    document.getElementById('streakNum').textContent=currentStreak;
+    animateCounter('streakNum', currentStreak);
     const sb=document.getElementById('streakBest');if(sb)sb.textContent='';
     document.getElementById('streakFlame').textContent=currentStreak>=30?'🔥🔥🔥':currentStreak>=14?'🔥🔥':'🔥';
     const dotsEl=document.getElementById('streakDots');dotsEl.innerHTML='';
@@ -1448,22 +1672,8 @@ function renderMonthRecap(){
   document.getElementById('mSess').textContent=ms.length;
   const km=ms.reduce((a,s)=>a+(s.km||0),0);
   document.getElementById('mKm').textContent=km>0?km.toFixed(1):'0';
-  const daysInMonth=new Date(y,m+1,0).getDate();
-  const todayNum=now.getDate();
-  const el=document.getElementById('monthDays');el.innerHTML='';
-  for(let day=1;day<=daysInMonth;day++){
-    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const dayIdx=((new Date(dateStr).getDay()+6)%7);
-    const isRest=data.days[dayIdx]?.type==='rest';
-    const hasSession=data.sessions.some(s=>s.date===dateStr);
-    const div=document.createElement('div');
-    const dateObjM=new Date(y,m,day);
-    const isFutureM=day>todayNum||(y>now.getFullYear())||(y===now.getFullYear()&&m>now.getMonth());
-    const isMissedM=!isFutureM&&day<todayNum&&!isRest&&!hasSession;
-    div.className='mday'+(hasSession?' has-session':isRest?' is-rest':isMissedM?' is-missed':isFutureM?' is-future':'')+(day===todayNum?' today':'');
-    div.textContent=day;el.appendChild(div);
-  }
 }
+
 
 // ── BMI / PESO ──
 function getBMIInfo(bmi){
@@ -1835,6 +2045,8 @@ function init(){
   checkWeekStreak();
   updateTimerDisplay();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  initTheme();
+  initNotifications();
 }
 
 // ── WEEK PLAN ──
@@ -1891,15 +2103,9 @@ function renderWeekPlan(){
       progressHtml=`<div class="plan-day-progress"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10px;color:var(--muted2)">Checklist</span><span style="font-family:'Syne Mono',monospace;font-size:10px;color:${done===total?'var(--green)':'var(--muted2)'}">${done}/${total}</span></div><div class="plan-mini-bar-bg"><div class="plan-mini-bar-fill" style="width:${pct}%"></div></div></div>`;
     }
 
-    // Quick log: solo oggi, non riposo, non già loggato
+    // Registra: solo oggi, non riposo, non già loggato
     const canQuickLog=isToday&&!isRest&&!hasLog;
-    const quickLog=`<div class="quick-log-form" id="quickLog_${i}">
-      <div class="quick-log-row">
-        <input class="inp" type="number" id="qKcal_${i}" placeholder="kcal" style="font-size:13px;padding:8px 10px">
-        ${act.hasKm?`<input class="inp" type="number" id="qKm_${i}" placeholder="km" style="font-size:13px;padding:8px 10px;max-width:70px">`:''}
-        <button onclick="quickLogSession(${i})" style="background:linear-gradient(135deg,var(--fire),var(--fire2));border:none;border-radius:10px;padding:8px 12px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">⚡ LOG</button>
-      </div>
-    </div>`;
+    const quickLog=''; // popup sostituisce il form inline
 
     wrap.innerHTML=`
       <div class="plan-day-header" onclick="togglePlanDay(${i})">
@@ -1912,7 +2118,7 @@ function renderWeekPlan(){
       </div>
       ${progressHtml}
       <div class="day-detail-panel${i===openPlanDay?' open':''}" id="panel_${i}"></div>
-      ${canQuickLog?`<button class="quick-log-btn" onclick="toggleQuickLog(event,${i})">⚡ Registra veloce</button>${quickLog}`:''}`;
+      ${canQuickLog?`<button class="quick-log-btn" onclick="openLogPopup(${i},event)">⚡ Registra sessione</button>`:''}`;
     el.appendChild(wrap);
     if(i===openPlanDay) fillPanel(i);
   });
@@ -1939,6 +2145,7 @@ function quickLogSession(i){
 }
 
 function spawnConfetti(){
+  if('vibrate' in navigator) navigator.vibrate([60,40,60]);
   const colors=['#ff4d00','#ff8c00','#ffcc00','#00e676','#2979ff'];
   const container=document.querySelector('.app');
   for(let i=0;i<12;i++){
@@ -1998,6 +2205,7 @@ function fillPanel(i){
 }
 
 function toggleCheck(dayIndex,exId){
+  if('vibrate' in navigator) navigator.vibrate(40);
   const key=getCheckKey(dayIndex);
   if(!data.checks[key]) data.checks[key]={};
   const wasChecked=data.checks[key][exId];
@@ -2139,9 +2347,18 @@ function renderHistory(){
     const kmText=s.km>0?` · ${s.km.toFixed(1)} km`:'';
     const noteText=s.note?` · "${s.note}"`:'';
     const dateStr=new Date(s.date).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
-    item.innerHTML=`<div class="session-icon">${s.typeIcon||'🏃'}</div><div class="session-info"><div class="session-day">${s.dayLabel} <span style="color:var(--muted);font-size:11px;font-weight:400">${dateStr}</span></div><div class="session-meta">${s.typeLabel||s.type}${kmText}${noteText}</div></div><div class="session-kcal">${s.kcal.toLocaleString()}<span style="font-size:10px;color:var(--muted);font-weight:400"> kcal</span></div><button class="session-del" onclick="deleteSession(${s.id})">✕</button>`;
+    const paceText = s.pace ? ` · ${s.pace}/km` : '';
+    const durText  = s.duration ? ` · ${s.duration}` : '';
+    const photoBtn = s.photo ? `<button class="session-photo-toggle" onclick="toggleSessionPhoto(${s.id},event)">📷 ▼</button>` : '';
+    const photoDiv = s.photo ? `<div class="session-photo-expand" id="sphoto_${s.id}"><img src="${s.photo}" alt="foto sessione"></div>` : '';
+    item.innerHTML=`<div class="session-icon">${s.typeIcon||'🏃'}</div><div class="session-info"><div class="session-day">${s.dayLabel} <span style="color:var(--muted);font-size:11px;font-weight:400">${dateStr}</span></div><div class="session-meta">${s.typeLabel||s.type}${kmText}${paceText}${durText}${noteText}</div>${photoDiv}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="session-kcal">${s.kcal.toLocaleString()}<span style="font-size:10px;color:var(--muted);font-weight:400"> kcal</span></div>${photoBtn}<button class="session-del" onclick="deleteSession(${s.id})">✕</button></div>`;
     el.appendChild(item);
   });
+}
+function toggleSessionPhoto(id, e) {
+  if(e) e.stopPropagation();
+  const el = document.getElementById('sphoto_'+id);
+  if(el) el.classList.toggle('open');
 }
 function deleteSession(id){data.sessions=data.sessions.filter(s=>s.id!==id);saveData(data);buildDaySelect();buildWeekBars();renderRecap();renderGoal();renderHistory();renderWeekPlan();if(isRestDay())renderMonthRecap();showToast('Eliminata','');}
 function confirmClear(){if(confirm('Cancellare tutto?')){data={...data,sessions:[],streak:0,bestStreak:0,lastDate:null,weekStreak:0,bestWeekStreak:0,lastWeekKey:null,checks:{}};saveData(data);init();showToast('Dati azzerati','');}}
@@ -2149,6 +2366,10 @@ function confirmClear(){if(confirm('Cancellare tutto?')){data={...data,sessions:
 // ── SETTINGS ──
 function renderSettingsPage(){
   document.getElementById('goalInput').value=data.goalSessions||5;
+  // Carica stato tema e notifiche
+  const lt = document.getElementById('lightModeToggle');
+  if(lt) lt.checked = document.body.classList.contains('light-mode');
+  initNotifications();
   renderActivityList();renderDayEditor();
 }
 function renderActivityList(){
@@ -2668,11 +2889,385 @@ async function sendFeedback() {
   }
 }
 
-// Wrap saveData per sincronizzare anche sul cloud
-const _originalSaveData = saveData;
-function saveData(d) {
-  _originalSaveData(d);
-  saveToCloud(); // asincrono, non blocca
+// sync cloud gestito dentro saveData
+
+// ══════════════════════════════════════
+// POPUP REGISTRAZIONE SESSIONE
+// ══════════════════════════════════════
+let logPopupDayIndex = -1;
+let logPopupImgBase64 = null;
+
+function openLogPopup(dayIndex, e) {
+  if(e) e.stopPropagation();
+  logPopupDayIndex = dayIndex;
+  logPopupImgBase64 = null;
+
+  const day = data.days[dayIndex];
+  const act = data.activities.find(a=>a.id===day.type) || data.activities[0];
+
+  // Titolo e icona
+  document.getElementById('logPopupIcon').textContent = act.icon || '🏋️';
+  document.getElementById('logPopupTitle').textContent = day.label;
+  document.getElementById('logPopupSub').textContent = act.name + ' · ' + new Date().toLocaleDateString('it-IT',{day:'numeric',month:'long'});
+
+  // Mostra/nascondi campi km in base all'attività
+  document.getElementById('lf-km-row').style.display = act.hasKm ? 'grid' : 'none';
+
+  // Reset campi e immagine
+  ['lf-kcal','lf-km','lf-pace','lf-duration','lf-note'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.value=''; el.classList.remove('ai-filled'); }
+  });
+  resetImgUpload();
+
+  // Apri overlay
+  const ov = document.getElementById('logPopupOverlay');
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLogPopup(e) {
+  if(e && !e.target.classList.contains('log-popup-overlay')) return;
+  _closeLogPopup();
+}
+function _closeLogPopup() {
+  document.getElementById('logPopupOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  logPopupDayIndex = -1;
+  logPopupImgBase64 = null;
+}
+
+function triggerImgUpload() {
+  document.getElementById('imgFileInput').click();
+}
+
+function resetImgUpload() {
+  const zone = document.getElementById('imgUploadZone');
+  zone.classList.remove('has-img','analyzing');
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('aiStatus').className = 'ai-status';
+  document.getElementById('aiStatus').textContent = '';
+  logPopupImgBase64 = null;
+}
+
+async function handleImgUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+
+  // Mostra preview
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result; // data:image/...;base64,...
+    logPopupImgBase64 = base64.split(',')[1]; // solo la parte base64
+
+    const zone = document.getElementById('imgUploadZone');
+    const preview = document.getElementById('imgPreview');
+    preview.src = base64;
+    zone.classList.add('has-img');
+
+    // Avvia analisi AI
+    await analyzeImageWithAI(base64);
+  };
+  reader.readAsDataURL(file);
+  event.target.value = ''; // reset input
+}
+
+async function analyzeImageWithAI(base64DataUrl) {
+  const status = document.getElementById('aiStatus');
+  const zone = document.getElementById('imgUploadZone');
+  zone.classList.add('analyzing');
+  status.className = 'ai-status loading';
+  status.textContent = '🤖 Analizzo l\'immagine...';
+
+  const day = data.days[logPopupDayIndex];
+  const act = data.activities.find(a=>a.id===day?.type) || {};
+
+  const prompt = `Sei un assistente fitness. Analizza questo screenshot di allenamento (potrebbe essere da Strava, Garmin, Apple Watch, Samsung Health o simili).
+Estrai SOLO i dati numerici presenti nell'immagine e rispondi in formato JSON puro (nessun testo extra):
+{
+  "kcal": numero o null,
+  "km": numero o null,
+  "pace": "MM:SS" o null,
+  "duration": "X min" o null,
+  "note": "breve descrizione attività" o null
+}
+Se un dato non è presente nell'immagine, metti null. Non inventare valori.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64DataUrl.split(',')[1] } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data_resp = await response.json();
+    const text = data_resp.content?.[0]?.text || '';
+
+    // Parse JSON
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // Compila i campi
+    let filled = 0;
+    if(parsed.kcal){ setAIField('lf-kcal', parsed.kcal); filled++; }
+    if(parsed.km && act.hasKm){ setAIField('lf-km', parsed.km); filled++; }
+    if(parsed.pace && act.hasKm){ setAIField('lf-pace', parsed.pace); filled++; }
+    if(parsed.duration){ setAIField('lf-duration', parsed.duration); filled++; }
+    if(parsed.note){ setAIField('lf-note', parsed.note); filled++; }
+
+    zone.classList.remove('analyzing');
+    status.className = 'ai-status done';
+    status.textContent = filled > 0 ? `✅ Rilevati ${filled} dati — puoi modificarli` : '⚠️ Nessun dato rilevato - inserisci manualmente';
+
+  } catch(err) {
+    zone.classList.remove('analyzing');
+    status.className = 'ai-status error';
+    status.textContent = '⚠️ Inserisci i dati manualmente';
+    console.error('AI error:', err);
+  }
+}
+
+function setAIField(id, value) {
+  const el = document.getElementById(id);
+  if(el) {
+    el.value = value;
+    el.classList.add('ai-filled');
+  }
+}
+
+function submitLogPopup() {
+  const kcal = parseFloat(document.getElementById('lf-kcal').value);
+  if(!kcal || kcal <= 0) { showToast('Inserisci le calorie!','fire'); return; }
+
+  const i = logPopupDayIndex;
+  const day = data.days[i];
+  const act = data.activities.find(a=>a.id===day.type) || data.activities[0];
+
+  const km       = act.hasKm ? (parseFloat(document.getElementById('lf-km').value)||0) : 0;
+  const pace     = document.getElementById('lf-pace').value.trim();
+  const duration = document.getElementById('lf-duration').value.trim();
+  const note     = document.getElementById('lf-note').value.trim();
+  const today    = new Date().toISOString().split('T')[0];
+
+  // Salva immagine come base64 (compressa) se presente
+  let photoData = null;
+  if(logPopupImgBase64) {
+    // Comprimi l'immagine tramite canvas prima di salvare
+    const img = document.getElementById('imgPreview');
+    try {
+      const canvas = document.createElement('canvas');
+      const MAX = 600;
+      const ratio = Math.min(MAX/img.naturalWidth, MAX/img.naturalHeight, 1);
+      canvas.width = img.naturalWidth * ratio;
+      canvas.height = img.naturalHeight * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      photoData = canvas.toDataURL('image/jpeg', 0.7);
+    } catch(e) { photoData = null; }
+  }
+
+  const session = {
+    id: Date.now(),
+    date: today,
+    dayIndex: i,
+    dayLabel: day.label,
+    type: act.id,
+    typeLabel: act.name,
+    typeIcon: act.icon,
+    kcal: Math.round(kcal),
+    km,
+    pace: pace || null,
+    duration: duration || null,
+    note,
+    photo: photoData
+  };
+
+  data.sessions.unshift(session);
+  updateStreak(today);
+  saveData(data);
+
+  _closeLogPopup();
+  buildDaySelect();buildWeekBars();renderStreak();renderRecap();renderGoal();renderHistory();renderWeekPlan();checkWeekStreak();
+  showToast('Sessione registrata! 💪','success');
+  spawnConfetti();
+}
+
+// ══════════════════════════════════════
+// ANIMAZIONE COUNTER
+// ══════════════════════════════════════
+function animateCounter(elId, target, duration=600) {
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const start = parseInt(el.textContent) || 0;
+  if(start === target) return;
+  el.classList.add('counting');
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if(progress < 1) requestAnimationFrame(update);
+    else { el.textContent = target; el.classList.remove('counting'); }
+  }
+  requestAnimationFrame(update);
+}
+
+// ══════════════════════════════════════
+// LIGHT MODE
+// ══════════════════════════════════════
+function toggleLightMode(enabled) {
+  document.body.classList.toggle('light-mode', enabled);
+  localStorage.setItem('fittrack_lightmode', enabled ? '1' : '0');
+}
+function initTheme() {
+  const saved = localStorage.getItem('fittrack_lightmode');
+  if(saved === '1') {
+    document.body.classList.add('light-mode');
+    const toggle = document.getElementById('lightModeToggle');
+    if(toggle) toggle.checked = true;
+  }
+}
+
+// ══════════════════════════════════════
+// NOTIFICHE PUSH
+// ══════════════════════════════════════
+async function toggleNotifications(enabled) {
+  const timeRow = document.getElementById('notifTimeRow');
+  if(!enabled) {
+    if(timeRow) timeRow.style.display = 'none';
+    localStorage.setItem('fittrack_notif', '0');
+    showToast('Notifiche disabilitate', '');
+    return;
+  }
+  if(!('Notification' in window)) {
+    showToast('Notifiche non supportate su questo browser', 'fire');
+    document.getElementById('notifToggle').checked = false;
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if(perm === 'granted') {
+    if(timeRow) timeRow.style.display = 'flex';
+    localStorage.setItem('fittrack_notif', '1');
+    scheduleNotification();
+    showToast('Notifiche attivate! 🔔', 'success');
+  } else {
+    document.getElementById('notifToggle').checked = false;
+    showToast('Permesso notifiche negato', 'fire');
+  }
+}
+
+function saveNotifTime(time) {
+  localStorage.setItem('fittrack_notif_time', time);
+  scheduleNotification();
+  showToast('Orario salvato: ' + time, 'success');
+}
+
+function scheduleNotification() {
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const time = localStorage.getItem('fittrack_notif_time') || '18:00';
+  const [h, m] = time.split(':').map(Number);
+  const now = new Date();
+  const next = new Date();
+  next.setHours(h, m, 0, 0);
+  if(next <= now) next.setDate(next.getDate() + 1);
+  const delay = next - now;
+  // Salva timeout ID
+  const existing = localStorage.getItem('fittrack_notif_timeout');
+  if(existing) clearTimeout(parseInt(existing));
+  const tid = setTimeout(() => {
+    // Controlla se ha già allenato oggi
+    const today = new Date().toISOString().split('T')[0];
+    const alreadyDone = data.sessions.some(s => s.date === today);
+    if(!alreadyDone && !isRestDay()) {
+      new Notification('FitTrack 🔥', {
+        body: 'È ora di allenarti! Mantieni la streak.',
+        icon: 'icons/icon-192.png',
+        badge: 'icons/icon-192.png'
+      });
+    }
+    scheduleNotification(); // riprogramma per domani
+  }, delay);
+  localStorage.setItem('fittrack_notif_timeout', tid);
+}
+
+function initNotifications() {
+  const notifEnabled = localStorage.getItem('fittrack_notif') === '1';
+  const notifTime = localStorage.getItem('fittrack_notif_time') || '18:00';
+  const toggle = document.getElementById('notifToggle');
+  const timeRow = document.getElementById('notifTimeRow');
+  const timeInput = document.getElementById('notifTime');
+  if(toggle) toggle.checked = notifEnabled;
+  if(timeInput) timeInput.value = notifTime;
+  if(timeRow) timeRow.style.display = notifEnabled ? 'flex' : 'none';
+  if(notifEnabled && Notification.permission === 'granted') scheduleNotification();
+}
+
+// ══════════════════════════════════════
+// SHARE SESSIONE
+// ══════════════════════════════════════
+function shareSession(sessionId) {
+  const s = data.sessions.find(s => s.id === sessionId);
+  if(!s) return;
+  openShareCard(s);
+}
+
+function openShareCard(session) {
+  document.getElementById('shareIcon').textContent = session?.typeIcon || '🔥';
+  document.getElementById('shareTitle').textContent = session ? session.typeLabel : 'Sessione completata!';
+  const dateStr = session ? new Date(session.date).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}) : new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('shareSub').textContent = dateStr;
+
+  // Stats
+  let statsHtml = '';
+  if(session) {
+    statsHtml += `<div class="share-stat"><div class="share-stat-val" style="color:#ff6600">${session.kcal.toLocaleString()}</div><div class="share-stat-lbl">kcal</div></div>`;
+    if(session.km > 0) statsHtml += `<div class="share-stat"><div class="share-stat-val" style="color:#ff8c00">${session.km.toFixed(1)}</div><div class="share-stat-lbl">km</div></div>`;
+    if(session.duration) statsHtml += `<div class="share-stat"><div class="share-stat-val" style="color:#4488ff">${session.duration}</div><div class="share-stat-lbl">durata</div></div>`;
+    if(!session.km && !session.duration) statsHtml += `<div class="share-stat"><div class="share-stat-val" style="color:#00e676">${getActiveStreak()}</div><div class="share-stat-lbl">streak</div></div>`;
+  }
+  document.getElementById('shareStats').innerHTML = statsHtml;
+  document.getElementById('shareStreakNum').textContent = getActiveStreak();
+  document.getElementById('shareOverlay').classList.add('open');
+}
+
+function closeShareCard(e) {
+  if(e && e.target !== document.getElementById('shareOverlay')) return;
+  document.getElementById('shareOverlay').classList.remove('open');
+}
+
+async function downloadShareCard() {
+  const card = document.getElementById('shareCard');
+  // Usa html2canvas se disponibile, altrimenti fallback
+  if(typeof html2canvas !== 'undefined') {
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
+      const a = document.createElement('a');
+      a.download = 'fittrack-sessione.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      showToast('Immagine salvata! 📸', 'success');
+      return;
+    } catch(e) { console.error(e); }
+  }
+  // Fallback: condividi tramite Web Share API
+  try {
+    if(navigator.share) {
+      await navigator.share({ title: 'FitTrack', text: `Ho completato una sessione di allenamento! 🔥 Streak: ${getActiveStreak()} giorni` });
+    } else {
+      showToast('Copia il testo e condividi!', '');
+    }
+  } catch(e) {}
 }
 
 obCheckFirst();
