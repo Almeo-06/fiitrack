@@ -15,10 +15,10 @@
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body{ height:100%; overflow:hidden; }
 html{ height:-webkit-fill-available; }
-body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; }
+body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; overflow:hidden; display:flex; flex-direction:column; }
 
 /* ── PAGINA A ── */
-#pageA{ position:absolute; inset:0; display:flex; flex-direction:column; overflow:hidden; }
+#pageA{ flex:1; position:relative; z-index:0; display:flex; flex-direction:column; overflow:hidden; }
 .scroll-area{ flex:1; overflow-y:auto; padding:20px 16px 24px; -webkit-overflow-scrolling:touch; }
 .scroll-area::-webkit-scrollbar{ width:0; }
 
@@ -281,44 +281,45 @@ body::before{
 </head>
 <body>
 
-<div id="dimmer"></div>
-
-<!-- CASSETTO PARZIALE -->
-<div id="drawer">
-  <div class="d-hdr">
-    <div class="d-top">
-      <button class="d-close" id="dClose">✕</button>
-      <div>
-        <div class="d-day-lbl" id="dDayLbl"></div>
-        <div class="d-title" id="dTitle"></div>
-        <div class="d-meta" id="dMeta"></div>
-      </div>
-    </div>
-  </div>
-  <div class="d-list" id="dList"></div>
-  <div class="d-footer"><button class="d-btn">📅 Non disponibile oggi</button></div>
-</div>
-
-<!-- PAGINA PIENA (oggi) -->
-<div id="pageB">
-  <div class="pb-hdr">
-    <div class="pb-top">
-      <button class="pb-back" id="pbBack">‹</button>
-      <div>
-        <div class="pb-day-lbl" id="pbDayLbl"></div>
-        <div class="pb-title" id="pbTitle"></div>
-        <div class="pb-meta" id="pbMeta"></div>
-      </div>
-    </div>
-  </div>
-  <div class="pb-list" id="pbList"></div>
-  <div class="pb-footer">
-    <button class="start-btn" id="startBtn">Inizia allenamento →</button>
-  </div>
-</div>
-
 <!-- PAGINA A -->
 <div id="pageA">
+
+  <div id="dimmer"></div>
+
+  <!-- CASSETTO PARZIALE -->
+  <div id="drawer">
+    <div class="d-hdr">
+      <div class="d-top">
+        <button class="d-close" id="dClose">✕</button>
+        <div>
+          <div class="d-day-lbl" id="dDayLbl"></div>
+          <div class="d-title" id="dTitle"></div>
+          <div class="d-meta" id="dMeta"></div>
+        </div>
+      </div>
+    </div>
+    <div class="d-list" id="dList"></div>
+    <div class="d-footer"><button class="d-btn">📅 Non disponibile oggi</button></div>
+  </div>
+
+  <!-- PAGINA PIENA (oggi) -->
+  <div id="pageB">
+    <div class="pb-hdr">
+      <div class="pb-top">
+        <button class="pb-back" id="pbBack">‹</button>
+        <div>
+          <div class="pb-day-lbl" id="pbDayLbl"></div>
+          <div class="pb-title" id="pbTitle"></div>
+          <div class="pb-meta" id="pbMeta"></div>
+        </div>
+      </div>
+    </div>
+    <div class="pb-list" id="pbList"></div>
+    <div class="pb-footer">
+      <button class="start-btn" id="startBtn">Inizia allenamento →</button>
+    </div>
+  </div>
+
   <div class="scroll-area">
     <div class="header">
       <div class="logo">Fit<span>Track</span></div>
@@ -406,12 +407,14 @@ body::before{
     </div>
   </div>
 
-  <div class="tab-bar">
-    <div class="tab-item on"  onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
-    <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
-    <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
-    <div class="tab-item"     onclick="navigateTo('impostazioni.html',3)"> <div class="tab-icon">⚙️</div>Impost.</div>
-  </div>
+
+</div>
+
+<div class="tab-bar">
+  <div class="tab-item on"  onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
+  <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
+  <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
+  <div class="tab-item"     onclick="navigateTo('impostazioni.html',3)"> <div class="tab-icon">⚙️</div>Impost.</div>
 </div>
 
 <script>
@@ -806,7 +809,7 @@ function launchConfetti(){
 /* ══ SLIDE NAVIGATION ══ */
 const PAGE_INDEX = 0; // home.html = indice 0
 (function(){
-  const sa = document.querySelector('#pageA .scroll-area');
+  const sa = document.querySelector('.scroll-area');
   if(!sa) return;
   const from = parseInt(sessionStorage.getItem('ft_from_tab') ?? PAGE_INDEX);
   sessionStorage.removeItem('ft_from_tab');
@@ -817,7 +820,7 @@ const PAGE_INDEX = 0; // home.html = indice 0
 
 function navigateTo(url, toIndex){
   if(toIndex === PAGE_INDEX) return;
-  const sa = document.querySelector('#pageA .scroll-area');
+  const sa = document.querySelector('.scroll-area');
   sessionStorage.setItem('ft_from_tab', PAGE_INDEX);
   const cls = toIndex > PAGE_INDEX ? 'slide-out-left' : 'slide-out-right';
   if(sa){ sa.classList.add(cls); }
