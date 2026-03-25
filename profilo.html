@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTrack · Profilo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
+  --a1:#0088ff; --a2:#00ccff;
+  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
+  --green:#00e676; --red:#ff4455; --warn:#ffaa00;
+  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+}
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{
+  background:var(--bg); color:var(--text); font-family:var(--font);
+  max-width:480px; margin:0 auto;
+  min-height:100vh; min-height:100dvh;
+  padding-bottom:80px;
+}
+
+/* sfondo */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 90% 40% at 50% -5%, rgba(0,136,255,.09), transparent),
+    radial-gradient(ellipse 50% 30% at 90% 95%, rgba(0,60,180,.06), transparent);
+}
+
+.scroll-area{
+  padding:20px 16px 0;
+  position:relative; z-index:1;
+  animation:pageIn .35s ease both;
+}
+@keyframes pageIn{ from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+/* ── HEADER ── */
+.header{
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:20px;
+}
+.back-btn{
+  width:36px; height:36px; border-radius:50%;
+  background:var(--bg2); border:1px solid var(--border);
+  color:var(--textm); font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:border-color .15s, color .15s;
+}
+.back-btn:active{ border-color:var(--a1); color:var(--a2); }
+.header-title{ font-weight:600; font-size:20px; color:var(--text); flex:1; }
+.header-title span{ color:var(--a2); }
+.save-btn-top{
+  padding:7px 14px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:9px;
+  color:#fff; font-size:12px; font-weight:500;
+  cursor:pointer; font-family:var(--font);
+  white-space:nowrap;
+  transition:transform .1s;
+}
+.save-btn-top:active{ transform:scale(.96); }
+
+/* ── AVATAR HERO ── */
+.avatar-hero{
+  background:linear-gradient(135deg,#030e1a,#060d1a);
+  border:1px solid rgba(0,136,255,.15);
+  border-radius:20px; padding:24px 20px;
+  margin-bottom:14px;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  position:relative; overflow:hidden;
+}
+.avatar-hero::before{
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:160px; height:160px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,136,255,.12),transparent 70%);
+  pointer-events:none;
+}
+.avatar-circle{
+  width:90px; height:90px; border-radius:50%;
+  background:var(--bg3); border:2.5px solid var(--a1);
+  display:flex; align-items:center; justify-content:center;
+  font-size:40px; cursor:pointer; position:relative;
+  overflow:hidden;
+  box-shadow:0 0 20px rgba(0,136,255,.2);
+  transition:box-shadow .2s;
+}
+.avatar-circle:active{ box-shadow:0 0 30px rgba(0,136,255,.4); }
+.avatar-circle img{
+  width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0;
+}
+.avatar-edit-badge{
+  position:absolute; bottom:0; right:0;
+  width:26px; height:26px; border-radius:50%;
+  background:var(--a1); border:2px solid var(--bg3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px;
+}
+.avatar-name{
+  font-size:20px; font-weight:600; color:var(--text);
+  letter-spacing:-.3px;
+}
+.avatar-goal-badge{
+  font-size:11px; color:var(--a1); padding:3px 12px;
+  background:rgba(0,136,255,.08); border:1px solid rgba(0,136,255,.2);
+  border-radius:20px; font-family:var(--mono); letter-spacing:.5px;
+}
+
+/* emoji picker row */
+.emoji-row{
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  padding:10px 0 2px;
+}
+.emoji-opt{
+  width:38px; height:38px; border-radius:10px;
+  background:var(--bg3); border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; cursor:pointer; transition:all .15s;
+}
+.emoji-opt:active{ transform:scale(.9); }
+.emoji-opt.sel{
+  border-color:var(--a1); background:rgba(0,136,255,.1);
+  box-shadow:0 0 8px rgba(0,136,255,.2);
+}
+#photoInput{ display:none; }
+.photo-upload-btn{
+  width:100%; padding:9px;
+  background:transparent; border:1px dashed var(--border);
+  border-radius:10px; color:var(--textm);
+  font-size:12px; cursor:pointer; font-family:var(--font);
+  transition:border-color .15s, color .15s;
+}
+.photo-upload-btn:active{ border-color:var(--a1); color:var(--a1); }
+
+/* ── STATS CARD ── */
+.stats-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; padding:16px; margin-bottom:14px;
+}
+.card-title{
+  font-size:10px; font-weight:500; color:var(--textm);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex; align-items:center; gap:7px;
+}
+.card-dot{ width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.stat-box{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:12px; padding:12px 8px; text-align:center;
+}
+.stat-num{ font-size:22px; font-weight:600; line-height:1; }
+.stat-lbl{
+  font-size:9px; color:var(--textm); margin-top:3px;
+  text-transform:uppercase; letter-spacing:.8px;
+}
+
+/* ── FORM CARD ── */
+.form-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; padding:16px; margin-bottom:14px;
+}
+.field-group{ margin-bottom:14px; }
+.field-group:last-child{ margin-bottom:0; }
+.field-lbl{
+  font-size:9px; color:var(--textm); text-transform:uppercase;
+  letter-spacing:1.5px; margin-bottom:6px;
+  display:block; font-family:var(--mono);
+}
+.field-inp{
+  width:100%; background:var(--bg3); border:1.5px solid var(--border);
+  border-radius:11px; padding:13px 14px;
+  color:var(--text); font-family:var(--font); font-size:15px;
+  outline:none; transition:border-color .15s, box-shadow .15s;
+}
+.field-inp:focus{
+  border-color:var(--a1);
+  box-shadow:0 0 0 3px rgba(0,136,255,.08);
+}
+.field-inp::placeholder{ color:var(--textm); }
+
+/* gender chips */
+.gender-chips{ display:flex; gap:8px; }
+.gender-chip{
+  flex:1; padding:10px 8px; background:var(--bg3);
+  border:1.5px solid var(--border); border-radius:11px;
+  cursor:pointer; text-align:center;
+  font-size:12px; font-weight:500; color:var(--textm);
+  transition:all .15s;
+}
+.gender-chip:active{ transform:scale(.97); }
+.gender-chip.sel{
+  background:rgba(0,136,255,.1);
+  border-color:rgba(0,136,255,.4);
+  color:var(--a2);
+}
+.gender-chip .chip-icon{ font-size:18px; display:block; margin-bottom:3px; }
+
+/* goal chips */
+.goal-chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.goal-chip{
+  padding:11px 10px; background:var(--bg3);
+  border:1.5px solid var(--border); border-radius:12px;
+  cursor:pointer; text-align:center;
+  transition:all .18s;
+}
+.goal-chip:active{ transform:scale(.97); }
+.goal-chip.sel{
+  background:rgba(0,136,255,.1);
+  border-color:rgba(0,136,255,.45);
+  box-shadow:0 0 10px rgba(0,136,255,.12);
+}
+.goal-chip-icon{ font-size:22px; margin-bottom:4px; }
+.goal-chip-name{ font-size:12px; font-weight:500; color:var(--text); }
+.goal-chip-sub{ font-size:10px; color:var(--textm); margin-top:1px; }
+.goal-chip.sel .goal-chip-name{ color:var(--a2); }
+
+/* row a 2 colonne */
+.row-2col{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* ── BOTTONE SALVA ── */
+.save-btn-main{
+  width:100%; padding:16px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:14px;
+  color:#fff; font-size:16px; font-weight:600;
+  cursor:pointer; font-family:var(--font);
+  box-shadow:0 4px 24px rgba(0,136,255,.28);
+  margin-bottom:10px;
+  transition:transform .12s, box-shadow .12s;
+  position:relative; overflow:hidden;
+}
+.save-btn-main:active{ transform:scale(.98); box-shadow:0 2px 12px rgba(0,136,255,.2); }
+.save-btn-main::after{
+  content:''; position:absolute; top:0; left:-60%;
+  width:35%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  transform:skewX(-15deg); animation:btnShine 3s ease infinite;
+}
+@keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
+
+/* toast feedback */
+.toast{
+  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--bg2); border:1px solid var(--green);
+  color:var(--green); padding:10px 20px;
+  border-radius:99px; font-size:13px; font-weight:500;
+  opacity:0; transition:all .3s; pointer-events:none; z-index:100;
+  white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* active indicator tab */
+.tab-item{ position:relative; }
+.tab-item.on::after{
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:18px; height:2px; border-radius:0 0 3px 3px;
+  background:var(--a2); box-shadow:0 0 8px var(--a2);
+}
+
+/* tab bar */
+.tab-bar{
+  position:fixed; bottom:0; left:0; right:0;
+  max-width:480px; margin:0 auto;
+  background:rgba(6,13,26,.97); border-top:1px solid var(--border);
+  display:flex; padding:8px 0 12px; z-index:20;
+}
+.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; }
+.tab-item.on{ color:var(--a2); }
+.tab-icon{ font-size:18px; }
+
+@keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInFromLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOutToLeft { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
+@keyframes slideOutToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+.slide-in-right { animation: slideInFromRight 0.28s cubic-bezier(.25,1,.3,1) both; }
+.slide-in-left { animation: slideInFromLeft 0.28s cubic-bezier(.25,1,.3,1) both; }
+.slide-out-left { animation: slideOutToLeft 0.22s cubic-bezier(.4,0,.6,1) forwards; }
+.slide-out-right { animation: slideOutToRight 0.22s cubic-bezier(.4,0,.6,1) forwards; }
+</style>
+<script>
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
+</script>
+</head>
+<body>
+
+<div class="scroll-area">
+
+  <!-- Header -->
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">‹</button>
+    <div class="header-title">Pro<span>filo</span></div>
+    <button class="save-btn-top" onclick="saveProfilo()">Salva</button>
+  </div>
+
+  <!-- Avatar hero -->
+  <div class="avatar-hero">
+    <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('photoInput').click()">
+      <span id="avatarEmoji">😎</span>
+      <img id="avatarImg" src="" alt="" style="display:none;" />
+      <div class="avatar-edit-badge">✏️</div>
+    </div>
+    <div class="avatar-name" id="heroName">Il tuo nome</div>
+    <div class="avatar-goal-badge" id="heroGoal">OBIETTIVO</div>
+
+    <!-- Emoji scelta rapida -->
+    <div class="emoji-row" id="emojiRow">
+      <div class="emoji-opt sel" data-emoji="😎" onclick="pickEmoji(this)">😎</div>
+      <div class="emoji-opt" data-emoji="💪" onclick="pickEmoji(this)">💪</div>
+      <div class="emoji-opt" data-emoji="🏋️" onclick="pickEmoji(this)">🏋️</div>
+      <div class="emoji-opt" data-emoji="🏃" onclick="pickEmoji(this)">🏃</div>
+      <div class="emoji-opt" data-emoji="🔥" onclick="pickEmoji(this)">🔥</div>
+      <div class="emoji-opt" data-emoji="⚡" onclick="pickEmoji(this)">⚡</div>
+      <div class="emoji-opt" data-emoji="🦁" onclick="pickEmoji(this)">🦁</div>
+      <div class="emoji-opt" data-emoji="🤖" onclick="pickEmoji(this)">🤖</div>
+    </div>
+
+    <!-- Upload foto -->
+    <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)" />
+    <button class="photo-upload-btn" onclick="document.getElementById('photoInput').click()">
+      📷 Carica foto dal dispositivo
+    </button>
+  </div>
+
+  <!-- Statistiche personali -->
+  <div class="stats-card">
+    <div class="card-title">
+      <div class="card-dot" style="background:var(--a2)"></div>
+      Statistiche personali
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--a2)" id="statStreak">0</div>
+        <div class="stat-lbl">Streak 🔥</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--green)" id="statSessions">0</div>
+        <div class="stat-lbl">Sessioni</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--warn)" id="statBest">0</div>
+        <div class="stat-lbl">Record 🏆</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dati personali -->
+  <div class="form-card">
+    <div class="card-title">
+      <div class="card-dot" style="background:var(--green)"></div>
+      Dati personali
+    </div>
+
+    <div class="field-group">
+      <label class="field-lbl" for="inputName">Nome</label>
+      <input class="field-inp" id="inputName" type="text" placeholder="Il tuo nome" maxlength="30" oninput="updateHeroName()" />
+    </div>
+
+    <div class="row-2col">
+      <div class="field-group">
+        <label class="field-lbl" for="inputAge">Età</label>
+        <input class="field-inp" id="inputAge" type="number" placeholder="es. 25" min="10" max="99" />
+      </div>
+      <div class="field-group">
+        <label class="field-lbl" for="inputHeight">Altezza (cm)</label>
+        <input class="field-inp" id="inputHeight" type="number" placeholder="es. 175" min="100" max="250" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-lbl">Sesso</div>
+      <div class="gender-chips" id="genderChips">
+        <div class="gender-chip" data-gender="uomo" onclick="selectGender(this)">
+          <span class="chip-icon">♂️</span>Uomo
+        </div>
+        <div class="gender-chip" data-gender="donna" onclick="selectGender(this)">
+          <span class="chip-icon">♀️</span>Donna
+        </div>
+        <div class="gender-chip" data-gender="altro" onclick="selectGender(this)">
+          <span class="chip-icon">⚧️</span>Altro
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-lbl" for="inputGoalWeight">Peso obiettivo (kg)</label>
+      <input class="field-inp" id="inputGoalWeight" type="number" placeholder="es. 75.0" min="30" max="300" step="0.1" />
+    </div>
+  </div>
+
+  <!-- Obiettivo fitness -->
+  <div class="form-card">
+    <div class="card-title">
+      <div class="card-dot" style="background:var(--a1)"></div>
+      Obiettivo fitness
+    </div>
+    <div class="goal-chips" id="goalChips">
+      <div class="goal-chip" data-goal="dimagrire" onclick="selectGoal(this)">
+        <div class="goal-chip-icon">🔥</div>
+        <div class="goal-chip-name">Dimagrire</div>
+        <div class="goal-chip-sub">Perdita di peso</div>
+      </div>
+      <div class="goal-chip" data-goal="massa" onclick="selectGoal(this)">
+        <div class="goal-chip-icon">💪</div>
+        <div class="goal-chip-name">Massa</div>
+        <div class="goal-chip-sub">Crescita muscolare</div>
+      </div>
+      <div class="goal-chip" data-goal="resistenza" onclick="selectGoal(this)">
+        <div class="goal-chip-icon">🏃</div>
+        <div class="goal-chip-name">Resistenza</div>
+        <div class="goal-chip-sub">Cardio e stamina</div>
+      </div>
+      <div class="goal-chip" data-goal="salute" onclick="selectGoal(this)">
+        <div class="goal-chip-icon">🌿</div>
+        <div class="goal-chip-name">Salute</div>
+        <div class="goal-chip-sub">Stile di vita sano</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottone salva principale -->
+  <button class="save-btn-main" onclick="saveProfilo()">💾 Salva profilo</button>
+
+</div><!-- /scroll-area -->
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <div class="tab-item"    onclick="navigateTo('home.html', 0)">         <div class="tab-icon">🏠</div>Home</div>
+  <div class="tab-item"    onclick="navigateTo('registra.html', 1)">     <div class="tab-icon">📝</div>Registra</div>
+  <div class="tab-item"    onclick="navigateTo('peso.html', 2)">         <div class="tab-icon">⚖️</div>Peso</div>
+  <div class="tab-item"    onclick="navigateTo('impostazioni.html', 3)"> <div class="tab-icon">⚙️</div>Impost.</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">✅ Profilo salvato!</div>
+
+<script>
+const KEY = 'fittrack_v4';
+
+// profilo.html non è un tab, ma supporta slide verso le pagine tab
+const PAGE_INDEX = -1; // profilo non è un tab
+function navigateTo(url, toIndex) {
+  const fromIndex = parseInt(sessionStorage.getItem('ft_from_tab') || '0');
+  const el = document.querySelector('.scroll-area') || document.body;
+  const cls = (toIndex === -1 || toIndex < fromIndex) ? 'slide-out-right' : 'slide-out-left';
+  el.classList.add(cls);
+  sessionStorage.setItem('ft_from_tab', toIndex >= 0 ? toIndex : fromIndex);
+  setTimeout(() => location.href = url, 230);
+}
+// Slide-in quando si arriva su profilo
+(function(){
+  const from = parseInt(sessionStorage.getItem('ft_from_tab') || '0');
+  const el = document.querySelector('.scroll-area') || document.body;
+  el.classList.add(from >= 0 ? 'slide-in-right' : 'slide-in-left');
+})();
+
+let currentEmoji  = '😎';
+let currentPhoto  = null; // base64
+let currentGender = null;
+let currentGoal   = null;
+
+/* ── Carica dati esistenti ── */
+(function init(){
+  let data = {};
+  try{ data = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){}
+
+  const p = data.profile || {};
+
+  // Stats
+  document.getElementById('statStreak').textContent   = data.streak    || 0;
+  document.getElementById('statSessions').textContent = (data.sessions||[]).length;
+  document.getElementById('statBest').textContent     = data.bestStreak || 0;
+
+  // Nome
+  const name = p.name || data.name || '';
+  document.getElementById('inputName').value = name;
+  document.getElementById('heroName').textContent = name || 'Il tuo nome';
+
+  // Età, altezza, peso obiettivo
+  if(p.age)        document.getElementById('inputAge').value        = p.age;
+  if(p.height)     document.getElementById('inputHeight').value     = p.height;
+  if(p.goalWeight) document.getElementById('inputGoalWeight').value = p.goalWeight;
+
+  // Sesso
+  if(p.gender){
+    currentGender = p.gender;
+    const chip = document.querySelector(`[data-gender="${p.gender}"]`);
+    if(chip) chip.classList.add('sel');
+  }
+
+  // Obiettivo fitness
+  const goal = p.goalType || data.goal;
+  if(goal){
+    currentGoal = goal;
+    const chip = document.querySelector(`[data-goal="${goal}"]`);
+    if(chip) chip.classList.add('sel');
+    document.getElementById('heroGoal').textContent = goalLabel(goal);
+  }
+
+  // Avatar / foto
+  if(p.photoDataUrl){
+    currentPhoto = p.photoDataUrl;
+    const img = document.getElementById('avatarImg');
+    img.src = currentPhoto;
+    img.style.display = 'block';
+    document.getElementById('avatarEmoji').style.display = 'none';
+  } else if(p.avatar){
+    currentEmoji = p.avatar;
+    setEmoji(currentEmoji);
+  }
+})();
+
+function goalLabel(g){
+  return { dimagrire:'DIMAGRIRE', massa:'MASSA', resistenza:'RESISTENZA', salute:'SALUTE' }[g] || g.toUpperCase();
+}
+
+function updateHeroName(){
+  const v = document.getElementById('inputName').value.trim();
+  document.getElementById('heroName').textContent = v || 'Il tuo nome';
+}
+
+function selectGender(el){
+  document.querySelectorAll('.gender-chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  currentGender = el.dataset.gender;
+}
+
+function selectGoal(el){
+  document.querySelectorAll('.goal-chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  currentGoal = el.dataset.goal;
+  document.getElementById('heroGoal').textContent = goalLabel(currentGoal);
+}
+
+function pickEmoji(el){
+  document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  currentEmoji = el.dataset.emoji;
+  currentPhoto = null;
+  setEmoji(currentEmoji);
+}
+
+function setEmoji(emoji){
+  document.getElementById('avatarEmoji').textContent  = emoji;
+  document.getElementById('avatarEmoji').style.display = '';
+  const img = document.getElementById('avatarImg');
+  img.style.display = 'none';
+  img.src = '';
+}
+
+function handlePhoto(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    currentPhoto = ev.target.result;
+    const img = document.getElementById('avatarImg');
+    img.src = currentPhoto;
+    img.style.display = 'block';
+    document.getElementById('avatarEmoji').style.display = 'none';
+    // deseleziona emoji
+    document.querySelectorAll('.emoji-opt').forEach(c => c.classList.remove('sel'));
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── SALVA ── */
+function saveProfilo(){
+  let data = {};
+  try{ data = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){}
+
+  if(!data.profile) data.profile = {};
+
+  const name       = document.getElementById('inputName').value.trim();
+  const age        = parseInt(document.getElementById('inputAge').value) || null;
+  const height     = parseInt(document.getElementById('inputHeight').value) || null;
+  const goalWeight = parseFloat(document.getElementById('inputGoalWeight').value) || null;
+
+  data.profile.name        = name;
+  data.profile.age         = age;
+  data.profile.gender      = currentGender;
+  data.profile.height      = height;
+  data.profile.goalWeight  = goalWeight;
+  data.profile.goalType    = currentGoal;
+  data.profile.avatar      = currentPhoto ? null : currentEmoji;
+  data.profile.photoDataUrl= currentPhoto || null;
+
+  // aggiorna anche i campi di primo livello per compatibilità
+  if(name)       data.name = name;
+  if(currentGoal) data.goal = currentGoal;
+
+  localStorage.setItem(KEY, JSON.stringify(data));
+
+  // aggiorna nome nell'hero
+  document.getElementById('heroName').textContent = name || 'Il tuo nome';
+
+  // mostra toast
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(()=> toast.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

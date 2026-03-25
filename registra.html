@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTrack · Registra</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
+  --a1:#0088ff; --a2:#00ccff;
+  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
+  --green:#00e676; --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+}
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; min-height:100vh; min-height:100dvh; padding-bottom:80px; }
+
+.scroll-area{ padding:20px 16px 0; }
+
+/* header */
+.header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.logo{ font-weight:600; font-size:20px; color:var(--text); }
+.logo span{ color:var(--a2); }
+.page-label{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:1px; }
+.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; }
+
+/* streak hero compatto */
+.streak-hero{
+  background:linear-gradient(135deg,#030e1a,#060d1a);
+  border:1px solid rgba(0,0,0,.2);
+  border-radius:18px; padding:16px 20px;
+  margin-bottom:14px;
+  display:flex; align-items:center; gap:16px;
+  position:relative; overflow:hidden;
+}
+.streak-hero::before{
+  content:''; position:absolute; top:-30px; right:-30px;
+  width:120px; height:120px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,136,255,.15),transparent 70%);
+  pointer-events:none;
+}
+.streak-num{ font-size:44px; font-weight:600; color:var(--a2); line-height:1; letter-spacing:-2px; flex-shrink:0; }
+.streak-info{ flex:1; }
+.streak-lbl{ font-size:12px; color:var(--textm); margin-bottom:6px; }
+.streak-best{ font-size:11px; color:var(--textm); }
+.streak-best span{ color:var(--green); font-weight:500; }
+
+/* calendario */
+.cal-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; padding:16px; margin-bottom:14px;
+}
+.cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.cal-month-lbl{ font-size:15px; font-weight:600; color:var(--text); }
+.cal-arrow{
+  width:32px; height:32px; border-radius:9px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--textm); font-size:17px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s, color .15s;
+}
+.cal-arrow:active{ background:var(--bg); color:var(--a2); border-color:rgba(0,136,255,.3); }
+
+.cal-weekdays{
+  display:grid; grid-template-columns:repeat(7,1fr);
+  gap:4px; margin-bottom:6px;
+}
+.cal-wd{
+  text-align:center; font-family:var(--mono);
+  font-size:9px; color:var(--textm); padding:4px 0;
+}
+
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; position:relative; }
+
+.cal-day{
+  aspect-ratio:1; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:12px; font-weight:500;
+  position:relative;
+}
+
+/* giorno vuoto (slot prima del 1) */
+.cal-day.slot{ pointer-events:none; }
+
+/* giorni futuri */
+.cal-day.future{ color:var(--textm); opacity:.25; }
+
+/* giorni passati non allenati */
+.cal-day.skipped{ color:var(--textm); background:transparent; }
+
+/* giorni allenati */
+.cal-day.done{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  color:#fff;
+}
+/* allenamento di corsa */
+.cal-day.done.run{
+  background:linear-gradient(135deg,#00aa66,#00dd88);
+}
+
+/* oggi non ancora allenato: solo bordo, centro vuoto */
+.cal-day.today{
+  color:var(--a2);
+  background:transparent;
+  border:1.5px solid var(--a1);
+  box-shadow:0 0 8px rgba(0,136,255,.2);
+}
+
+/* oggi già allenato: pieno + bordo evidenziato */
+.cal-day.today-done{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  color:#fff;
+  border:2px solid #fff;
+  box-shadow:0 0 10px rgba(0,204,255,.3);
+}
+
+/* legenda */
+.cal-legend{ display:flex; gap:14px; margin-top:12px; flex-wrap:wrap; }
+.leg-item{ display:flex; align-items:center; gap:5px; font-size:10px; color:var(--textm); }
+.leg-dot{ width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.leg-dot.done{ background:linear-gradient(135deg,var(--a1),var(--a2)); }
+.leg-dot.today{ background:transparent; border:1.5px solid var(--a1); }
+.leg-dot.skipped{ background:var(--bg3); border:1px solid var(--border); }
+
+/* pulsante avvia */
+.start-btn{
+  width:100%; padding:15px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:14px;
+  color:#fff; font-size:15px; font-weight:500;
+  cursor:pointer; font-family:var(--font);
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+  margin-bottom:14px;
+  transition:transform .1s;
+}
+.start-btn:active{ transform:scale(.98); }
+
+/* ── FLOATING GIORNO ── */
+/* placeholder: mantiene lo spazio nella griglia */
+.cal-day.cell-ph{
+  visibility:hidden;
+  pointer-events:none;
+}
+/* card flottante che si espande sopra la griglia */
+.cal-floating{
+  position:absolute;
+  z-index:30;
+  border-radius:12px;
+  background:var(--bg2);
+  border:1px solid rgba(0,136,255,.3);
+  border-top:2px solid var(--a1);
+  padding:12px 13px;
+  box-shadow:0 8px 32px rgba(0,0,0,.55);
+  cursor:pointer;
+  overflow:hidden;
+}
+@keyframes cellOpen{
+  0%  { opacity:0; transform:scale(.82) translateY(4px);  }
+  60% { opacity:1; transform:scale(1.04) translateY(-1px); }
+  100%{ opacity:1; transform:scale(1)    translateY(0);    }
+}
+.cal-floating.opening{ animation:cellOpen .42s cubic-bezier(.34,1.1,.64,1) both; }
+.cal-floating .fl-date{
+  font-family:var(--mono); font-size:9px; color:var(--a1);
+  letter-spacing:1.5px; text-transform:uppercase; margin-bottom:5px;
+}
+.cal-floating .fl-name{
+  font-size:12px; font-weight:600; color:var(--text);
+  margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cal-floating .fl-stats{ display:flex; gap:10px; flex-wrap:wrap; }
+.cal-floating .fl-stat{ display:flex; align-items:baseline; gap:3px; }
+.cal-floating .fl-val{ font-size:16px; font-weight:600; line-height:1; }
+.cal-floating .fl-lbl{ font-size:8px; color:var(--textm); text-transform:uppercase; letter-spacing:.5px; }
+.cal-day.done{ cursor:pointer; }
+.cal-day.today-done{ cursor:pointer; }
+.cal-day.done:active{ opacity:.8; }
+
+/* ── EFFETTI ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 90% 40% at 50% -5%, rgba(0,136,255,.09), transparent),
+    radial-gradient(ellipse 50% 30% at 90% 95%, rgba(0,60,180,.06), transparent);
+}
+.scroll-area{ position:relative; z-index:1; animation:pageIn .35s ease both; }
+@keyframes pageIn{ from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+/* streak glow */
+@keyframes streakGlow{
+  0%,100%{ text-shadow:0 0 18px rgba(0,204,255,.25); }
+  50%{     text-shadow:0 0 38px rgba(0,204,255,.6), 0 0 70px rgba(0,136,255,.2); }
+}
+.streak-num{ animation:streakGlow 2.8s ease-in-out infinite; }
+@keyframes heroGlow{
+  0%,100%{ border-color:rgba(0,136,255,.2); box-shadow:none; }
+  50%{     border-color:rgba(0,204,255,.4); box-shadow:0 0 24px rgba(0,136,255,.1); }
+}
+.streak-hero{ animation:heroGlow 3.5s ease-in-out infinite; }
+
+/* giorni allenati brillano */
+.cal-day.done{      box-shadow:0 2px 10px rgba(0,136,255,.32); }
+.cal-day.today-done{ box-shadow:0 2px 14px rgba(0,204,255,.45); }
+
+/* oggi pulsa */
+@keyframes todayPulse{
+  0%,100%{ box-shadow:0 0 6px rgba(0,136,255,.2); }
+  50%{     box-shadow:0 0 14px rgba(0,136,255,.45); }
+}
+.cal-day.today{ animation:todayPulse 2s ease-in-out infinite; }
+
+/* shine sul bottone */
+.start-btn{ position:relative; overflow:hidden; }
+.start-btn::after{
+  content:''; position:absolute; top:0; left:-60%;
+  width:35%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  transform:skewX(-15deg); animation:btnShine 3s ease infinite;
+}
+@keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
+
+/* ── SLIDE TRANSITION ── */
+@keyframes slideInFromRight{ from{opacity:0;transform:translateX(48px);} to{opacity:1;transform:translateX(0);} }
+@keyframes slideInFromLeft{  from{opacity:0;transform:translateX(-48px);} to{opacity:1;transform:translateX(0);} }
+@keyframes slideOutToLeft{   from{opacity:1;transform:translateX(0);}  to{opacity:0;transform:translateX(-48px);} }
+@keyframes slideOutToRight{  from{opacity:1;transform:translateX(0);}  to{opacity:0;transform:translateX(48px);} }
+.scroll-area.slide-in-right { animation:slideInFromRight .28s cubic-bezier(.25,1,.3,1) both; }
+.scroll-area.slide-in-left  { animation:slideInFromLeft  .28s cubic-bezier(.25,1,.3,1) both; }
+.scroll-area.slide-out-left { animation:slideOutToLeft   .22s cubic-bezier(.4,0,.6,1) both; }
+.scroll-area.slide-out-right{ animation:slideOutToRight  .22s cubic-bezier(.4,0,.6,1) both; }
+
+/* ── STORICO SESSIONI ── */
+.storico-sess-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; padding:16px; margin-bottom:14px;
+}
+.sess-row{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.sess-row:last-child{ border-bottom:none; padding-bottom:0; }
+.sess-icon{ font-size:20px; flex-shrink:0; width:28px; text-align:center; }
+.sess-info{ flex:1; min-width:0; }
+.sess-name{ font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sess-meta{ font-family:var(--mono); font-size:10px; color:var(--textm); margin-top:2px; }
+.sess-kcal{ font-family:var(--mono); font-size:12px; color:var(--green); font-weight:500; flex-shrink:0; }
+.storico-empty{ font-size:12px; color:var(--textm); text-align:center; padding:20px 0; }
+
+/* ── SWIPE TO DELETE ── */
+.swipe-wrap{
+  position:relative;
+  overflow:hidden;
+  border-radius:0;
+}
+.swipe-item{
+  transition:transform 0.25s ease;
+  will-change:transform;
+}
+.swipe-delete-btn{
+  position:absolute;
+  right:0; top:0; bottom:0;
+  width:80px;
+  background:#ff4455;
+  color:white;
+  border:none;
+  cursor:pointer;
+  font-size:0.85rem;
+  font-weight:600;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  transform:translateX(80px);
+  transition:transform 0.25s ease;
+}
+.swipe-wrap.open .swipe-item{ transform:translateX(-80px); }
+.swipe-wrap.open .swipe-delete-btn{ transform:translateX(0); }
+
+/* active indicator tab */
+.tab-item{ position:relative; }
+.tab-item.on::after{
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:18px; height:2px; border-radius:0 0 3px 3px;
+  background:var(--a2); box-shadow:0 0 8px var(--a2);
+}
+
+/* tab bar */
+.tab-bar{
+  position:fixed; bottom:0; left:0; right:0;
+  max-width:480px; margin:0 auto;
+  background:rgba(6,13,26,.97); border-top:1px solid var(--border);
+  display:flex; padding:8px 0 12px; z-index:20;
+}
+.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; }
+.tab-item.on{ color:var(--a2); }
+.tab-icon{ font-size:18px; }
+</style>
+<script>
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
+</script>
+</head>
+<body>
+
+<div class="scroll-area">
+
+  <!-- header -->
+  <div class="header">
+    <div class="logo">Fit<span>Track</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="page-label">REGISTRA</div>
+      <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
+    </div>
+  </div>
+
+  <!-- streak compatto -->
+  <div class="streak-hero">
+    <div class="streak-num" id="streakNum">0</div>
+    <div class="streak-info">
+      <div class="streak-lbl">giorni streak 🔥</div>
+      <div class="streak-best">Record personale: <span id="bestStreak">0</span> giorni</div>
+    </div>
+  </div>
+
+  <!-- calendario -->
+  <div class="cal-card">
+    <div class="cal-nav">
+      <button class="cal-arrow" onclick="prevMonth()">‹</button>
+      <div class="cal-month-lbl" id="calMonth"></div>
+      <button class="cal-arrow" onclick="nextMonth()">›</button>
+    </div>
+    <div class="cal-weekdays">
+      <div class="cal-wd">Lu</div><div class="cal-wd">Ma</div><div class="cal-wd">Me</div>
+      <div class="cal-wd">Gi</div><div class="cal-wd">Ve</div><div class="cal-wd">Sa</div>
+      <div class="cal-wd">Do</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <div class="leg-item"><div class="leg-dot done"></div>Allenato</div>
+      <div class="leg-item"><div class="leg-dot today"></div>Oggi</div>
+      <div class="leg-item"><div class="leg-dot skipped"></div>Saltato</div>
+    </div>
+  </div>
+
+  <!-- avvia allenamento -->
+  <button class="start-btn" onclick="startWorkout()">▶ Inizia allenamento di oggi</button>
+
+  <!-- storico sessioni -->
+  <div class="storico-sess-card">
+    <div class="card-title" style="font-size:10px;font-weight:500;color:var(--textm);letter-spacing:2px;text-transform:uppercase;margin-bottom:0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onclick="toggleStoricoSess()">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--a2);flex-shrink:0;"></div>
+        Storico allenamenti
+      </div>
+      <span id="storicoSessArrow" style="font-size:13px;color:var(--textm);transition:transform .25s;display:inline-block;">›</span>
+    </div>
+    <div id="storicoSessWrap" style="overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.4,0,.2,1);">
+      <div style="padding-top:12px;" id="storicoSessList"></div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="tab-bar">
+  <div class="tab-item"    onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
+  <div class="tab-item on" onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
+  <div class="tab-item"    onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
+  <div class="tab-item"    onclick="navigateTo('impostazioni.html',3)"> <div class="tab-icon">⚙️</div>Impost.</div>
+</div>
+
+<script>
+// Aggiorna avatar header con dati profilo
+(function(){
+  try{
+    const d = JSON.parse(localStorage.getItem('fittrack_v4'));
+    if(!d) return;
+    const p = d.profile || {};
+    const av = document.getElementById('headerAvatar');
+    if(!av) return;
+    if(p.photoDataUrl){
+      av.innerHTML = `<img src="${p.photoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    } else if(p.avatar && p.avatar !== '😎'){
+      av.textContent = p.avatar;
+    } else if(p.name || d.name){
+      av.textContent = (p.name || d.name || '?')[0].toUpperCase();
+      av.style.fontSize = '16px'; av.style.fontWeight = '600';
+    }
+  } catch(e){}
+})();
+
+const KEY = 'fittrack_v4';
+
+// Onboarding guard — reindirizza solo se non ci sono dati (nuovo utente)
+(function(){
+  try {
+    var _raw = localStorage.getItem('fittrack_v4');
+    if (!_raw) { location.replace('onboarding.html'); return; }
+    var _d = JSON.parse(_raw);
+    if ((_d.sessions && _d.sessions.length) || (_d.weightLog && _d.weightLog.length)) return;
+    if (!_d.onboardingDone) location.replace('onboarding.html');
+  } catch(e) { location.replace('onboarding.html'); }
+})();
+
+const MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+const today = new Date();
+today.setHours(0,0,0,0);
+const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+let curYear  = today.getFullYear();
+let curMonth = today.getMonth();
+
+/* ── carica dati ── */
+function loadData(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if(!d) return { sessions:[], streak:0, bestStreak:0 };
+    if(!d.sessions)   d.sessions   = [];
+    if(!d.streak)     d.streak     = 0;
+    if(!d.bestStreak) d.bestStreak = 0;
+    return d;
+  } catch{ return { sessions:[], streak:0, bestStreak:0 }; }
+}
+
+const data = loadData();
+const doneDates = new Set(data.sessions.map(s => s.date));
+// BUG 4: mappa data → tipo sessione (per colorare corsa in verde)
+const dateTypeMap = {};
+data.sessions.forEach(s => { if(!dateTypeMap[s.date]) dateTypeMap[s.date] = s.type; });
+
+document.getElementById('streakNum').textContent  = data.streak;
+document.getElementById('bestStreak').textContent = data.bestStreak;
+
+/* ── render calendario ── */
+function renderCalendar(){
+  document.getElementById('calMonth').textContent = MONTHS[curMonth] + ' ' + curYear;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  /* offset lunedì-based: domenica JS = 0 → diventa 6 */
+  const firstWeekDay = new Date(curYear, curMonth, 1).getDay();
+  const offset = (firstWeekDay + 6) % 7;
+  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+
+  /* celle vuote iniziali */
+  for(let i = 0; i < offset; i++){
+    const el = document.createElement('div');
+    el.className = 'cal-day slot';
+    grid.appendChild(el);
+  }
+
+  /* giorni del mese */
+  for(let d = 1; d <= daysInMonth; d++){
+    const mm  = String(curMonth + 1).padStart(2, '0');
+    const dd  = String(d).padStart(2, '0');
+    const dateStr = `${curYear}-${mm}-${dd}`;
+    const dayDate = new Date(curYear, curMonth, d);
+
+    const isToday  = dateStr === todayStr;
+    const isDone   = doneDates.has(dateStr);
+    const isFuture = dayDate > today;
+
+    const el = document.createElement('div');
+    el.textContent = d;
+
+    const runCls = dateTypeMap[dateStr] === 'run' ? ' run' : '';
+    if(isToday && isDone)  { el.className = 'cal-day today-done'+runCls; el.onclick = ()=>showDayCard(el, dateStr); }
+    else if(isToday)       { el.className = 'cal-day today'; }
+    else if(isDone)        { el.className = 'cal-day done'+runCls;  el.onclick = ()=>showDayCard(el, dateStr); }
+    else if(isFuture)      { el.className = 'cal-day future'; }
+    else                   { el.className = 'cal-day skipped'; }
+
+    grid.appendChild(el);
+  }
+}
+
+function prevMonth(){
+  curMonth--;
+  if(curMonth < 0){ curMonth = 11; curYear--; }
+  renderCalendar();
+}
+
+function nextMonth(){
+  curMonth++;
+  if(curMonth > 11){ curMonth = 0; curYear++; }
+  renderCalendar();
+}
+
+renderCalendar();
+
+/* ── AVVIA ALLENAMENTO DI OGGI ── */
+const TYPE_INFO = {
+  gym:  { label:'Palestra', icon:'🏋️' },
+  run:  { label:'Corsa',    icon:'🏃' },
+  bike: { label:'Bici',     icon:'🚴' },
+  other:{ label:'Altro',    icon:'💪' },
+};
+const DAYS_IT2   = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+const EX_ICONS   = ['🏋️','💪','🔝','🦵','🏃','🚴','💪','🔥'];
+
+function startWorkout(){
+  location.href = 'scegli.html';
+}
+
+/* ── FLOATING DETTAGLIO GIORNO ── */
+const MS = ['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'];
+let expandedCell = null, floatingEl = null, expandedDate = null;
+
+function showDayCard(cellEl, dateStr){
+  if(expandedDate === dateStr){ closeDayCard(); return; }
+  if(expandedCell) closeDayCard();
+
+  const sessions = data.sessions.filter(s => s.date === dateStr);
+  if(!sessions.length) return;
+
+  const s0 = sessions[0];
+  const dateObj  = new Date(dateStr + 'T12:00');
+  const grid     = document.getElementById('calGrid');
+  const gridRect = grid.getBoundingClientRect();
+  const cellRect = cellEl.getBoundingClientRect();
+
+  /* posizione relativa alla griglia */
+  const relLeft = cellRect.left - gridRect.left;
+  const relTop  = cellRect.top  - gridRect.top;
+  const cellW   = cellRect.width;
+  const gridW   = gridRect.width;
+
+  /* larghezza: ~2.5x cella, max 58% griglia */
+  const floatW = Math.min(cellW * 2.5, gridW * 0.58);
+  let floatL = relLeft;
+  if(floatL + floatW > gridW) floatL = gridW - floatW;
+  if(floatL < 0) floatL = 0;
+
+  /* crea il floating */
+  const el = document.createElement('div');
+  el.className = 'cal-floating opening';
+  el.style.left  = floatL + 'px';
+  el.style.top   = relTop + 'px';
+  el.style.width = floatW + 'px';
+
+  /* contenuto */
+  const dateLabel = dateObj.getDate() + ' ' + MS[dateObj.getMonth()];
+  const icon   = s0.typeIcon || '🏋️';
+  const name   = s0.workout || s0.note || 'Allenamento';
+  const totKcal = sessions.reduce((a,s) => a + (s.kcal||0), 0);
+  const totKm   = sessions.reduce((a,s) => a + (s.km||0), 0);
+  let dur = '';
+  if(s0.duration)     dur = Math.floor(s0.duration/60) + 'min';
+  else if(totKcal)    dur = '~' + Math.round(totKcal/5.5) + 'min';
+
+  let statsHtml = `<div class="fl-stat"><span class="fl-val" style="color:var(--green)">${totKcal||'—'}</span><span class="fl-lbl">kcal</span></div>`;
+  if(dur)     statsHtml += `<div class="fl-stat"><span class="fl-val" style="color:var(--a2)">${dur}</span><span class="fl-lbl">durata</span></div>`;
+  if(totKm>0) statsHtml += `<div class="fl-stat"><span class="fl-val" style="color:var(--a1)">${totKm.toFixed(1)}</span><span class="fl-lbl">km</span></div>`;
+
+  el.innerHTML = `
+    <div class="fl-date">${dateLabel}</div>
+    <div class="fl-name">${icon} ${name}</div>
+    <div class="fl-stats">${statsHtml}</div>`;
+
+  /* cella originale → placeholder invisibile (mantiene lo spazio) */
+  cellEl.classList.add('cell-ph');
+  cellEl.dataset.origText = cellEl.textContent;
+  cellEl.textContent = '';
+
+  el.addEventListener('click', e => { e.stopPropagation(); closeDayCard(); });
+  grid.appendChild(el);
+
+  expandedCell = cellEl;
+  floatingEl   = el;
+  expandedDate = dateStr;
+  setTimeout(() => document.addEventListener('click', calOutsideClick), 50);
+}
+
+function calOutsideClick(e){
+  if(floatingEl && floatingEl.contains(e.target)) return;
+  if(expandedCell && expandedCell.contains(e.target)) return;
+  closeDayCard();
+}
+
+function closeDayCard(){
+  if(expandedCell){
+    expandedCell.classList.remove('cell-ph');
+    expandedCell.textContent = expandedCell.dataset.origText || '';
+    expandedCell = null;
+  }
+  if(floatingEl){ floatingEl.remove(); floatingEl = null; }
+  expandedDate = null;
+  document.removeEventListener('click', calOutsideClick);
+}
+
+/* ══ SWIPE TO DELETE ══ */
+function makeSwipeable(wrap, onDelete) {
+  const item = wrap.querySelector('.swipe-item');
+  let startX = 0, dx = 0, swiping = false;
+
+  item.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    swiping = true;
+    dx = 0;
+  }, { passive: true });
+
+  item.addEventListener('touchmove', e => {
+    if (!swiping) return;
+    dx = e.touches[0].clientX - startX;
+    if (dx < -5) e.preventDefault();
+  }, { passive: false });
+
+  item.addEventListener('touchend', () => {
+    if (dx < -60) wrap.classList.add('open');
+    else if (dx > 20) wrap.classList.remove('open');
+    swiping = false;
+  });
+
+  document.addEventListener('touchstart', e => {
+    if (!wrap.contains(e.target)) wrap.classList.remove('open');
+  }, { passive: true });
+
+  const btn = wrap.querySelector('.swipe-delete-btn');
+  if (btn) btn.addEventListener('click', onDelete);
+}
+
+/* ══ STORICO SESSIONI ══ */
+const MONTHS_SHORT = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+
+function renderStoricoSessioni() {
+  const el = document.getElementById('storicoSessList');
+  if (!el) return;
+  const sessions = [...(data.sessions || [])].reverse(); // più recente prima
+  el.innerHTML = '';
+
+  if (!sessions.length) {
+    el.innerHTML = '<div class="storico-empty">Nessun allenamento ancora</div>';
+    refreshStoricoSessHeight();
+    return;
+  }
+
+  sessions.forEach(sess => {
+    const dateObj = new Date(sess.date + 'T12:00');
+    const dateStr = dateObj.getDate() + ' ' + MONTHS_SHORT[dateObj.getMonth()];
+    const icon    = sess.typeIcon || TYPE_INFO[sess.type]?.icon || '💪';
+    const name    = sess.workout || sess.note || 'Allenamento';
+    const kcal    = sess.kcal || 0;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'swipe-wrap';
+
+    const swipeItem = document.createElement('div');
+    swipeItem.className = 'swipe-item';
+
+    const row = document.createElement('div');
+    row.className = 'sess-row';
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'sess-icon';
+    iconEl.textContent = icon;
+
+    const infoEl = document.createElement('div');
+    infoEl.className = 'sess-info';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'sess-name';
+    nameEl.textContent = name;
+
+    const metaEl = document.createElement('div');
+    metaEl.className = 'sess-meta';
+    metaEl.textContent = dateStr;
+
+    infoEl.appendChild(nameEl);
+    infoEl.appendChild(metaEl);
+
+    const kcalEl = document.createElement('div');
+    kcalEl.className = 'sess-kcal';
+    kcalEl.textContent = kcal ? kcal + ' kcal' : '';
+
+    row.appendChild(iconEl);
+    row.appendChild(infoEl);
+    row.appendChild(kcalEl);
+
+    swipeItem.appendChild(row);
+    wrap.appendChild(swipeItem);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'swipe-delete-btn';
+    delBtn.innerHTML = '🗑️<span>Elimina</span>';
+    wrap.appendChild(delBtn);
+
+    el.appendChild(wrap);
+
+    makeSwipeable(wrap, () => {
+      if (!confirm('Eliminare questo allenamento?')) return;
+      const d = loadData();
+      const idx = d.sessions.findIndex(s => s.id === sess.id && s.date === sess.date);
+      if (idx !== -1) d.sessions.splice(idx, 1);
+      try { localStorage.setItem(KEY, JSON.stringify(d)); } catch(e){}
+      // rimuovi dal DOM
+      wrap.remove();
+      refreshStoricoSessHeight();
+    });
+  });
+
+  refreshStoricoSessHeight();
+}
+
+let storicoSessOpen = false;
+function toggleStoricoSess() {
+  storicoSessOpen = !storicoSessOpen;
+  const wrap  = document.getElementById('storicoSessWrap');
+  const arrow = document.getElementById('storicoSessArrow');
+  if (!wrap) return;
+  if (storicoSessOpen) {
+    if (!wrap.dataset.rendered) {
+      renderStoricoSessioni();
+      wrap.dataset.rendered = '1';
+    }
+    wrap.style.maxHeight = wrap.scrollHeight + 'px';
+    if (arrow) arrow.style.transform = 'rotate(90deg)';
+  } else {
+    wrap.style.maxHeight = '0';
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+  }
+}
+
+function refreshStoricoSessHeight() {
+  if (storicoSessOpen) {
+    const wrap = document.getElementById('storicoSessWrap');
+    if (wrap) wrap.style.maxHeight = wrap.scrollHeight + 'px';
+  }
+}
+
+/* ══ SLIDE NAVIGATION ══ */
+const PAGE_INDEX = 1; // registra.html = indice 1
+(function(){
+  const sa = document.querySelector('.scroll-area');
+  if(!sa) return;
+  const from = parseInt(sessionStorage.getItem('ft_from_tab') ?? PAGE_INDEX);
+  sessionStorage.removeItem('ft_from_tab');
+  if(from < PAGE_INDEX) sa.classList.add('slide-in-right');
+  else if(from > PAGE_INDEX) sa.classList.add('slide-in-left');
+  else sa.classList.add('slide-in-right');
+})();
+
+function navigateTo(url, toIndex){
+  if(toIndex === PAGE_INDEX) return;
+  const sa = document.querySelector('.scroll-area');
+  sessionStorage.setItem('ft_from_tab', PAGE_INDEX);
+  const cls = toIndex > PAGE_INDEX ? 'slide-out-left' : 'slide-out-right';
+  if(sa){ sa.classList.add(cls); }
+  setTimeout(()=>{ location.href = url; }, 230);
+}
+</script>
+</body>
+</html>
