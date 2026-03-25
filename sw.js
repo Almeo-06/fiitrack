@@ -8,7 +8,7 @@
    ogni caricamento legge sempre l'ultima versione dal server.
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2025-03-25-2'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-03-25-1'; /* bump per forzare aggiornamento */
 
 let _cfg   = null;   /* configurazione attiva */
 let _timer = null;   /* handle del setTimeout */
