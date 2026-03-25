@@ -19,7 +19,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 
 /* ── PAGINA A ── */
 #pageA{ position:absolute; inset:0; display:flex; flex-direction:column; overflow:hidden; }
-.scroll-area{ flex:1; overflow-y:auto; padding:20px 16px calc(100px + env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling:touch; }
+.scroll-area{ flex:1; overflow-y:auto; padding:20px 16px 24px; -webkit-overflow-scrolling:touch; }
 .scroll-area::-webkit-scrollbar{ width:0; }
 
 /* header */
@@ -30,7 +30,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; }
 
 /* ── HERO CAROUSEL ── */
-.hero-carousel{ position:relative; border-radius:20px; margin-bottom:12px; }
+.hero-carousel{ position:relative; border-radius:20px; margin-bottom:12px; touch-action:pan-y; }
 .hero-track{ display:flex; transition:transform 0.35s cubic-bezier(.25,1,.3,1); will-change:transform; }
 .hero-card{ min-width:100%; box-sizing:border-box; cursor:pointer; }
 .hero-dots{ display:flex; justify-content:center; gap:6px; margin-top:10px; }
@@ -191,7 +191,7 @@ body::before{
 }
 
 /* tab bar */
-.tab-bar{ position:absolute; bottom:0; left:0; right:0; background:rgba(6,13,26,.97); border-top:1px solid var(--border); display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:5; }
+.tab-bar{ position:relative; flex-shrink:0; background:rgba(6,13,26,.97); border-top:1px solid var(--border); display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:5; }
 
 /* ══ CONFETTI ══ */
 .confetti-particle {
