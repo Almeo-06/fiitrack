@@ -269,6 +269,24 @@ body::before{
   80%  { opacity: 1; }
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
+
+/* ══ CIRCUITO BADGE ══ */
+.circuit-badge{ display:none; align-items:center; gap:6px; background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); border-radius:8px; padding:4px 12px; font-family:var(--mono); font-size:9px; color:var(--green); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+
+/* ══ STANCHEZZA ══ */
+.fatigue-wrap{ width:100%; margin-bottom:14px; text-align:center; }
+.fatigue-lbl{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; display:block; }
+.fatigue-btns{ display:flex; gap:8px; justify-content:center; }
+.fat-btn{ display:flex; flex-direction:column; align-items:center; gap:5px; padding:10px 16px; background:var(--bg3); border:1.5px solid var(--border); border-radius:12px; cursor:pointer; font-family:var(--font); color:var(--textm); font-size:10px; transition:all .15s; min-width:72px; }
+.fat-emoji{ font-size:22px; line-height:1; }
+.fat-btn.sel{ border-color:rgba(0,136,255,.4); background:rgba(0,136,255,.1); color:var(--a2); }
+.fat-btn:active{ transform:scale(.94); }
+
+/* ══ CONSIGLIO FINE SESSIONE ══ */
+.fatigue-advice{ margin:0 0 16px; background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:16px; animation:slideUp .4s ease both; }
+.fa-icon{ font-size:28px; margin-bottom:8px; }
+.fa-title{ font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.fa-text{ font-size:12px; color:var(--textm); line-height:1.6; }
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
@@ -301,6 +319,7 @@ body::before{
     </div>
   </div>
   <div class="ex-body-wrap">
+    <div id="circuitBadge" class="circuit-badge">⚡ CIRCUITO · Esercizio <span id="circuitPos"></span></div>
     <div class="ex-big-circle" id="exCircle"></div>
     <div class="ex-big-name" id="exName"></div>
     <div class="ex-big-sub" id="exSub"></div>
@@ -373,6 +392,15 @@ body::before{
       <div class="rec-add" onclick="addSec(30)">+30s</div>
       <div class="rec-skip" onclick="skipRec()">Salta ›</div>
     </div>
+    <!-- Feedback stanchezza (facoltativo) -->
+    <div class="fatigue-wrap">
+      <span class="fatigue-lbl">Come ti senti? (facoltativo)</span>
+      <div class="fatigue-btns">
+        <button class="fat-btn" id="fat1" onclick="setFatigue(1)"><span class="fat-emoji">😴</span>Stanco</button>
+        <button class="fat-btn" id="fat2" onclick="setFatigue(2)"><span class="fat-emoji">😐</span>Ok</button>
+        <button class="fat-btn" id="fat3" onclick="setFatigue(3)"><span class="fat-emoji">💪</span>Carico</button>
+      </div>
+    </div>
     <div class="rnc" id="rncCard"></div>
   </div>
 </div>
@@ -405,6 +433,8 @@ body::before{
         <div class="end-stat-lbl">Esercizi</div>
       </div>
     </div>
+
+    <div id="fatigueAdvice"></div>
 
     <div class="end-exs-title">
       <div style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div>
@@ -447,7 +477,7 @@ if(!WORKOUT || !WORKOUT.exs || !WORKOUT.exs.length){
         type:      _fwo.type,
         typeLabel: _fTLabel[_fwo.type]||'Altro',
         typeIcon:  _fTIcon[_fwo.type]||'💪',
-        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪'}))
+        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',circuitGroup:ex.circuitGroup??null}))
       };
     } else {
       location.replace('scegli.html');
@@ -575,7 +605,9 @@ const CIRC = 2*Math.PI*88;
    exData[i] = { weights:[], reps:[], note:'' }
    weights e reps raccolgono un valore per ogni serie completata
 ──────────────────────────────────────────────── */
-let exData = WORKOUT.exs.map(()=>({ weights:[], reps:[], note:'' }));
+let exData = WORKOUT.exs.map(()=>({ weights:[], reps:[], note:'', fatigues:[] }));
+let lastCompletedEx   = 0;   /* quale esercizio ha appena finito la serie */
+let fatigueForThisRest= 0;   /* 0=non impostato, 1=😴, 2=😐, 3=💪 */
 
 /* ── PR tracking ── */
 function getPRs(){
@@ -664,6 +696,18 @@ function toggleNote(){
   field.onblur = ()=>{ exData[curEx].note = field.value.trim(); };
 }
 
+/* ── Feedback stanchezza ── */
+function setFatigue(val){
+  const prev = fatigueForThisRest;
+  fatigueForThisRest = val;
+  [1,2,3].forEach(v=>document.getElementById('fat'+v)?.classList.toggle('sel', v===val));
+  if(exData[lastCompletedEx]){
+    const arr = exData[lastCompletedEx].fatigues;
+    if(prev>0 && arr.length>0) arr[arr.length-1] = val; /* sostituzione se già impostato */
+    else arr.push(val);
+  }
+}
+
 /* ── Navigazione schermate ── */
 function show(id){
   ['screenEx','screenRec','screenEnd'].forEach(s=>{
@@ -698,6 +742,17 @@ function renderEx(){
   document.getElementById('exCircle').textContent  = ex.icon;
   document.getElementById('exName').textContent    = ex.name;
   document.getElementById('exSub').textContent     = `${ex.sets} serie · ${ex.reps} ripetizioni`;
+
+  /* Circuit badge */
+  const _cg = ex.circuitGroup ?? null;
+  const _badge = document.getElementById('circuitBadge');
+  if(_cg !== null && _badge){
+    const _cidxs = WORKOUT.exs.map((e,i)=>e.circuitGroup===_cg?i:-1).filter(i=>i>=0);
+    document.getElementById('circuitPos').textContent = `${_cidxs.indexOf(curEx)+1} di ${_cidxs.length}`;
+    _badge.style.display = 'inline-flex';
+  } else if(_badge){
+    _badge.style.display = 'none';
+  }
   document.getElementById('seriesDots').innerHTML  =
     Array.from({length:ex.sets},(_,j)=>{
       const cls = j<d?'sdot done':j===d?'sdot next':'sdot';
@@ -740,20 +795,20 @@ function renderEx(){
 
 /* ── Fine serie ── */
 function onFineSerie(){
+  lastCompletedEx = curEx;   /* salva PRIMA di qualsiasi routing */
   const ex = WORKOUT.exs[curEx];
 
-  /* Salva peso e reps della serie appena completata */
+  /* Salva peso, reps e nota della serie appena completata */
   const wVal = parseFloat(document.getElementById('inputWeight').value);
   const rVal = parseInt(document.getElementById('inputReps').value, 10);
   exData[curEx].weights.push(isNaN(wVal) ? null : wVal);
   exData[curEx].reps.push(isNaN(rVal) ? null : rVal);
-  /* Salva anche la nota corrente */
   exData[curEx].note = document.getElementById('noteField').value.trim();
 
   sd[curEx]++;
   afterExDone = sd[curEx] >= ex.sets;
 
-  /* Se l'esercizio è appena completato, controlla PR */
+  /* Controlla PR se esercizio completato */
   if(afterExDone){
     const isNewPR = checkAndUpdatePR(curEx);
     if(isNewPR){
@@ -763,20 +818,65 @@ function onFineSerie(){
     }
   }
 
+  /* ── LOGICA CIRCUITI ── */
+  const cg = ex.circuitGroup ?? null;
+  if(cg !== null){
+    const circIdxs = WORKOUT.exs.map((e,i)=>e.circuitGroup===cg?i:-1).filter(i=>i>=0);
+    const posInCirc = circIdxs.indexOf(curEx);
+    const isLast    = posInCirc === circIdxs.length-1;
+
+    if(!isLast){
+      /* Non è l'ultimo nel circuito: vai al prossimo senza recupero */
+      curEx = circIdxs[posInCirc+1];
+      afterExDone = false;
+      show('screenEx'); renderEx(); return;
+    }
+
+    /* È l'ultimo nel circuito */
+    if(afterExDone){
+      /* Tutte le serie completate: trova il primo esercizio fuori dal circuito */
+      let nextEx = circIdxs[circIdxs.length-1]+1;
+      while(nextEx < WORKOUT.exs.length && (WORKOUT.exs[nextEx].circuitGroup??null)===cg) nextEx++;
+      if(nextEx >= WORKOUT.exs.length){ endSession(); return; }
+      curEx = nextEx; afterExDone = false;
+      openRec(ex.rec); return;
+    }
+
+    /* Altro round da fare: recupero, poi torna al primo del circuito */
+    curEx = circIdxs[0]; afterExDone = false;
+    openRec(ex.rec); return;
+  }
+
+  /* ── LOGICA NORMALE ── */
   if(afterExDone && curEx >= WORKOUT.exs.length-1){ endSession(); return; }
   openRec(ex.rec);
 }
 
 /* ── Recupero ── */
 function openRec(sec){
+  /* reset fatigue UI */
+  fatigueForThisRest = 0;
+  [1,2,3].forEach(v=>document.getElementById('fat'+v)?.classList.remove('sel'));
+
   recSec = sec; recMax = sec;
   const ex = WORKOUT.exs[curEx];
   const d  = sd[curEx];
   document.getElementById('recTitle').textContent   = 'Recupero · '+ex.name;
   document.getElementById('recFill').style.width    = pct()+'%';
-  document.getElementById('recProgLbl').textContent = afterExDone
-    ? `Esercizio ${curEx+1} completato`
-    : `Serie ${d} / ${ex.sets} completata`;
+
+  /* Etichetta progresso con contesto circuito */
+  const _lastEx = WORKOUT.exs[lastCompletedEx];
+  const _lastCG = _lastEx?.circuitGroup ?? null;
+  const _curCG  = ex.circuitGroup ?? null;
+  const _goingBackToCircuit = _lastCG !== null && _curCG === _lastCG && !afterExDone;
+  let progLbl;
+  if(_goingBackToCircuit){
+    const _round = sd[lastCompletedEx];
+    progLbl = `Circuito · Round ${_round} / ${_lastEx.sets}`;
+  } else {
+    progLbl = afterExDone ? `Esercizio ${lastCompletedEx+1} completato` : `Serie ${sd[lastCompletedEx]} / ${_lastEx?.sets||ex.sets} completata`;
+  }
+  document.getElementById('recProgLbl').textContent = progLbl;
   let rncHTML = '';
   if(afterExDone && WORKOUT.exs[curEx+1]){
     const nx=WORKOUT.exs[curEx+1];
@@ -859,6 +959,21 @@ function endSession(){
       <div class="end-ex-check">${sd[i]>=ex.sets?'✓':'—'}</div>
     </div>`;
   }).join('');
+
+  /* Consiglio basato sulla stanchezza */
+  let _totalF=0, _countF=0;
+  exData.forEach(e=>{ e.fatigues.forEach(f=>{ _totalF+=f; _countF++; }); });
+  let _adviceHTML = '';
+  if(_countF > 0){
+    const _avg = _totalF/_countF;
+    const [_icon,_title,_text] = _avg < 1.7
+      ? ['😴','Sessione intensa','Ti sei sentito molto stanco — considera di ridurre leggermente il carico o aggiungere un giorno di riposo.']
+      : _avg < 2.4
+        ? ['😐','Carico bilanciato','Il mix tra sforzo e recupero è ottimo. Continua così!']
+        : ['💪','Puoi dare di più!','Ti sei sentito forte per tutta la sessione. Puoi aumentare il carico o aggiungere una serie extra la prossima volta.'];
+    _adviceHTML = `<div class="fatigue-advice"><div class="fa-icon">${_icon}</div><div class="fa-title">${_title}</div><div class="fa-text">${_text}</div></div>`;
+  }
+  document.getElementById('fatigueAdvice').innerHTML = _adviceHTML;
 
   show('screenEnd');
 

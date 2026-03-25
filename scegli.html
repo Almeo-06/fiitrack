@@ -391,7 +391,7 @@ function avvia(){
       type:      wo.type,
       typeLabel: wo.typeLabel,
       typeIcon:  wo.icon,
-      exs:       wo.exs.map(ex=>({name:ex.name, sets:ex.sets, reps:ex.reps, rec:ex.rec||90, icon:ex.icon||'💪'}))
+      exs:       wo.exs.map(ex=>({name:ex.name, sets:ex.sets, reps:ex.reps, rec:ex.rec||90, icon:ex.icon||'💪', circuitGroup:ex.circuitGroup??null}))
     };
   }
 

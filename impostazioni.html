@@ -184,13 +184,29 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .sec-lbl::after{ content:''; flex:1; height:1px; background:var(--border); }
 
 /* righe esercizi nell'editor */
-.ex-rows{ display:flex; flex-direction:column; gap:7px; margin-bottom:10px; }
+.ex-rows{ display:flex; flex-direction:column; gap:0; margin-bottom:10px; }
 .ex-row{ background:var(--bg3); border:1px solid var(--border); border-radius:11px; overflow:hidden; }
 .ex-row-hdr{ display:flex; align-items:center; gap:8px; padding:10px 12px; cursor:pointer; }
 .ex-num{ width:22px; height:22px; border-radius:6px; background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2); display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--a1); flex-shrink:0; }
 .ex-row-name{ font-size:13px; font-weight:500; color:var(--text); flex:1; }
 .ex-row-sets{ font-size:11px; color:var(--textm); }
 .ex-del-btn{ background:none; border:none; color:var(--textm); cursor:pointer; font-size:14px; padding:2px; }
+
+/* drag handle */
+.ex-drag-handle{ width:24px; display:flex; align-items:center; justify-content:center; color:var(--textm); font-size:16px; cursor:grab; user-select:none; touch-action:none; flex-shrink:0; letter-spacing:1px; }
+.ex-drag-handle:active{ cursor:grabbing; color:var(--a1); }
+.ex-row.is-dragging{ position:relative; z-index:50; box-shadow:0 10px 36px rgba(0,0,0,.7); transform-origin:center; opacity:0.95; }
+.ex-row.drag-placeholder{ border:1.5px dashed var(--a1); opacity:0.4; }
+
+/* indicatore circuito (barra sinistra colorata) */
+.ex-circuit-bar{ width:3px; align-self:stretch; border-radius:2px; flex-shrink:0; transition:background .2s; }
+
+/* pulsante collega/scollega tra due esercizi */
+.circuit-link-row{ display:flex; justify-content:center; align-items:center; height:18px; position:relative; z-index:2; margin:0; }
+.circuit-link-row::before{ content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:1px; height:100%; background:var(--border); }
+.circuit-link-btn{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; background:var(--bg3); border:1px solid var(--border); font-size:10px; font-weight:500; cursor:pointer; font-family:var(--font); color:var(--textm); transition:all .15s; position:relative; z-index:1; white-space:nowrap; }
+.circuit-link-btn.linked{ border-style:solid; }
+.circuit-link-btn:active{ transform:scale(.93); }
 .ex-row-body{ display:none; padding:0 12px 12px; border-top:1px solid var(--border); padding-top:10px; }
 .ex-row-body.open{ display:block; }
 .ex-fields{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
@@ -857,7 +873,7 @@ function openEditor(i){
     document.getElementById('editorTitle').textContent = 'Modifica allenamento';
     document.getElementById('edName').value = w.name;
     selType  = w.type;
-    editExs  = w.exs.map(e=>({...e}));
+    editExs  = w.exs.map(e=>({...e, circuitGroup: e.circuitGroup ?? null}));
   }
   openExIdx = -1;
   renderTypeRow();
@@ -881,12 +897,52 @@ function renderTypeRow(){
 
 function setType(id){ selType=id; renderTypeRow(); }
 
+const CIRCUIT_COLORS = ['#00e676','#ff9800','#e040fb','#40c4ff','#ff4081'];
+
+function getNextGroupId(){
+  const used = new Set(editExs.map(e=>e.circuitGroup).filter(g=>g!==null));
+  let id=0; while(used.has(id)) id++; return id;
+}
+
+function toggleCircuit(i){
+  const a=editExs[i], b=editExs[i+1];
+  const cgA=a.circuitGroup??null, cgB=b.circuitGroup??null;
+  if(cgA!==null && cgA===cgB){
+    /* Scollega: trova i follower del gruppo dopo i */
+    const tail=[];
+    for(let j=i+1;j<editExs.length&&editExs[j].circuitGroup===cgA;j++) tail.push(j);
+    const headCount=editExs.filter((e,j)=>j<=i&&e.circuitGroup===cgA).length;
+    if(headCount===1&&tail.length===1){
+      a.circuitGroup=null; b.circuitGroup=null;          /* gruppo da 2: rimuovi entrambi */
+    } else if(tail.length===1){
+      b.circuitGroup=null;                               /* B era ultimo: rimuovi solo B */
+    } else {
+      const ng=getNextGroupId();
+      tail.forEach(j=>editExs[j].circuitGroup=ng);      /* B+ → nuovo gruppo */
+      if(headCount===1) a.circuitGroup=null;
+    }
+  } else {
+    /* Collega */
+    const tg = cgA!==null ? cgA : (cgB!==null ? cgB : getNextGroupId());
+    a.circuitGroup=tg; b.circuitGroup=tg;
+  }
+  renderExRows();
+}
+
 function renderExRows(){
   const el = document.getElementById('exRows');
   if(!editExs.length){ el.innerHTML=''; return; }
-  el.innerHTML = editExs.map((ex,i)=>`
-    <div class="ex-row">
+
+  let html='';
+  editExs.forEach((ex,i)=>{
+    const cg    = ex.circuitGroup??null;
+    const color = cg!==null ? CIRCUIT_COLORS[cg%CIRCUIT_COLORS.length] : null;
+    const barStyle = color ? `background:${color}` : 'background:transparent';
+
+    html += `<div class="ex-row" id="exrow_${i}">
       <div class="ex-row-hdr" onclick="toggleEx(${i})">
+        <div class="ex-drag-handle" ontouchstart="initDrag(event,${i})" onmousedown="initDrag(event,${i})" onclick="event.stopPropagation()" ondragstart="return false">≡</div>
+        <div class="ex-circuit-bar" style="${barStyle}"></div>
         <div class="ex-num">${i+1}</div>
         <div class="ex-row-name" id="exrn_${i}">${ex.name||'Esercizio '+(i+1)}</div>
         <div class="ex-row-sets" id="exrs_${i}">${ex.sets}×${ex.reps}</div>
@@ -921,7 +977,22 @@ function renderExRows(){
           </div>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+
+    /* Pulsante collega/scollega tra questo e il successivo */
+    if(i < editExs.length-1){
+      const nextCg  = editExs[i+1].circuitGroup??null;
+      const linked  = cg!==null && cg===nextCg;
+      const btnColor= linked ? color : 'var(--textm)';
+      const btnBorder= linked ? color : 'var(--border)';
+      const btnLabel= linked ? `⊖ Circuito` : `⊕ Collega`;
+      html += `<div class="circuit-link-row">
+        <button class="circuit-link-btn${linked?' linked':''}" style="color:${btnColor};border-color:${btnBorder}" onclick="toggleCircuit(${i})">${btnLabel}</button>
+      </div>`;
+    }
+  });
+
+  el.innerHTML = html;
 }
 
 function updateExHdr(i){
@@ -930,6 +1001,91 @@ function updateExHdr(i){
   const s = document.getElementById('exrs_'+i);
   if(n) n.textContent = ex.name||'Esercizio '+(i+1);
   if(s) s.textContent = ex.sets+'×'+ex.reps;
+}
+
+/* ══ DRAG & DROP ESERCIZI ══
+   Usiamo transform:translateY sull'elemento originale (no ghost)
+   per evitare il clipping di overflow:hidden su html/body.
+══════════════════════════════════════════ */
+let _dragIdx   = -1;
+let _dragStartY= 0;
+let _dragEl    = null;
+
+function _clientY(e){ return e.touches ? e.touches[0].clientY : e.clientY; }
+
+function initDrag(e, idx){
+  if(e.cancelable) e.preventDefault();
+  e.stopPropagation();
+  _dragIdx    = idx;
+  _dragStartY = _clientY(e);
+
+  const rows = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
+  _dragEl = rows[idx];
+  if(!_dragEl) return;
+
+  _dragEl.classList.add('is-dragging');
+
+  document.addEventListener('touchmove',  _onDragMove, {passive:false});
+  document.addEventListener('touchend',   _onDragEnd);
+  document.addEventListener('mousemove',  _onDragMove);
+  document.addEventListener('mouseup',    _onDragEnd);
+}
+
+function _onDragMove(e){
+  if(_dragIdx < 0 || !_dragEl) return;
+  if(e.cancelable) e.preventDefault();
+  const dy = _clientY(e) - _dragStartY;
+  _dragEl.style.transform = `translateY(${dy}px) scale(1.03)`;
+
+  /* Evidenzia dove verrà spostato */
+  const rows = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
+  const midY = _dragEl.getBoundingClientRect().top + _dragEl.getBoundingClientRect().height / 2;
+  rows.forEach((r, i) => {
+    r.classList.remove('drag-placeholder');
+    if(i !== _dragIdx){
+      const rr = r.getBoundingClientRect();
+      if(midY < rr.top + rr.height / 2) r.classList.add('drag-placeholder');
+    }
+  });
+}
+
+function _onDragEnd(e){
+  document.removeEventListener('touchmove',  _onDragMove);
+  document.removeEventListener('touchend',   _onDragEnd);
+  document.removeEventListener('mousemove',  _onDragMove);
+  document.removeEventListener('mouseup',    _onDragEnd);
+  if(!_dragEl || _dragIdx < 0){ _dragCleanup(); return; }
+
+  /* Calcola dove droppare */
+  const rows  = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
+  const midY  = _dragEl.getBoundingClientRect().top + _dragEl.getBoundingClientRect().height / 2;
+  let dropIdx = rows.length;
+  for(let i = 0; i < rows.length; i++){
+    const r = rows[i].getBoundingClientRect();
+    if(midY < r.top + r.height / 2){ dropIdx = i; break; }
+  }
+  let insertAt = dropIdx > _dragIdx ? dropIdx - 1 : dropIdx;
+  insertAt = Math.max(0, Math.min(insertAt, editExs.length - 1));
+
+  const fromIdx = _dragIdx;
+  _dragCleanup();
+
+  if(insertAt !== fromIdx){
+    const moved = editExs.splice(fromIdx, 1)[0];
+    editExs.splice(insertAt, 0, moved);
+    if(openExIdx === fromIdx) openExIdx = insertAt;
+    else if(openExIdx > fromIdx && openExIdx <= insertAt) openExIdx--;
+    else if(openExIdx < fromIdx && openExIdx >= insertAt) openExIdx++;
+    renderExRows();
+  }
+}
+
+function _dragCleanup(){
+  document.querySelectorAll('#exRows .ex-row').forEach(r => {
+    r.classList.remove('is-dragging', 'drag-placeholder');
+    r.style.transform = '';
+  });
+  _dragEl = null; _dragIdx = -1;
 }
 
 function toggleEx(i){
@@ -941,7 +1097,7 @@ function toggleEx(i){
 }
 
 function addEx(){
-  editExs.push({id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, note:''});
+  editExs.push({id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, note:'', circuitGroup:null});
   openExIdx = editExs.length-1;
   renderExRows();
   setTimeout(()=>{
