@@ -731,23 +731,33 @@ function renderPageB(idx){
 (function(){
   if(!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').then(reg => {
+    /* Controlla aggiornamenti SW ad ogni apertura della home */
+    reg.update().catch(()=>{});
+
+    /* Quando un nuovo SW è pronto, ricarica la pagina per usare i file aggiornati */
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      if(!newSW) return;
+      newSW.addEventListener('statechange', () => {
+        if(newSW.state === 'activated'){
+          /* Ricarica silenziosamente per applicare i nuovi file */
+          window.location.reload();
+        }
+      });
+    });
+
+    /* Schedula notifica se abilitata */
     try{
       const _d = JSON.parse(localStorage.getItem('fittrack_v4')) || {};
       if(_d.notifEnabled && Notification.permission === 'granted'){
         const _body = (_d.streak > 0)
           ? `Hai una streak di ${_d.streak} giorni 🔥 Non dimenticare di allenarti oggi!`
           : 'Non dimenticare il tuo allenamento di oggi! 💪';
-        /* Aspetta che il SW sia attivo prima di inviargli il messaggio */
-        const _sw = reg.active || reg.waiting || reg.installing;
         const _send = (sw) => sw.postMessage({
-          type:    'SCHEDULE',
-          enabled: true,
-          time:    _d.notifTime || '20:00',
-          body:    _body,
-          icon:    'icons/icon-192.png',
+          type: 'SCHEDULE', enabled: true,
+          time: _d.notifTime || '20:00', body: _body, icon: 'icons/icon-192.png',
         });
-        if(reg.active){ _send(reg.active); }
-        else { reg.addEventListener('updatefound', ()=>{ reg.installing.addEventListener('statechange', e=>{ if(e.target.state==='activated') _send(e.target); }); }); }
+        if(reg.active) _send(reg.active);
       }
     } catch(e){}
   }).catch(()=>{});

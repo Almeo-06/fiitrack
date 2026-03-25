@@ -1,16 +1,31 @@
 /* ══════════════════════════════════════════════════════
    FitTrack Service Worker — Promemoria Streak
-   Schedula una notifica locale ogni giorno all'orario scelto.
-   Il timer si azzera se il browser viene completamente chiuso:
-   viene ripristinato alla prossima apertura dell'app.
+   Versione: 2025-03-25-1
+   ↑ Cambia questa stringa per forzare l'aggiornamento
+     su tutti i dispositivi che hanno la PWA installata.
+
+   Questo SW NON fa caching dei file HTML/JS/CSS:
+   ogni caricamento legge sempre l'ultima versione dal server.
 ══════════════════════════════════════════════════════ */
+
+const SW_VERSION = '2025-03-25-2'; /* bump per forzare aggiornamento */
 
 let _cfg   = null;   /* configurazione attiva */
 let _timer = null;   /* handle del setTimeout */
 
 /* ── Lifecycle ── */
-self.addEventListener('install',  () => self.skipWaiting());
-self.addEventListener('activate', e  => e.waitUntil(self.clients.claim()));
+self.addEventListener('install', () => {
+  self.skipWaiting(); /* prende controllo subito, senza aspettare reload */
+});
+
+self.addEventListener('activate', e => {
+  /* Cancella TUTTE le cache residue di versioni precedenti */
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.clients.claim()) /* prende controllo di tutte le tab aperte */
+  );
+});
 
 /* ── Messaggi dalla pagina ── */
 self.addEventListener('message', e => {
