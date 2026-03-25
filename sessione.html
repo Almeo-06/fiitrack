@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FitTrack · Sessione</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -126,7 +126,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 }
 @keyframes toastIn{ from{opacity:0;transform:translateX(-50%) translateY(10px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
 
-.end-footer{ padding:0 20px 24px; flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
+.end-footer{ padding:0 20px calc(24px + env(safe-area-inset-bottom, 0px)); flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
 .home-btn{ width:100%; padding:15px; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:500; cursor:pointer; font-family:var(--font); box-shadow:0 4px 20px rgba(0,0,0,.2); }
 .share-btn{
   width:100%; padding:13px; background:transparent;
