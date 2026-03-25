@@ -240,6 +240,28 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   color:var(--textm); font-size:13px; cursor:pointer; font-family:var(--font);
 }
 
+/* ── TOGGLE SWITCH ── */
+.toggle-switch{ position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+.toggle-switch input{ opacity:0; width:0; height:0; position:absolute; }
+.toggle-slider{ position:absolute; cursor:pointer; inset:0; background:var(--border); border-radius:26px; transition:.25s; }
+.toggle-slider::before{ content:''; position:absolute; width:20px; height:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.25s; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+.toggle-switch input:checked + .toggle-slider{ background:var(--a1); }
+.toggle-switch input:checked + .toggle-slider::before{ transform:translateX(20px); }
+
+/* ── TIME INPUT ── */
+.time-input{ background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:7px 11px; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; cursor:pointer; transition:border-color .15s; }
+.time-input:focus{ border-color:var(--a1); }
+/* Forza i colori del picker in dark mode su Chrome/Firefox */
+.time-input::-webkit-calendar-picker-indicator{ filter:invert(1) opacity(.5); cursor:pointer; }
+
+/* ── NOTIFICHE ── */
+.notif-perm-btn{ width:100%; padding:12px; background:rgba(0,136,255,.07); border:1px solid rgba(0,136,255,.2); border-radius:12px; color:var(--a2); font-size:13px; font-weight:500; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s; }
+.notif-perm-btn:active{ background:rgba(0,136,255,.14); }
+.notif-status{ font-size:11px; padding:8px 12px; border-radius:8px; margin-bottom:4px; line-height:1.5; }
+.notif-status.ok { background:rgba(0,230,118,.08); color:var(--green); border:1px solid rgba(0,230,118,.2); }
+.notif-status.warn{ background:rgba(255,170,0,.08); color:var(--warn); border:1px solid rgba(255,170,0,.2); }
+.notif-status.err { background:rgba(255,50,50,.08); color:var(--red);  border:1px solid rgba(255,50,50,.2);  }
+
 /* ── BACKUP ── */
 .backup-row{ display:flex; gap:8px; }
 .backup-btn{
@@ -536,7 +558,53 @@ body::before{
     </div>
   </div>
 
-  <!-- ── 6. DATI ── -->
+  <!-- ── 6. NOTIFICHE ── -->
+  <div class="section" id="sec6">
+    <div class="sec-header" onclick="toggleSec(6)">
+      <div class="sec-icon">🔔</div>
+      <div>
+        <div class="sec-title">Promemoria streak</div>
+        <div class="sec-subtitle" id="notifSubtitle">Nessun promemoria attivo</div>
+      </div>
+      <div class="sec-arrow" id="arr6">›</div>
+    </div>
+    <div class="sec-body" id="body6">
+      <div class="sec-inner">
+        <div id="notifStatusBox"></div>
+
+        <div class="set-row">
+          <div class="set-row-icon">🔔</div>
+          <div class="set-row-info">
+            <div class="set-row-name">Promemoria giornaliero</div>
+            <div class="set-row-sub">Ricordati di non rompere la streak</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notifToggle" onchange="onNotifToggle()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="set-row" id="notifTimeRow" style="display:none">
+          <div class="set-row-icon">⏰</div>
+          <div class="set-row-info">
+            <div class="set-row-name">Orario promemoria</div>
+            <div class="set-row-sub">A che ora vuoi essere avvisato</div>
+          </div>
+          <input type="time" id="notifTime" value="20:00" class="time-input" onchange="saveNotifSettings()">
+        </div>
+
+        <button id="notifPermBtn" class="notif-perm-btn" onclick="requestNotifPerm()" style="display:none;margin-top:10px;">
+          🔔 Consenti notifiche
+        </button>
+
+        <div style="font-size:10px;color:var(--textm);margin-top:12px;line-height:1.6;opacity:0.65;">
+          Le notifiche si attivano solo se il browser è aperto. Per riceverle anche in background, installa l'app sul telefono come PWA.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. DATI ── -->
   <div class="section" id="sec4">
     <div class="sec-header" onclick="toggleSec(4)">
       <div class="sec-icon">💾</div>
@@ -1191,6 +1259,124 @@ function showToast(msg, ok=true){
   clearTimeout(t._t);
   t._t = setTimeout(()=>t.style.display='none', 2500);
 }
+
+/* ══ NOTIFICHE & SERVICE WORKER ══ */
+
+/* Registra SW (o aggiorna se già registrato) */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+function _swPostMessage(msg){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.ready.then(reg=>{
+    if(reg.active) reg.active.postMessage(msg);
+  }).catch(()=>{});
+}
+
+function _notifBody(){
+  /* Prepara il testo con la streak attuale */
+  const streak = data.streak || 0;
+  return streak > 0
+    ? `Hai una streak di ${streak} giorni 🔥 Non dimenticare di allenarti oggi!`
+    : 'Non dimenticare il tuo allenamento di oggi! 💪';
+}
+
+function scheduleNotifViaSW(){
+  _swPostMessage({
+    type:    'SCHEDULE',
+    enabled: true,
+    time:    data.notifTime || '20:00',
+    body:    _notifBody(),
+    icon:    'icons/icon-192.png',
+  });
+}
+
+function cancelNotifViaSW(){
+  _swPostMessage({ type: 'CANCEL' });
+}
+
+function _renderNotifStatus(){
+  const box      = document.getElementById('notifStatusBox');
+  const btn      = document.getElementById('notifPermBtn');
+  const subtitle = document.getElementById('notifSubtitle');
+  const timeRow  = document.getElementById('notifTimeRow');
+  const enabled  = !!(data.notifEnabled);
+  const time     = data.notifTime || '20:00';
+
+  document.getElementById('notifToggle').checked = enabled;
+  document.getElementById('notifTime').value     = time;
+  timeRow.style.display = enabled ? 'flex' : 'none';
+
+  if(!('Notification' in window)){
+    box.innerHTML = '<div class="notif-status err">⛔ Questo browser non supporta le notifiche.</div>';
+    btn.style.display = 'none';
+    subtitle.textContent = 'Non supportato';
+    return;
+  }
+
+  const perm = Notification.permission;
+
+  if(perm === 'denied'){
+    box.innerHTML = '<div class="notif-status err">⛔ Notifiche bloccate. Vai nelle impostazioni del browser per riabilitarle.</div>';
+    btn.style.display = 'none';
+    subtitle.textContent = 'Bloccate dal browser';
+    return;
+  }
+
+  if(enabled && perm === 'default'){
+    box.innerHTML = '<div class="notif-status warn">⚠️ Premi il pulsante per consentire le notifiche.</div>';
+    btn.style.display = 'flex';
+    subtitle.textContent = 'In attesa di permesso';
+    return;
+  }
+
+  box.innerHTML = '';
+  btn.style.display = 'none';
+  subtitle.textContent = enabled
+    ? `Attivo ogni giorno alle ${time}`
+    : 'Nessun promemoria attivo';
+}
+
+async function requestNotifPerm(){
+  if(!('Notification' in window)) return;
+  const result = await Notification.requestPermission();
+  _renderNotifStatus();
+  if(result === 'granted'){
+    data.notifEnabled = true;
+    saveData(data);
+    scheduleNotifViaSW();
+    showToast('✓ Notifiche attivate');
+  }
+}
+
+function onNotifToggle(){
+  const enabled = document.getElementById('notifToggle').checked;
+  data.notifEnabled = enabled;
+  saveData(data);
+  document.getElementById('notifTimeRow').style.display = enabled ? 'flex' : 'none';
+  _renderNotifStatus();
+  if(enabled && Notification.permission === 'granted') scheduleNotifViaSW();
+  else if(!enabled) cancelNotifViaSW();
+}
+
+function saveNotifSettings(){
+  data.notifTime = document.getElementById('notifTime').value;
+  saveData(data);
+  _renderNotifStatus();
+  if(data.notifEnabled && Notification.permission === 'granted'){
+    scheduleNotifViaSW();
+    showToast('✓ Promemoria aggiornato');
+  }
+}
+
+/* Esegui all'avvio: inizializza UI e (ri)schedula se già abilitato */
+(function initNotif(){
+  _renderNotifStatus();
+  if(data.notifEnabled && Notification.permission === 'granted'){
+    scheduleNotifViaSW(); /* rischedulda in caso il SW fosse stato killato */
+  }
+})();
 
 /* ══ SLIDE NAVIGATION ══ */
 const PAGE_INDEX = 3; // impostazioni.html = indice 3

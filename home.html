@@ -727,6 +727,32 @@ function renderPageB(idx){
   };
 }
 
+/* ══ SERVICE WORKER — rischedulazione notifiche streak ══ */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    try{
+      const _d = JSON.parse(localStorage.getItem('fittrack_v4')) || {};
+      if(_d.notifEnabled && Notification.permission === 'granted'){
+        const _body = (_d.streak > 0)
+          ? `Hai una streak di ${_d.streak} giorni 🔥 Non dimenticare di allenarti oggi!`
+          : 'Non dimenticare il tuo allenamento di oggi! 💪';
+        /* Aspetta che il SW sia attivo prima di inviargli il messaggio */
+        const _sw = reg.active || reg.waiting || reg.installing;
+        const _send = (sw) => sw.postMessage({
+          type:    'SCHEDULE',
+          enabled: true,
+          time:    _d.notifTime || '20:00',
+          body:    _body,
+          icon:    'icons/icon-192.png',
+        });
+        if(reg.active){ _send(reg.active); }
+        else { reg.addEventListener('updatefound', ()=>{ reg.installing.addEventListener('statechange', e=>{ if(e.target.state==='activated') _send(e.target); }); }); }
+      }
+    } catch(e){}
+  }).catch(()=>{});
+})();
+
 /* ══ CONFETTI ══ */
 function launchConfetti(){
   const COLORS = ['#00ccff','#0088ff','#00e676','#ffaa00','#a855f7','#ff4455'];
