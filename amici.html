@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FitTrack · Amici</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
+  --a1:#0088ff; --a2:#00ccff;
+  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
+  --green:#00e676; --red:#ff4455; --warn:#ffaa00;
+  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+}
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; overflow:hidden; }
+html{ height:-webkit-fill-available; }
+body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; padding-top:env(safe-area-inset-top,0px); }
+
+.scroll-area{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px 16px 24px; position:relative; z-index:1; }
+.scroll-area::-webkit-scrollbar{ width:0; }
+
+/* ── HEADER ── */
+.header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.logo{ font-weight:600; font-size:20px; color:var(--text); }
+.logo span{ color:var(--a2); }
+.page-label{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:1px; }
+.header-right{ display:flex; align-items:center; gap:10px; }
+
+/* bell button */
+.bell-btn{
+  width:34px; height:34px; border-radius:50%;
+  background:var(--bg3); border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; cursor:pointer; position:relative;
+  transition:border-color .15s;
+}
+.bell-btn:active{ border-color:var(--a1); }
+.bell-badge{
+  position:absolute; top:-3px; right:-3px;
+  width:16px; height:16px; border-radius:50%;
+  background:var(--red); color:#fff;
+  font-size:9px; font-weight:600; font-family:var(--mono);
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--bg);
+}
+
+/* ── STATO: NON LOGGATO ── */
+.login-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:18px; padding:28px 20px; text-align:center;
+  margin-top:20px;
+}
+.login-card-icon{ font-size:48px; margin-bottom:16px; }
+.login-card-title{ font-size:18px; font-weight:600; color:var(--text); margin-bottom:8px; }
+.login-card-sub{ font-size:13px; color:var(--textm); line-height:1.6; margin-bottom:20px; }
+.google-btn{
+  width:100%; padding:13px; border-radius:12px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; color:#fff; font-size:14px; font-weight:500;
+  cursor:pointer; font-family:var(--font);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.google-btn img{ width:16px; height:16px; }
+
+/* ── USERNAME SETUP OVERLAY ── */
+.overlay{
+  position:fixed; inset:0; z-index:60;
+  background:rgba(0,0,0,.75);
+  display:none; align-items:flex-end; justify-content:center;
+}
+.overlay.open{ display:flex; }
+.sheet{
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border:1px solid var(--border); border-bottom:none;
+  width:100%; max-width:480px; padding:28px 20px 36px;
+  animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{ from{transform:translateY(100%);} to{transform:translateY(0);} }
+.sheet-handle{ width:36px; height:4px; border-radius:99px; background:var(--border); margin:0 auto 20px; }
+.sheet-title{ font-size:18px; font-weight:600; color:var(--text); margin-bottom:6px; }
+.sheet-sub{ font-size:13px; color:var(--textm); line-height:1.6; margin-bottom:20px; }
+.field-lbl{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; display:block; }
+.field-inp{
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  border-radius:10px; padding:12px 14px; color:var(--text);
+  font-family:var(--mono); font-size:16px; outline:none;
+  transition:border-color .15s; margin-bottom:6px;
+}
+.field-inp:focus{ border-color:var(--a1); }
+.field-inp::placeholder{ color:var(--textm); }
+.field-hint{ font-size:11px; color:var(--textm); margin-bottom:16px; }
+.field-hint.error{ color:var(--red); }
+.field-hint.ok{ color:var(--green); }
+.primary-btn{
+  width:100%; padding:14px; border-radius:12px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; color:#fff; font-size:14px; font-weight:500;
+  cursor:pointer; font-family:var(--font); transition:opacity .15s;
+}
+.primary-btn:disabled{ opacity:.4; cursor:default; }
+
+/* ── SEARCH ── */
+.search-wrap{
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:10px 14px; margin-bottom:16px;
+}
+.search-wrap:focus-within{ border-color:var(--a1); }
+.search-icon{ font-size:15px; flex-shrink:0; }
+.search-inp{
+  flex:1; background:transparent; border:none; outline:none;
+  color:var(--text); font-family:var(--font); font-size:14px;
+}
+.search-inp::placeholder{ color:var(--textm); }
+
+/* risultato ricerca */
+.search-result{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:14px; margin-bottom:16px;
+  display:none;
+}
+.search-result.visible{ display:block; }
+
+/* ── SEZIONE ── */
+.section-title{
+  font-size:9px; font-weight:500; color:var(--textm);
+  text-transform:uppercase; letter-spacing:2px;
+  margin-bottom:10px; display:flex; align-items:center; gap:8px;
+}
+.section-title::before{ content:''; width:5px; height:5px; border-radius:50%; background:var(--a1); flex-shrink:0; }
+
+/* ── CARD UTENTE (ricerca + richieste) ── */
+.user-card{
+  display:flex; align-items:center; gap:12px;
+}
+.user-av{
+  width:42px; height:42px; border-radius:50%;
+  background:var(--bg3); border:1.5px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0; overflow:hidden;
+}
+.user-av img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.user-info{ flex:1; min-width:0; }
+.user-name{ font-size:14px; font-weight:600; color:var(--text); }
+.user-meta{ font-size:11px; color:var(--textm); margin-top:2px; }
+.add-btn{
+  padding:7px 14px; border-radius:9px; font-size:12px; font-weight:500;
+  cursor:pointer; font-family:var(--font); border:none; flex-shrink:0;
+}
+.add-btn.primary{ background:linear-gradient(135deg,var(--a1),var(--a2)); color:#fff; }
+.add-btn.sent{ background:var(--bg3); border:1px solid var(--border); color:var(--textm); }
+.add-btn.already{ background:rgba(0,230,118,.1); border:1px solid rgba(0,230,118,.2); color:var(--green); }
+.add-btn.accept{ background:rgba(0,230,118,.1); border:1px solid rgba(0,230,118,.25); color:var(--green); }
+.add-btn.reject{ background:rgba(255,68,85,.07); border:1px solid rgba(255,68,85,.2); color:var(--red); }
+
+/* ── RICHIESTE IN SOSPESO ── */
+.requests-card{
+  background:var(--bg2); border:1px solid rgba(255,170,0,.2);
+  border-radius:14px; padding:14px; margin-bottom:16px;
+}
+.req-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.req-row:last-child{ border-bottom:none; padding-bottom:0; }
+.req-btns{ display:flex; gap:6px; flex-shrink:0; }
+
+/* ── LISTA AMICI ── */
+.friends-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:14px; overflow:hidden; margin-bottom:16px;
+}
+.friend-row{
+  display:flex; align-items:center; gap:12px;
+  padding:13px 14px; border-bottom:1px solid var(--border);
+  transition:background .1s;
+}
+.friend-row:last-child{ border-bottom:none; }
+.friend-row:active{ background:var(--bg3); }
+.friend-streak{
+  font-family:var(--mono); font-size:14px; font-weight:600;
+  color:var(--a2); flex-shrink:0; text-align:right;
+}
+.friend-streak.inactive{ color:var(--red); }
+.friend-streak-lbl{ font-size:8px; color:var(--textm); text-transform:uppercase; }
+.challenge-btn{
+  width:30px; height:30px; border-radius:8px; flex-shrink:0;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--textm); font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state{ text-align:center; padding:40px 20px; color:var(--textm); }
+.empty-state-icon{ font-size:40px; margin-bottom:12px; }
+.empty-state-text{ font-size:13px; line-height:1.6; }
+
+/* ── NOTIFICHE PANEL ── */
+.notif-overlay{
+  position:fixed; inset:0; z-index:50;
+  background:rgba(0,0,0,.7);
+  display:none; align-items:flex-start; justify-content:center;
+  padding-top:60px;
+}
+.notif-overlay.open{ display:flex; }
+.notif-panel{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; width:calc(100% - 32px); max-width:420px;
+  max-height:70vh; overflow-y:auto; padding:16px;
+  animation:fadeDown .2s ease;
+}
+@keyframes fadeDown{ from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
+.notif-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.notif-title{ font-size:14px; font-weight:600; color:var(--text); }
+.notif-close{ background:none; border:none; color:var(--textm); font-size:18px; cursor:pointer; }
+.notif-empty{ font-size:13px; color:var(--textm); text-align:center; padding:20px 0; }
+.notif-item{ padding:10px 0; border-bottom:1px solid var(--border); }
+.notif-item:last-child{ border-bottom:none; padding-bottom:0; }
+.notif-text{ font-size:13px; color:var(--text); margin-bottom:6px; }
+.notif-time{ font-size:10px; color:var(--textm); }
+
+/* ── TAB BAR ── */
+.tab-bar{
+  position:relative; flex-shrink:0;
+  background:rgba(6,13,26,.97); border-top:1px solid var(--border);
+  display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px)); z-index:20;
+}
+.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; position:relative; }
+.tab-item.on{ color:var(--a2); }
+.tab-item.on::after{ content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:18px; height:2px; border-radius:0 0 3px 3px; background:var(--a2); box-shadow:0 0 8px var(--a2); }
+.tab-icon{ font-size:18px; }
+
+/* toast */
+.toast{
+  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:rgba(10,20,40,.95); border:1px solid var(--border);
+  border-radius:10px; padding:10px 18px; font-size:13px; color:var(--text);
+  opacity:0; transition:all .3s; pointer-events:none; z-index:100; white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* bg glow */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 90% 40% at 50% -5%,rgba(0,136,255,.09),transparent),
+    radial-gradient(ellipse 50% 30% at 90% 95%,rgba(0,60,180,.06),transparent);
+}
+</style>
+<script>
+(function(){
+  try{
+    var d=JSON.parse(localStorage.getItem('fittrack_v4'));
+    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};
+    var t=th[(d&&d.theme)||'blue']||th.blue;
+    document.documentElement.style.setProperty('--a1',t[0]);
+    document.documentElement.style.setProperty('--a2',t[1]);
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+
+<div class="scroll-area">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">Fit<span>Track</span></div>
+    <div class="header-right">
+      <div class="page-label">AMICI</div>
+      <div class="bell-btn" id="bellBtn" onclick="openNotif()" style="display:none">
+        🔔
+        <div class="bell-badge" id="bellBadge" style="display:none">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATO: NON LOGGATO -->
+  <div id="stateLogin">
+    <div class="login-card">
+      <div class="login-card-icon">👥</div>
+      <div class="login-card-title">Connettiti con i tuoi amici</div>
+      <div class="login-card-sub">
+        Accedi con Google per cercare amici, vedere le loro streak e sfidarli.
+        L'app continua a funzionare normalmente senza account.
+      </div>
+      <button class="google-btn" onclick="loginGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+        Accedi con Google
+      </button>
+    </div>
+  </div>
+
+  <!-- STATO: LOGGATO, FUNZIONI AMICI -->
+  <div id="stateMain" style="display:none">
+
+    <!-- Cerca utente -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-inp" id="searchInp" type="text"
+        placeholder="Cerca per username esatto…"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="onSearch(this.value)">
+    </div>
+
+    <!-- Risultato ricerca -->
+    <div class="search-result" id="searchResult"></div>
+
+    <!-- Richieste in arrivo -->
+    <div id="incomingSection" style="display:none">
+      <div class="section-title">Richieste ricevute</div>
+      <div class="requests-card" id="incomingList"></div>
+    </div>
+
+    <!-- Lista amici -->
+    <div class="section-title">I tuoi amici</div>
+    <div id="friendsList"></div>
+
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab-item" onclick="navigateTo('home.html',0)"><div class="tab-icon">🏠</div>Home</div>
+  <div class="tab-item" onclick="navigateTo('registra.html',1)"><div class="tab-icon">📝</div>Registra</div>
+  <div class="tab-item" onclick="navigateTo('peso.html',2)"><div class="tab-icon">⚖️</div>Peso</div>
+  <div class="tab-item" onclick="navigateTo('impostazioni.html',3)"><div class="tab-icon">⚙️</div>Impost.</div>
+</div>
+
+<!-- USERNAME SETUP OVERLAY -->
+<div class="overlay" id="usernameOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Scegli il tuo username</div>
+    <div class="sheet-sub">Sarà il tuo nome pubblico nell'app. Deve essere unico e non potrai cambiarlo facilmente in seguito.</div>
+    <label class="field-lbl">Username</label>
+    <input class="field-inp" id="usernameInp" type="text" placeholder="es. marco_fitness"
+      maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false"
+      oninput="onUsernameInput(this.value)">
+    <div class="field-hint" id="usernameHint">3–20 caratteri, solo lettere, numeri e _</div>
+    <button class="primary-btn" id="usernameBtn" onclick="saveUsername()" disabled>Conferma username</button>
+  </div>
+</div>
+
+<!-- NOTIFICHE PANEL -->
+<div class="notif-overlay" id="notifOverlay" onclick="closeNotifOnBg(event)">
+  <div class="notif-panel">
+    <div class="notif-header">
+      <div class="notif-title">🔔 Notifiche</div>
+      <button class="notif-close" onclick="closeNotif()">✕</button>
+    </div>
+    <div id="notifList"><div class="notif-empty">Nessuna notifica</div></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   FIREBASE INIT
+══════════════════════════════════════════════ */
+const _fbCfg = {
+  apiKey:            "AIzaSyD3kvEKJw3vBVZGT3VJqolnsDwQeCFvZSM",
+  authDomain:        "fittrack-c95c6.firebaseapp.com",
+  projectId:         "fittrack-c95c6",
+  storageBucket:     "fittrack-c95c6.firebasestorage.app",
+  messagingSenderId: "502254449477",
+  appId:             "1:502254449477:web:0e38cddc20a8eb28ba442c"
+};
+const _fbApp = firebase.apps.length ? firebase.app() : firebase.initializeApp(_fbCfg);
+const _auth  = firebase.auth();
+const _db    = firebase.firestore();
+
+const LS_KEY = 'fittrack_v4';
+let _me = null;        /* { uid, username, displayName, avatarEmoji, photoURL } */
+let _searchTimer = null;
+
+/* ══════════════════════════════════════════════
+   NAVIGAZIONE (stessa logica delle altre pagine)
+══════════════════════════════════════════════ */
+function navigateTo(url){ location.href = url; }
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ══════════════════════════════════════════════
+   AUTH STATE
+══════════════════════════════════════════════ */
+_auth.onAuthStateChanged(async function(user){
+  if(!user){
+    document.getElementById('stateLogin').style.display = '';
+    document.getElementById('stateMain').style.display  = 'none';
+    document.getElementById('bellBtn').style.display    = 'none';
+    return;
+  }
+
+  /* loggato — controlla username */
+  try{
+    const snap = await _db.collection('users').doc(user.uid).get();
+    if(!snap.exists || !snap.data().username){
+      /* chiedi username */
+      document.getElementById('stateLogin').style.display = 'none';
+      document.getElementById('stateMain').style.display  = 'none';
+      document.getElementById('usernameOverlay').classList.add('open');
+      return;
+    }
+
+    const data = snap.data();
+    _me = {
+      uid:         user.uid,
+      username:    data.username,
+      displayName: user.displayName || data.username,
+      avatarEmoji: data.avatarEmoji || '😎',
+      photoURL:    user.photoURL || null
+    };
+
+    document.getElementById('stateLogin').style.display = 'none';
+    document.getElementById('stateMain').style.display  = '';
+    document.getElementById('bellBtn').style.display    = 'flex';
+
+    /* sync profilo locale → Firestore */
+    syncProfile();
+    /* carica amici + notifiche */
+    loadFriends();
+    loadIncoming();
+    loadNotifBadge();
+
+  } catch(e){
+    console.error('Auth check error:', e);
+    showToast('Errore di connessione');
+  }
+});
+
+/* ══════════════════════════════════════════════
+   LOGIN GOOGLE
+══════════════════════════════════════════════ */
+async function loginGoogle(){
+  try{
+    await _auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  } catch(e){
+    showToast('Errore accesso: ' + e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   USERNAME SETUP
+══════════════════════════════════════════════ */
+let _usernameValid = false;
+let _usernameTimer = null;
+
+function onUsernameInput(val){
+  clearTimeout(_usernameTimer);
+  const hint = document.getElementById('usernameHint');
+  const btn  = document.getElementById('usernameBtn');
+  _usernameValid = false;
+  btn.disabled = true;
+
+  const clean = val.trim().toLowerCase();
+  if(!/^[a-z0-9_]{3,20}$/.test(clean)){
+    hint.textContent = '3–20 caratteri, solo lettere, numeri e _';
+    hint.className   = 'field-hint';
+    return;
+  }
+
+  hint.textContent = 'Controllo disponibilità…';
+  hint.className   = 'field-hint';
+
+  _usernameTimer = setTimeout(async () => {
+    try{
+      const snap = await _db.collection('usernames').doc(clean).get();
+      if(snap.exists){
+        hint.textContent = 'Username già in uso, scegline un altro';
+        hint.className   = 'field-hint error';
+      } else {
+        hint.textContent = '✓ Username disponibile!';
+        hint.className   = 'field-hint ok';
+        _usernameValid   = true;
+        btn.disabled     = false;
+      }
+    } catch(e){
+      hint.textContent = 'Errore di connessione, riprova';
+      hint.className   = 'field-hint error';
+    }
+  }, 500);
+}
+
+async function saveUsername(){
+  if(!_usernameValid) return;
+  const user  = _auth.currentUser;
+  if(!user) return;
+  const clean = document.getElementById('usernameInp').value.trim().toLowerCase();
+  const btn   = document.getElementById('usernameBtn');
+  btn.disabled = true;
+  btn.textContent = 'Salvataggio…';
+
+  try{
+    /* controlla ancora (race condition) */
+    const check = await _db.collection('usernames').doc(clean).get();
+    if(check.exists){ showToast('Username già preso, scegline un altro'); btn.disabled=false; btn.textContent='Conferma username'; return; }
+
+    /* leggi avatar da localStorage */
+    let avatarEmoji = '😎';
+    try{
+      const ld = JSON.parse(localStorage.getItem(LS_KEY));
+      avatarEmoji = (ld && ld.profile && ld.profile.avatar) || '😎';
+    } catch(e){}
+
+    const batch = _db.batch();
+    batch.set(_db.collection('users').doc(user.uid), {
+      username:    clean,
+      displayName: user.displayName || clean,
+      avatarEmoji: avatarEmoji,
+      photoURL:    user.photoURL || null,
+      streak:      0,
+      bestStreak:  0,
+      sessionsThisWeek: 0,
+      lastActive:  firebase.firestore.FieldValue.serverTimestamp(),
+      privacy:     { streak:true, bestStreak:true, sessionsThisWeek:true, personalRecords:true, challenges:true }
+    });
+    batch.set(_db.collection('usernames').doc(clean), { uid: user.uid });
+    await batch.commit();
+
+    document.getElementById('usernameOverlay').classList.remove('open');
+    showToast('✓ Username salvato!');
+
+    /* ricarica la pagina per entrare nel flusso normale */
+    setTimeout(() => location.reload(), 600);
+
+  } catch(e){
+    showToast('Errore: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Conferma username';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SYNC PROFILO LOCALE → FIRESTORE
+══════════════════════════════════════════════ */
+function getSessionsThisWeek(sessions){
+  const now = new Date();
+  const day = (now.getDay() + 6) % 7;
+  const start = new Date(now);
+  start.setDate(now.getDate() - day);
+  start.setHours(0,0,0,0);
+  const startStr = start.toISOString().slice(0,10);
+  return new Set(sessions.filter(s => s.date >= startStr).map(s => s.date)).size;
+}
+
+async function syncProfile(){
+  if(!_me) return;
+  try{
+    const ld = JSON.parse(localStorage.getItem(LS_KEY)) || {};
+    const sessThisWeek = getSessionsThisWeek(ld.sessions || []);
+    /* leggi privacy corrente per non sovrascriverla */
+    const snap = await _db.collection('users').doc(_me.uid).get();
+    const existingPrivacy = (snap.exists && snap.data().privacy) || { streak:true, bestStreak:true, sessionsThisWeek:true, personalRecords:true, challenges:true };
+    const currentAvatar = (ld.profile && ld.profile.avatar) || _me.avatarEmoji;
+
+    await _db.collection('users').doc(_me.uid).update({
+      streak:           ld.streak           || 0,
+      bestStreak:       ld.bestStreak        || 0,
+      sessionsThisWeek: sessThisWeek,
+      avatarEmoji:      currentAvatar,
+      lastActive:       firebase.firestore.FieldValue.serverTimestamp(),
+      privacy:          existingPrivacy
+    });
+  } catch(e){ console.warn('syncProfile error:', e); }
+}
+
+/* ══════════════════════════════════════════════
+   RICERCA UTENTE
+══════════════════════════════════════════════ */
+function onSearch(val){
+  clearTimeout(_searchTimer);
+  const box = document.getElementById('searchResult');
+  const clean = val.trim().toLowerCase();
+  if(!clean){ box.classList.remove('visible'); box.innerHTML=''; return; }
+  box.innerHTML = '<div style="color:var(--textm);font-size:12px;">Ricerca…</div>';
+  box.classList.add('visible');
+  _searchTimer = setTimeout(() => searchUser(clean), 500);
+}
+
+async function searchUser(username){
+  const box = document.getElementById('searchResult');
+  if(!_me) return;
+  if(username === _me.username){
+    box.innerHTML = renderUserCard({ username: _me.username, avatarEmoji: _me.avatarEmoji, photoURL: _me.photoURL, streak:0 }, 'self');
+    return;
+  }
+  try{
+    const unSnap = await _db.collection('usernames').doc(username).get();
+    if(!unSnap.exists){ box.innerHTML = '<div style="color:var(--textm);font-size:13px;">Nessun utente trovato.</div>'; return; }
+
+    const targetUid = unSnap.data().uid;
+    const userSnap  = await _db.collection('users').doc(targetUid).get();
+    if(!userSnap.exists){ box.innerHTML = '<div style="color:var(--textm);font-size:13px;">Utente non trovato.</div>'; return; }
+
+    const uData = userSnap.data();
+
+    /* controlla se già amici */
+    const friendSnap = await _db.collection('users').doc(_me.uid).collection('friends').doc(targetUid).get();
+    if(friendSnap.exists){ box.innerHTML = renderUserCard(uData, 'already'); return; }
+
+    /* controlla se richiesta già inviata */
+    const reqSnap = await _db.collection('friendRequests')
+      .where('from','==',_me.uid).where('to','==',targetUid).where('status','==','pending').get();
+    if(!reqSnap.empty){ box.innerHTML = renderUserCard(uData, 'sent'); return; }
+
+    box.innerHTML = renderUserCard(uData, 'add', targetUid);
+  } catch(e){
+    box.innerHTML = '<div style="color:var(--red);font-size:12px;">Errore di connessione</div>';
+  }
+}
+
+function renderUserCard(u, state, targetUid=''){
+  const av = u.photoURL
+    ? `<img src="${u.photoURL}" alt="">`
+    : (u.avatarEmoji || '😎');
+  const avContent = u.photoURL ? `<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">` : (u.avatarEmoji || '😎');
+
+  let btn = '';
+  if(state === 'self')    btn = `<button class="add-btn already">Sei tu</button>`;
+  if(state === 'already') btn = `<button class="add-btn already">✓ Già amici</button>`;
+  if(state === 'sent')    btn = `<button class="add-btn sent">Richiesta inviata</button>`;
+  if(state === 'add')     btn = `<button class="add-btn primary" onclick="sendRequest('${targetUid}','${u.username}','${u.avatarEmoji||'😎'}')">+ Aggiungi</button>`;
+
+  return `<div class="user-card">
+    <div class="user-av">${avContent}</div>
+    <div class="user-info">
+      <div class="user-name">@${u.username}</div>
+      <div class="user-meta">${u.displayName || u.username}</div>
+    </div>
+    ${btn}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   INVIA RICHIESTA AMICIZIA
+══════════════════════════════════════════════ */
+async function sendRequest(toUid, toUsername, toAvatar){
+  if(!_me) return;
+  try{
+    await _db.collection('friendRequests').add({
+      from:        _me.uid,
+      fromUsername:_me.username,
+      fromAvatar:  _me.avatarEmoji || '😎',
+      to:          toUid,
+      toUsername:  toUsername,
+      status:      'pending',
+      createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('✓ Richiesta inviata a @' + toUsername);
+    /* aggiorna risultato ricerca */
+    onSearch(document.getElementById('searchInp').value);
+  } catch(e){
+    showToast('Errore: ' + e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   RICHIESTE IN ARRIVO
+══════════════════════════════════════════════ */
+async function loadIncoming(){
+  if(!_me) return;
+  try{
+    const snap = await _db.collection('friendRequests')
+      .where('to','==',_me.uid).where('status','==','pending').get();
+
+    const sec  = document.getElementById('incomingSection');
+    const list = document.getElementById('incomingList');
+
+    if(snap.empty){ sec.style.display='none'; return; }
+
+    sec.style.display = '';
+    list.innerHTML = snap.docs.map(doc => {
+      const r = doc.data();
+      return `<div class="req-row" id="req_${doc.id}">
+        <div class="user-av" style="width:36px;height:36px;font-size:18px;">${r.fromAvatar}</div>
+        <div class="user-info">
+          <div class="user-name" style="font-size:13px;">@${r.fromUsername}</div>
+          <div class="user-meta">vuole essere tuo amico</div>
+        </div>
+        <div class="req-btns">
+          <button class="add-btn accept" onclick="acceptRequest('${doc.id}','${r.from}','${r.fromUsername}','${r.fromAvatar}')">✓</button>
+          <button class="add-btn reject" onclick="rejectRequest('${doc.id}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ console.warn('loadIncoming error:', e); }
+}
+
+async function acceptRequest(reqId, fromUid, fromUsername, fromAvatar){
+  if(!_me) return;
+  try{
+    const batch = _db.batch();
+    /* aggiorna richiesta */
+    batch.update(_db.collection('friendRequests').doc(reqId), {
+      status: 'accepted',
+      acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    /* aggiungi amico su entrambi i lati */
+    batch.set(_db.collection('users').doc(_me.uid).collection('friends').doc(fromUid), {
+      username: fromUsername, avatarEmoji: fromAvatar, addedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.set(_db.collection('users').doc(fromUid).collection('friends').doc(_me.uid), {
+      username: _me.username, avatarEmoji: _me.avatarEmoji, addedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await batch.commit();
+
+    document.getElementById('req_'+reqId)?.remove();
+    const list = document.getElementById('incomingList');
+    if(!list.children.length) document.getElementById('incomingSection').style.display='none';
+    showToast('✓ Amicizia accettata con @' + fromUsername);
+    loadFriends();
+    loadNotifBadge();
+  } catch(e){ showToast('Errore: ' + e.message); }
+}
+
+async function rejectRequest(reqId){
+  try{
+    await _db.collection('friendRequests').doc(reqId).update({ status:'rejected' });
+    document.getElementById('req_'+reqId)?.remove();
+    const list = document.getElementById('incomingList');
+    if(!list.children.length) document.getElementById('incomingSection').style.display='none';
+    loadNotifBadge();
+  } catch(e){ showToast('Errore: ' + e.message); }
+}
+
+/* ══════════════════════════════════════════════
+   LISTA AMICI
+══════════════════════════════════════════════ */
+async function loadFriends(){
+  if(!_me) return;
+  const container = document.getElementById('friendsList');
+  container.innerHTML = '<div class="empty-state" style="padding:20px 0;"><div style="color:var(--textm);font-size:12px;">Caricamento…</div></div>';
+
+  try{
+    const friendsSnap = await _db.collection('users').doc(_me.uid).collection('friends').get();
+    if(friendsSnap.empty){
+      container.innerHTML = `<div class="empty-state">
+        <div class="empty-state-icon">👥</div>
+        <div class="empty-state-text">Non hai ancora amici.<br>Cerca il loro username per aggiungerli!</div>
+      </div>`;
+      return;
+    }
+
+    /* carica dati di ogni amico in parallelo */
+    const profiles = await Promise.all(
+      friendsSnap.docs.map(d => _db.collection('users').doc(d.id).get())
+    );
+
+    const now = Date.now();
+    const MS_48H = 48 * 60 * 60 * 1000;
+
+    const rows = profiles.map(snap => {
+      if(!snap.exists) return '';
+      const u = snap.data();
+
+      /* determina inattività */
+      const lastActiveMs = u.lastActive ? u.lastActive.toDate().getTime() : 0;
+      const inactive = (now - lastActiveMs) > MS_48H || u.streak === 0;
+
+      /* rispetta privacy */
+      const showStreak  = u.privacy?.streak  !== false;
+      const showSessions= u.privacy?.sessionsThisWeek !== false;
+
+      const streakVal   = showStreak ? (u.streak || 0) : '—';
+      const streakCls   = inactive ? 'inactive' : '';
+      const sessionsTxt = showSessions ? `${u.sessionsThisWeek || 0} sess. questa sett.` : '';
+
+      const avContent = u.photoURL
+        ? `<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`
+        : (u.avatarEmoji || '😎');
+
+      return `<div class="friend-row">
+        <div class="user-av" style="width:42px;height:42px;font-size:20px;">${avContent}</div>
+        <div class="user-info">
+          <div class="user-name">@${u.username}</div>
+          <div class="user-meta">${sessionsTxt}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-right:8px;">
+          <div class="friend-streak ${streakCls}">${streakVal}🔥</div>
+          <div class="friend-streak-lbl">streak</div>
+        </div>
+        <div class="challenge-btn" title="Prossimamente" onclick="showToast('Sfide con amici in arrivo!')">⚔️</div>
+      </div>`;
+    }).filter(Boolean);
+
+    if(!rows.length){
+      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">Nessun amico trovato.</div></div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="friends-card">${rows.join('')}</div>`;
+
+  } catch(e){
+    container.innerHTML = '<div style="color:var(--red);font-size:12px;text-align:center;padding:20px;">Errore caricamento amici</div>';
+    console.warn('loadFriends error:', e);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   BADGE CAMPANELLA
+══════════════════════════════════════════════ */
+async function loadNotifBadge(){
+  if(!_me) return;
+  try{
+    const snap = await _db.collection('friendRequests')
+      .where('to','==',_me.uid).where('status','==','pending').get();
+    const badge = document.getElementById('bellBadge');
+    const count = snap.size;
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  } catch(e){}
+}
+
+/* ══════════════════════════════════════════════
+   PANNELLO NOTIFICHE
+══════════════════════════════════════════════ */
+async function openNotif(){
+  document.getElementById('notifOverlay').classList.add('open');
+  if(!_me) return;
+
+  const list = document.getElementById('notifList');
+  list.innerHTML = '<div class="notif-empty">Caricamento…</div>';
+
+  try{
+    /* richieste in arrivo (pending) */
+    const pendingSnap = await _db.collection('friendRequests')
+      .where('to','==',_me.uid).where('status','==','pending').get();
+
+    /* richieste accettate (amici nuovi) */
+    const acceptedSnap = await _db.collection('friendRequests')
+      .where('from','==',_me.uid).where('status','==','accepted').get();
+
+    const items = [];
+
+    pendingSnap.forEach(doc => {
+      const r = doc.data();
+      items.push(`<div class="notif-item">
+        <div class="notif-text">${r.fromAvatar} <strong>@${r.fromUsername}</strong> vuole essere tuo amico</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button class="add-btn accept" style="font-size:11px;padding:5px 12px;" onclick="acceptRequest('${doc.id}','${r.from}','${r.fromUsername}','${r.fromAvatar}');closeNotif();loadNotifBadge();">Accetta</button>
+          <button class="add-btn reject" style="font-size:11px;padding:5px 12px;" onclick="rejectRequest('${doc.id}');closeNotif();loadNotifBadge();">Rifiuta</button>
+        </div>
+      </div>`);
+    });
+
+    acceptedSnap.forEach(doc => {
+      const r = doc.data();
+      items.push(`<div class="notif-item">
+        <div class="notif-text">${r.fromAvatar || '😎'} <strong>@${r.toUsername}</strong> ha accettato la tua richiesta di amicizia</div>
+      </div>`);
+    });
+
+    list.innerHTML = items.length
+      ? items.join('')
+      : '<div class="notif-empty">Nessuna notifica</div>';
+
+  } catch(e){
+    list.innerHTML = '<div class="notif-empty" style="color:var(--red);">Errore di connessione</div>';
+  }
+}
+
+function closeNotif(){ document.getElementById('notifOverlay').classList.remove('open'); }
+function closeNotifOnBg(e){ if(e.target === document.getElementById('notifOverlay')) closeNotif(); }
+</script>
+</body>
+</html>

@@ -616,7 +616,91 @@ body::before{
     </div>
   </div>
 
-  <!-- ── 7. DATI ── -->
+  <!-- ── 7. PRIVACY AMICI ── -->
+  <div class="section" id="sec_privacy">
+    <div class="sec-header" onclick="toggleSecPrivacy()">
+      <div class="sec-icon">👁</div>
+      <div>
+        <div class="sec-title">Privacy amici</div>
+        <div class="sec-subtitle">Cosa vedono i tuoi amici</div>
+      </div>
+      <div class="sec-arrow" id="arr_privacy">›</div>
+    </div>
+    <div class="sec-body" id="body_privacy">
+      <div class="sec-inner">
+        <div style="font-size:12px;color:var(--textm);margin-bottom:14px;line-height:1.6;">
+          Scegli quali dati sono visibili ai tuoi amici su FitTrack.
+        </div>
+        <div id="privacyLoginMsg" style="font-size:12px;color:var(--textm);text-align:center;padding:10px 0;">
+          Accedi con Google dalla sezione Dati per gestire la privacy.
+        </div>
+        <div id="privacyToggles" style="display:none;">
+          <div class="set-row">
+            <div class="set-row-icon">🔥</div>
+            <div class="set-row-info">
+              <div class="set-row-name">Streak attuale</div>
+              <div class="set-row-sub">Il numero di giorni consecutivi</div>
+            </div>
+            <label style="position:relative;width:44px;height:24px;flex-shrink:0;">
+              <input type="checkbox" id="priv_streak" onchange="savePrivacy()" style="opacity:0;width:0;height:0;">
+              <span id="priv_streak_track" style="position:absolute;inset:0;border-radius:99px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:background .2s;"></span>
+              <span id="priv_streak_thumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--textm);transition:all .2s;"></span>
+            </label>
+          </div>
+          <div class="set-row">
+            <div class="set-row-icon">🏆</div>
+            <div class="set-row-info">
+              <div class="set-row-name">Record streak</div>
+              <div class="set-row-sub">Il tuo massimo di giorni consecutivi</div>
+            </div>
+            <label style="position:relative;width:44px;height:24px;flex-shrink:0;">
+              <input type="checkbox" id="priv_bestStreak" onchange="savePrivacy()" style="opacity:0;width:0;height:0;">
+              <span id="priv_bestStreak_track" style="position:absolute;inset:0;border-radius:99px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:background .2s;"></span>
+              <span id="priv_bestStreak_thumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--textm);transition:all .2s;"></span>
+            </label>
+          </div>
+          <div class="set-row">
+            <div class="set-row-icon">📅</div>
+            <div class="set-row-info">
+              <div class="set-row-name">Sessioni questa settimana</div>
+              <div class="set-row-sub">Quante volte ti sei allenato</div>
+            </div>
+            <label style="position:relative;width:44px;height:24px;flex-shrink:0;">
+              <input type="checkbox" id="priv_sessionsThisWeek" onchange="savePrivacy()" style="opacity:0;width:0;height:0;">
+              <span id="priv_sessionsThisWeek_track" style="position:absolute;inset:0;border-radius:99px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:background .2s;"></span>
+              <span id="priv_sessionsThisWeek_thumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--textm);transition:all .2s;"></span>
+            </label>
+          </div>
+          <div class="set-row">
+            <div class="set-row-icon">💪</div>
+            <div class="set-row-info">
+              <div class="set-row-name">Record personali (PR)</div>
+              <div class="set-row-sub">I tuoi massimali per esercizio</div>
+            </div>
+            <label style="position:relative;width:44px;height:24px;flex-shrink:0;">
+              <input type="checkbox" id="priv_personalRecords" onchange="savePrivacy()" style="opacity:0;width:0;height:0;">
+              <span id="priv_personalRecords_track" style="position:absolute;inset:0;border-radius:99px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:background .2s;"></span>
+              <span id="priv_personalRecords_thumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--textm);transition:all .2s;"></span>
+            </label>
+          </div>
+          <div class="set-row">
+            <div class="set-row-icon">🎯</div>
+            <div class="set-row-info">
+              <div class="set-row-name">Sfide attive</div>
+              <div class="set-row-sub">Le sfide a cui stai partecipando</div>
+            </div>
+            <label style="position:relative;width:44px;height:24px;flex-shrink:0;">
+              <input type="checkbox" id="priv_challenges" onchange="savePrivacy()" style="opacity:0;width:0;height:0;">
+              <span id="priv_challenges_track" style="position:absolute;inset:0;border-radius:99px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:background .2s;"></span>
+              <span id="priv_challenges_thumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--textm);transition:all .2s;"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 8. DATI ── -->
   <div class="section" id="sec4">
     <div class="sec-header" onclick="toggleSec(4)">
       <div class="sec-icon">💾</div>
@@ -1586,6 +1670,59 @@ function _updateLastSync(date) {
   const el = document.getElementById('lastSyncLabel');
   el.textContent = 'Ultimo sync: ' + date.toLocaleString('it-IT');
   el.style.display = '';
+}
+
+/* ── PRIVACY AMICI ── */
+const _PRIV_KEYS = ['streak','bestStreak','sessionsThisWeek','personalRecords','challenges'];
+
+function toggleSecPrivacy(){
+  const body  = document.getElementById('body_privacy');
+  const arrow = document.getElementById('arr_privacy');
+  const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+  body.style.maxHeight  = isOpen ? '0px' : '600px';
+  arrow.classList.toggle('open', !isOpen);
+}
+
+function _setToggle(key, val){
+  const track = document.getElementById('priv_'+key+'_track');
+  const thumb = document.getElementById('priv_'+key+'_thumb');
+  const inp   = document.getElementById('priv_'+key);
+  if(!track || !thumb || !inp) return;
+  inp.checked = val;
+  track.style.background = val ? 'var(--a1)' : 'var(--bg3)';
+  thumb.style.transform  = val ? 'translateX(20px)' : 'translateX(0)';
+  thumb.style.background = val ? '#fff' : 'var(--textm)';
+}
+
+/* carica privacy da Firestore quando l'utente è loggato */
+_auth.onAuthStateChanged(async function(user){
+  const loginMsg = document.getElementById('privacyLoginMsg');
+  const toggles  = document.getElementById('privacyToggles');
+  if(!user){ loginMsg.style.display=''; toggles.style.display='none'; return; }
+
+  try{
+    const snap = await _db.collection('users').doc(user.uid).get();
+    if(!snap.exists){ loginMsg.style.display=''; toggles.style.display='none'; return; }
+    const privacy = snap.data().privacy || {};
+    loginMsg.style.display = 'none';
+    toggles.style.display  = '';
+    _PRIV_KEYS.forEach(k => _setToggle(k, privacy[k] !== false));
+  } catch(e){ console.warn('privacy load error:', e); }
+});
+
+async function savePrivacy(){
+  const user = _auth.currentUser;
+  if(!user) return;
+  const privacy = {};
+  _PRIV_KEYS.forEach(k => {
+    const inp = document.getElementById('priv_'+k);
+    privacy[k] = inp ? inp.checked : true;
+    _setToggle(k, privacy[k]);
+  });
+  try{
+    await _db.collection('users').doc(user.uid).update({ privacy });
+    showToast('✓ Privacy aggiornata');
+  } catch(e){ showToast('Errore salvataggio privacy'); }
 }
 
 /* ── stato feedback ── */

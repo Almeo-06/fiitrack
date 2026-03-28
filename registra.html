@@ -280,6 +280,43 @@ body::before{
 .swipe-wrap.open .swipe-item{ transform:translateX(-80px); }
 .swipe-wrap.open .swipe-delete-btn{ transform:translateX(0); }
 
+/* ── STATISTICHE MENSILI ── */
+.month-stats{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; padding:16px; margin-bottom:14px;
+}
+.month-stats-title{
+  font-size:9px; font-weight:500; color:var(--textm);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:12px; display:flex; align-items:center; gap:7px;
+}
+.month-stats-title::before{
+  content:''; width:5px; height:5px; border-radius:50%;
+  background:var(--a1); flex-shrink:0;
+}
+.month-stats-grid{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+}
+.ms-card{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:12px; padding:12px 10px; text-align:center;
+}
+.ms-val{
+  font-family:var(--mono); font-size:22px; font-weight:600;
+  line-height:1; margin-bottom:4px;
+}
+.ms-lbl{
+  font-size:9px; color:var(--textm); text-transform:uppercase;
+  letter-spacing:.8px; margin-bottom:6px;
+}
+.ms-delta{
+  font-size:9px; font-weight:600; padding:2px 7px;
+  border-radius:99px; display:inline-block;
+}
+.ms-delta.up{ background:rgba(0,230,118,.12); color:var(--green); }
+.ms-delta.down{ background:rgba(255,68,85,.1); color:#ff4455; }
+.ms-delta.neutral{ background:rgba(48,72,112,.3); color:var(--textm); }
+
 /* active indicator tab */
 .tab-item{ position:relative; }
 .tab-item.on::after{
@@ -342,6 +379,12 @@ body::before{
       <div class="leg-item"><div class="leg-dot today"></div>Oggi</div>
       <div class="leg-item"><div class="leg-dot skipped"></div>Saltato</div>
     </div>
+  </div>
+
+  <!-- statistiche mensili -->
+  <div class="month-stats">
+    <div class="month-stats-title">Riepilogo mese</div>
+    <div class="month-stats-grid" id="monthStatsGrid"></div>
   </div>
 
   <!-- avvia allenamento -->
@@ -483,15 +526,63 @@ function prevMonth(){
   curMonth--;
   if(curMonth < 0){ curMonth = 11; curYear--; }
   renderCalendar();
+  renderMonthStats();
 }
 
 function nextMonth(){
   curMonth++;
   if(curMonth > 11){ curMonth = 0; curYear++; }
   renderCalendar();
+  renderMonthStats();
+}
+
+function renderMonthStats(){
+  const pad = n => String(n).padStart(2,'0');
+
+  /* prefisso mese corrente e precedente */
+  const curPrefix  = `${curYear}-${pad(curMonth+1)}`;
+  const prevM      = curMonth === 0 ? 11 : curMonth - 1;
+  const prevY      = curMonth === 0 ? curYear - 1 : curYear;
+  const prevPrefix = `${prevY}-${pad(prevM+1)}`;
+
+  const curSess  = data.sessions.filter(s => s.date && s.date.startsWith(curPrefix));
+  const prevSess = data.sessions.filter(s => s.date && s.date.startsWith(prevPrefix));
+
+  const curCount  = curSess.length;
+  const prevCount = prevSess.length;
+
+  const curKcal  = curSess.reduce((a,s) => a + (s.kcal||0), 0);
+  const prevKcal = prevSess.reduce((a,s) => a + (s.kcal||0), 0);
+
+  const curDays  = new Set(curSess.map(s=>s.date)).size;
+  const prevDays = new Set(prevSess.map(s=>s.date)).size;
+
+  function deltaHtml(cur, prev){
+    if(prev === 0) return cur > 0
+      ? `<span class="ms-delta up">Nuovo!</span>`
+      : `<span class="ms-delta neutral">—</span>`;
+    const pct = Math.round(((cur - prev) / prev) * 100);
+    if(pct > 0)  return `<span class="ms-delta up">+${pct}%</span>`;
+    if(pct < 0)  return `<span class="ms-delta down">${pct}%</span>`;
+    return `<span class="ms-delta neutral">=</span>`;
+  }
+
+  const cards = [
+    { val: curCount,               lbl: 'Sessioni',   color: 'var(--a1)',   delta: deltaHtml(curCount, prevCount) },
+    { val: curKcal || '—', lbl: 'Kcal bruciate', color: 'var(--green)', delta: deltaHtml(curKcal, prevKcal) },
+    { val: curDays,                lbl: 'Giorni att.', color: 'var(--a2)',  delta: deltaHtml(curDays, prevDays) },
+  ];
+
+  document.getElementById('monthStatsGrid').innerHTML = cards.map(c => `
+    <div class="ms-card">
+      <div class="ms-val" style="color:${c.color}">${c.val}</div>
+      <div class="ms-lbl">${c.lbl}</div>
+      ${c.delta}
+    </div>`).join('');
 }
 
 renderCalendar();
+renderMonthStats();
 
 /* ── AVVIA ALLENAMENTO DI OGGI ── */
 const TYPE_INFO = {
@@ -557,10 +648,15 @@ function showDayCard(cellEl, dateStr){
   if(dur)     statsHtml += `<div class="fl-stat"><span class="fl-val" style="color:var(--a2)">${dur}</span><span class="fl-lbl">durata</span></div>`;
   if(totKm>0) statsHtml += `<div class="fl-stat"><span class="fl-val" style="color:var(--a1)">${totKm.toFixed(1)}</span><span class="fl-lbl">km</span></div>`;
 
+  const noteHtml = s0.sessionNote
+    ? `<div style="margin-top:8px;font-size:11px;color:var(--textm);font-style:italic;line-height:1.4;">🖊️ ${s0.sessionNote}</div>`
+    : '';
+
   el.innerHTML = `
     <div class="fl-date">${dateLabel}</div>
     <div class="fl-name">${icon} ${name}</div>
-    <div class="fl-stats">${statsHtml}</div>`;
+    <div class="fl-stats">${statsHtml}</div>
+    ${noteHtml}`;
 
   /* cella originale → placeholder invisibile (mantiene lo spazio) */
   cellEl.classList.add('cell-ph');
