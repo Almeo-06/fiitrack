@@ -15,7 +15,7 @@
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body{ height:100%; overflow:hidden; }
 html{ height:-webkit-fill-available; }
-body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; overflow:hidden; display:flex; flex-direction:column; }
+body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; overflow:hidden; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); }
 
 /* ── PAGINA A ── */
 #pageA{ flex:1; position:relative; z-index:0; display:flex; flex-direction:column; overflow:hidden; }

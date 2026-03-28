@@ -25,7 +25,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .screen.hidden-left { transform:translateX(-100%); pointer-events:none; }
 
 /* header */
-.hdr{ padding:14px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.hdr{ padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .hdr-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .hdr-title{ font-size:13px; font-weight:500; color:var(--text); }
 .hdr-right{ display:flex; align-items:center; gap:8px; }
@@ -209,6 +209,15 @@ body::before{
 .inp-field:focus{ border-color:var(--a1); box-shadow:0 0 0 2px rgba(0,136,255,.15); }
 .inp-sep{ font-size:18px; color:var(--border); padding-top:16px; }
 
+/* ══ SUGGERIMENTO PESO ══ */
+.weight-hint{
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  font-family:var(--mono); font-size:10px; color:var(--textm);
+  margin-bottom:12px; min-height:18px;
+}
+.weight-hint-val{ color:var(--a2); font-weight:500; }
+.weight-hint-pr{ color:#ffaa00; font-weight:500; }
+
 /* ══ MATITA NOTE ══ */
 .notes-row{ display:flex; align-items:center; gap:8px; margin-bottom:18px; width:100%; }
 .note-btn{
@@ -273,6 +282,23 @@ body::before{
 /* ══ CIRCUITO BADGE ══ */
 .circuit-badge{ display:none; align-items:center; gap:6px; background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); border-radius:8px; padding:4px 12px; font-family:var(--mono); font-size:9px; color:var(--green); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
 
+/* forza il ring del timer a tempo ad usare il gradiente contrastante */
+#timedRingFill{ stroke:url(#tg); }
+
+/* ══ ESERCIZIO A TEMPO — schermata tipo recupero ══ */
+#screenTimedBody{
+  flex:1; display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:16px 24px; overflow-y:auto;
+}
+/* glow ring a tempo usa colori contrastanti via --t1-rgb */
+#timedRingWrap::before{
+  background:radial-gradient(circle,
+    rgba(var(--t1-rgb),.18) 0%,
+    rgba(var(--t2-rgb),.08) 50%,
+    transparent 70%);
+}
+
 /* ══ STANCHEZZA ══ */
 .fatigue-wrap{ width:100%; margin-bottom:14px; text-align:center; }
 .fatigue-lbl{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; display:block; }
@@ -289,7 +315,22 @@ body::before{
 .fa-text{ font-size:12px; color:var(--textm); line-height:1.6; }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
+(function(){try{
+  var d=JSON.parse(localStorage.getItem('fittrack_v4'));
+  var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};
+  var t=th[(d&&d.theme)||'blue']||th.blue;
+  document.documentElement.style.setProperty('--a1',t[0]);
+  document.documentElement.style.setProperty('--a2',t[1]);
+  /* colori contrastanti per il timer esercizi a tempo */
+  var tt={blue:['#7c3aed','#a855f7','124,58,237','168,85,247'],
+          purple:['#f97316','#fbbf24','249,115,22','251,191,36'],
+          orange:['#0088ff','#00ccff','0,136,255','0,204,255']};
+  var tc=tt[(d&&d.theme)||'blue']||tt.blue;
+  document.documentElement.style.setProperty('--t1',tc[0]);
+  document.documentElement.style.setProperty('--t2',tc[1]);
+  document.documentElement.style.setProperty('--t1-rgb',tc[2]);
+  document.documentElement.style.setProperty('--t2-rgb',tc[3]);
+}catch(e){}})();
 </script>
 </head>
 <body>
@@ -318,7 +359,7 @@ body::before{
       <div class="prog-lbl" id="exProgLbl"></div>
     </div>
   </div>
-  <div class="ex-body-wrap">
+  <div class="ex-body-wrap" id="exBodyWrap">
     <div id="circuitBadge" class="circuit-badge">⚡ CIRCUITO · Esercizio <span id="circuitPos"></span></div>
     <div class="ex-big-circle" id="exCircle"></div>
     <div class="ex-big-name" id="exName"></div>
@@ -331,12 +372,15 @@ body::before{
         <div class="inp-lbl">Peso (kg)</div>
         <input class="inp-field" type="number" id="inputWeight" placeholder="—" min="0" max="999" step="0.5">
       </div>
-      <div class="inp-sep">×</div>
-      <div class="inp-group">
+      <div class="inp-sep" id="inpSep">×</div>
+      <div class="inp-group" id="repsGroup">
         <div class="inp-lbl">Reps fatte</div>
         <input class="inp-field" type="number" id="inputReps" placeholder="—" min="0" max="999" step="1">
       </div>
     </div>
+
+    <!-- Suggerimento peso carico -->
+    <div id="weightHint" class="weight-hint"></div>
 
     <!-- Matita note esercizio -->
     <div class="notes-row">
@@ -346,6 +390,31 @@ body::before{
 
     <button class="fine-btn" onclick="onFineSerie()">Fine serie</button>
   </div>
+
+  <!-- ══ SCHERMATA ESERCIZIO A TEMPO (stile recupero) ══ -->
+  <div id="screenTimedBody">
+    <div class="rec-label" id="timedExLabel">TEMPO RIMANENTE</div>
+    <div class="series-dots" id="timedSeriesDots" style="margin-bottom:20px;"></div>
+    <div class="ring-wrap" id="timedRingWrap">
+      <svg class="ring-svg" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" id="timedStop1"/>
+            <stop offset="100%" id="timedStop2"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="100" cy="100" r="88"/>
+        <circle class="ring-fill" id="timedRingFill" cx="100" cy="100" r="88"
+          stroke="url(#tg)" stroke-dasharray="553" stroke-dashoffset="553"/>
+      </svg>
+      <div class="ring-time">
+        <div class="ring-num" id="timedRingNum">0s</div>
+        <div class="ring-sec">secondi</div>
+      </div>
+    </div>
+    <button class="fine-btn" style="width:100%;margin-top:8px;" onclick="onFineSerie()">Fine serie</button>
+  </div>
+
   <div class="next-card" id="nextCard">
     <div class="next-icon" id="nextIcon"></div>
     <div>
@@ -436,6 +505,16 @@ body::before{
 
     <div id="fatigueAdvice"></div>
 
+    <!-- Input km per sessioni corsa/bici -->
+    <div id="kmWrap" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 14px;margin-bottom:16px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--textm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">📍 Distanza percorsa (facoltativo)</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input id="kmInput" type="number" step="0.1" min="0" max="999" placeholder="es. 5.0"
+          style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:22px;font-weight:500;text-align:center;padding:10px;outline:none;">
+        <span style="font-size:14px;color:var(--textm);font-family:var(--mono);font-weight:500;">km</span>
+      </div>
+    </div>
+
     <div class="end-exs-title">
       <div style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div>
       Esercizi completati
@@ -477,7 +556,7 @@ if(!WORKOUT || !WORKOUT.exs || !WORKOUT.exs.length){
         type:      _fwo.type,
         typeLabel: _fTLabel[_fwo.type]||'Altro',
         typeIcon:  _fTIcon[_fwo.type]||'💪',
-        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',circuitGroup:ex.circuitGroup??null}))
+        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',circuitGroup:ex.circuitGroup??null,weight:ex.weight??null,timed:ex.timed||false}))
       };
     } else {
       location.replace('scegli.html');
@@ -606,7 +685,9 @@ const CIRC = 2*Math.PI*88;
    weights e reps raccolgono un valore per ogni serie completata
 ──────────────────────────────────────────────── */
 let exData = WORKOUT.exs.map(()=>({ weights:[], reps:[], note:'', fatigues:[] }));
-let lastCompletedEx   = 0;   /* quale esercizio ha appena finito la serie */
+let lastCompletedEx   = 0;
+let timedExInt = null;
+let timedExSec = 0;   /* quale esercizio ha appena finito la serie */
 let fatigueForThisRest= 0;   /* 0=non impostato, 1=😴, 2=😐, 3=💪 */
 
 /* ── PR tracking ── */
@@ -696,6 +777,48 @@ function toggleNote(){
   field.onblur = ()=>{ exData[curEx].note = field.value.trim(); };
 }
 
+/* ── Timer esercizio a tempo ── */
+function startTimedEx(){
+  clearInterval(timedExInt);
+  const ex = WORKOUT.exs[curEx];
+  timedExSec = ex.reps;
+
+  /* imposta colori contrastanti sul gradiente del ring */
+  const _t1 = getComputedStyle(document.documentElement).getPropertyValue('--t1').trim() || '#7c3aed';
+  const _t2 = getComputedStyle(document.documentElement).getPropertyValue('--t2').trim() || '#a855f7';
+  const _s1 = document.getElementById('timedStop1');
+  const _s2 = document.getElementById('timedStop2');
+  if(_s1) _s1.setAttribute('stop-color', _t1);
+  if(_s2) _s2.setAttribute('stop-color', _t2);
+
+  /* etichetta con nome esercizio */
+  const _lbl = document.getElementById('timedExLabel');
+  if(_lbl) _lbl.textContent = ex.name.toUpperCase();
+
+  /* dots serie */
+  const _dots = document.getElementById('timedSeriesDots');
+  if(_dots) _dots.innerHTML = Array.from({length:ex.sets},(_,j)=>{
+    const cls = j<sd[curEx]?'sdot done':j===sd[curEx]?'sdot next':'sdot';
+    return `<div class="${cls}">${j<sd[curEx]?'✓':j+1}</div>`;
+  }).join('');
+
+  updateTimedDisplay();
+  timedExInt = setInterval(()=>{
+    if(timedExSec <= 0){ clearInterval(timedExInt); onFineSerie(); return; }
+    timedExSec--;
+    updateTimedDisplay();
+  }, 1000);
+}
+
+function updateTimedDisplay(){
+  const ex   = WORKOUT.exs[curEx];
+  const pct  = ex.reps > 0 ? timedExSec / ex.reps : 0;
+  const fill = document.getElementById('timedRingFill');
+  const num  = document.getElementById('timedRingNum');
+  if(fill) fill.style.strokeDashoffset = Math.max(0, CIRC * (1 - pct));
+  if(num)  num.textContent = timedExSec + 's';
+}
+
 /* ── Feedback stanchezza ── */
 function setFatigue(val){
   const prev = fatigueForThisRest;
@@ -741,7 +864,9 @@ function renderEx(){
   document.getElementById('exProgLbl').textContent = `Serie ${d+1} / ${ex.sets}`;
   document.getElementById('exCircle').textContent  = ex.icon;
   document.getElementById('exName').textContent    = ex.name;
-  document.getElementById('exSub').textContent     = `${ex.sets} serie · ${ex.reps} ripetizioni`;
+  document.getElementById('exSub').textContent     = ex.timed
+    ? `${ex.sets} serie · ${ex.reps}s`
+    : `${ex.sets} serie · ${ex.reps} ripetizioni`;
 
   /* Circuit badge */
   const _cg = ex.circuitGroup ?? null;
@@ -774,12 +899,53 @@ function renderEx(){
   rEl.value = '';
   rEl.placeholder = ex.reps;
 
+  /* Suggerimento peso */
+  const _hintEl = document.getElementById('weightHint');
+  if(_hintEl){
+    if(exData[curEx].weights.length > 0 && lastW !== '' && lastW !== null){
+      /* Serie 2+: mostra il peso della serie precedente */
+      _hintEl.innerHTML = `↑ Serie precedente: <span class="weight-hint-val">${lastW} kg</span>`;
+    } else if(exData[curEx].weights.length === 0){
+      /* Prima serie: usa peso configurato, poi fallback su PR */
+      if(ex.weight !== null && ex.weight !== undefined){
+        if(wEl.value === '') wEl.value = ex.weight;
+        _hintEl.innerHTML = '';
+      } else {
+        const _pr = getPRs()[ex.name];
+        if(_pr && _pr.maxWeight){
+          _hintEl.innerHTML = `💾 Ultimo carico: <span class="weight-hint-pr">${_pr.maxWeight} kg</span>`;
+          if(wEl.value === '') wEl.value = _pr.maxWeight;
+        } else {
+          _hintEl.innerHTML = '';
+        }
+      }
+    } else {
+      _hintEl.innerHTML = '';
+    }
+  }
+
   /* Note: mantieni testo e visibilità */
   noteEl.value = exData[curEx].note || '';
   const noteVisible = !!exData[curEx].note;
   noteEl.classList.toggle('visible', noteVisible);
   noteBtn.classList.toggle('active', noteVisible);
   noteEl.onblur = ()=>{ exData[curEx].note = noteEl.value.trim(); };
+
+  /* Modalità a tempo: schermata stile recupero */
+  const _bodyWrap  = document.getElementById('exBodyWrap');
+  const _timedBody = document.getElementById('screenTimedBody');
+  const _nextCard2 = document.getElementById('nextCard');
+  if(ex.timed){
+    if(_bodyWrap)  _bodyWrap.style.display  = 'none';
+    if(_timedBody) _timedBody.style.display = 'flex';
+    if(_nextCard2) _nextCard2.style.display = 'none';
+    startTimedEx();
+  } else {
+    if(_bodyWrap)  _bodyWrap.style.display  = '';
+    if(_timedBody) _timedBody.style.display = 'none';
+    if(_nextCard2) _nextCard2.style.display = '';
+    clearInterval(timedExInt);
+  }
 
   const nx = WORKOUT.exs[curEx+1];
   const nc = document.getElementById('nextCard');
@@ -795,12 +961,15 @@ function renderEx(){
 
 /* ── Fine serie ── */
 function onFineSerie(){
-  lastCompletedEx = curEx;   /* salva PRIMA di qualsiasi routing */
+  clearInterval(timedExInt);  /* ferma timer a tempo se attivo */
+  lastCompletedEx = curEx;    /* salva PRIMA di qualsiasi routing */
   const ex = WORKOUT.exs[curEx];
 
   /* Salva peso, reps e nota della serie appena completata */
   const wVal = parseFloat(document.getElementById('inputWeight').value);
-  const rVal = parseInt(document.getElementById('inputReps').value, 10);
+  const rVal = ex.timed
+    ? ex.reps   /* per esercizi a tempo salva la durata target */
+    : parseInt(document.getElementById('inputReps').value, 10);
   exData[curEx].weights.push(isNaN(wVal) ? null : wVal);
   exData[curEx].reps.push(isNaN(rVal) ? null : rVal);
   exData[curEx].note = document.getElementById('noteField').value.trim();
@@ -953,7 +1122,7 @@ function endSession(){
       <div class="end-ex-icon">${ex.icon}</div>
       <div style="flex:1">
         <div class="end-ex-name">${ex.name}${prBadge}</div>
-        <div class="end-ex-detail">${sd[i]} / ${ex.sets} serie · ${ex.reps} rep${weightTxt}</div>
+        <div class="end-ex-detail">${sd[i]} / ${ex.sets} serie · ${ex.timed ? ex.reps+'s' : ex.reps+' rep'}${weightTxt}</div>
         ${noteTxt}
       </div>
       <div class="end-ex-check">${sd[i]>=ex.sets?'✓':'—'}</div>
@@ -975,6 +1144,14 @@ function endSession(){
   }
   document.getElementById('fatigueAdvice').innerHTML = _adviceHTML;
 
+  /* Mostra campo km per corsa/bici */
+  const _kmWrap = document.getElementById('kmWrap');
+  if(_kmWrap && (WORKOUT.type === 'run' || WORKOUT.type === 'bike')){
+    _kmWrap.style.display = 'block';
+    const _kmInp = document.getElementById('kmInput');
+    if(_kmInp) _kmInp.focus();
+  }
+
   show('screenEnd');
 
   /* 3. Toast di conferma salvataggio */
@@ -992,6 +1169,18 @@ function confirmEnd(){
 }
 
 function goHome() {
+  /* Salva km se inserito */
+  const _kmWrap = document.getElementById('kmWrap');
+  if(_kmWrap && _kmWrap.style.display !== 'none'){
+    const _kmVal = parseFloat(document.getElementById('kmInput')?.value);
+    if(!isNaN(_kmVal) && _kmVal > 0){
+      try{
+        const _d = JSON.parse(localStorage.getItem(KEY)) || {};
+        if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].km = _kmVal;
+        localStorage.setItem(KEY, JSON.stringify(_d));
+      } catch(e){}
+    }
+  }
   const isRecord = sessionStorage.getItem('ft_new_streak_record') === '1';
   sessionStorage.removeItem('ft_new_streak_record');
   location.href = isRecord ? 'home.html?newRecord=1' : 'home.html';
