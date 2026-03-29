@@ -189,6 +189,86 @@ body::before{
   to{   opacity:1; transform:translateY(0); }
 }
 .wo-card{ animation:fadeUp .3s ease both; }
+
+/* ── overlay / sheet ── */
+.overlay{
+  position:fixed; inset:0; z-index:60;
+  background:rgba(0,0,0,.75);
+  display:none; align-items:flex-end; justify-content:center;
+}
+.overlay.open{ display:flex; }
+.sheet{
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border:1px solid var(--border); border-bottom:none;
+  width:100%; max-width:480px; padding:24px 20px 36px;
+  animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+  max-height:85vh; overflow-y:auto;
+}
+.sheet::-webkit-scrollbar{ width:0; }
+@keyframes slideUp{ from{transform:translateY(100%);} to{transform:translateY(0);} }
+.sheet-handle{ width:36px; height:4px; border-radius:99px; background:var(--border); margin:0 auto 20px; }
+.sheet-title{ font-size:17px; font-weight:600; color:var(--text); margin-bottom:6px; }
+.sheet-sub{ font-size:13px; color:var(--textm); margin-bottom:20px; line-height:1.5; }
+.field-lbl{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; display:block; }
+.field-inp{
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  border-radius:10px; padding:11px 14px; color:var(--text);
+  font-family:var(--font); font-size:15px; outline:none;
+  transition:border-color .15s; margin-bottom:14px;
+}
+.field-inp:focus{ border-color:var(--a1); }
+.field-inp::placeholder{ color:var(--textm); }
+.primary-btn{
+  width:100%; padding:14px; border-radius:12px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; color:#fff; font-size:14px; font-weight:500;
+  cursor:pointer; font-family:var(--font); transition:opacity .15s;
+}
+.primary-btn:disabled{ opacity:.4; cursor:default; }
+.cancel-btn{
+  width:100%; padding:12px; background:none; border:none;
+  color:var(--textm); font-family:var(--font); font-size:13px;
+  cursor:pointer; margin-top:8px;
+}
+
+/* ── tipo allenamento (log manuale) ── */
+.tipo-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+.tipo-btn{
+  padding:10px 6px; border-radius:10px;
+  background:var(--bg3); border:1.5px solid var(--border);
+  color:var(--textm); font-family:var(--font); font-size:12px;
+  font-weight:500; cursor:pointer; text-align:center; transition:all .15s;
+}
+.tipo-btn.sel{ border-color:var(--a1); color:var(--a2); background:rgba(0,136,255,.08); }
+
+/* ── esercizi personalizzati ── */
+.cex-row{
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg3); border-radius:10px;
+  padding:10px 12px; margin-bottom:8px;
+}
+.cex-name{ flex:1; font-size:13px; font-weight:500; color:var(--text); }
+.cex-detail{ font-size:11px; color:var(--textm); font-family:var(--mono); flex-shrink:0; }
+.cex-del{
+  width:26px; height:26px; border-radius:7px; flex-shrink:0;
+  background:rgba(255,68,85,.08); border:1px solid rgba(255,68,85,.2);
+  color:#ff4455; font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.add-ex-row{ display:flex; gap:8px; margin-bottom:16px; }
+.add-ex-row .field-inp{ margin-bottom:0; }
+.add-ex-row .field-inp.sm{ width:64px; flex-shrink:0; text-align:center; }
+.add-ex-btn{
+  padding:11px 14px; border-radius:10px;
+  background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
+  color:var(--a2); font-size:18px; cursor:pointer; flex-shrink:0;
+}
+
+/* ── card manuale ── */
+.wo-card.manuale .wo-icon{
+  background:rgba(255,170,0,.08); border-color:rgba(255,170,0,.2);
+}
+.wo-card.manuale .wo-name{ color:var(--warn, #ffaa00); }
 </style>
 </head>
 <body>
@@ -205,6 +285,62 @@ body::before{
 
 <div class="footer">
   <button class="start-btn" id="startBtn" disabled onclick="avvia()">Seleziona un allenamento</button>
+</div>
+
+<!-- SHEET: PERSONALIZZA ALLENAMENTO LIBERO -->
+<div class="overlay" id="customizeSheet" onclick="closeCustomizeOnBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">✏️ Personalizza allenamento</div>
+    <div class="sheet-sub">Aggiungi e modifica gli esercizi prima di iniziare.</div>
+
+    <div id="customExList"></div>
+
+    <label class="field-lbl">Aggiungi esercizio</label>
+    <div class="add-ex-row">
+      <input class="field-inp" id="cexName" placeholder="Nome esercizio" style="flex:1;margin-bottom:0;">
+      <input class="field-inp sm" id="cexSets" type="number" min="1" max="20" placeholder="Ser." title="Serie">
+      <input class="field-inp sm" id="cexReps" type="number" min="1" max="100" placeholder="Rep." title="Reps">
+      <button class="add-ex-btn" onclick="addCustomEx()">+</button>
+    </div>
+
+    <button class="primary-btn" id="startCustomBtn" onclick="startCustomWorkout()">Inizia allenamento →</button>
+    <button class="cancel-btn" onclick="closeCustomizeSheet()">Annulla</button>
+  </div>
+</div>
+
+<!-- SHEET: LOG MANUALE ATTIVITÀ PASSATA -->
+<div class="overlay" id="logManualeSheet" onclick="closeLogManualeOnBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📋 Registra attività</div>
+    <div class="sheet-sub">Aggiungi una sessione già completata.</div>
+
+    <label class="field-lbl">Tipo</label>
+    <div class="tipo-row">
+      <button class="tipo-btn sel" data-tipo="run" onclick="selectLogTipo('run')">🏃 Corsa</button>
+      <button class="tipo-btn" data-tipo="gym" onclick="selectLogTipo('gym')">🏋️ Palestra</button>
+      <button class="tipo-btn" data-tipo="bike" onclick="selectLogTipo('bike')">🚴 Bici</button>
+      <button class="tipo-btn" data-tipo="other" onclick="selectLogTipo('other')">💪 Altro</button>
+    </div>
+
+    <label class="field-lbl">Data</label>
+    <input class="field-inp" id="logData" type="date">
+
+    <label class="field-lbl">Durata (minuti)</label>
+    <input class="field-inp" id="logDurata" type="number" min="1" max="600" placeholder="es. 45">
+
+    <div id="logKmWrap">
+      <label class="field-lbl">Km percorsi</label>
+      <input class="field-inp" id="logKm" type="number" min="0" max="999" step="0.1" placeholder="es. 5.2">
+    </div>
+
+    <label class="field-lbl">Note (opzionale)</label>
+    <input class="field-inp" id="logNote" placeholder="Come è andata?">
+
+    <button class="primary-btn" onclick="saveLogManuale()">Salva sessione</button>
+    <button class="cancel-btn" onclick="closeLogManualeSheet()">Annulla</button>
+  </div>
 </div>
 
 <script>
@@ -313,7 +449,7 @@ function buildUI(){
     });
   }
 
-  /* allenamento libero */
+  /* allenamento libero + log manuale */
   html += `<div class="section-lbl">Libero</div>
     <div class="wo-card libero" id="card_libero"
          style="animation-delay:${WORKOUTS.length*0.05}s"
@@ -323,11 +459,22 @@ function buildUI(){
         <div class="wo-icon">✏️</div>
         <div>
           <div class="wo-name">Allenamento libero</div>
-          <div class="wo-type">Scegli esercizi sul momento</div>
+          <div class="wo-type">Scegli gli esercizi prima di iniziare</div>
         </div>
       </div>
       <div class="wo-meta">
-        <span class="wo-chip">Personalizzato</span>
+        <span class="wo-chip">Personalizzabile</span>
+      </div>
+    </div>
+    <div class="wo-card manuale" id="card_manuale"
+         style="animation-delay:${(WORKOUTS.length+1)*0.05}s"
+         onclick="openLogManuale()">
+      <div class="wo-top">
+        <div class="wo-icon">📋</div>
+        <div>
+          <div class="wo-name">Registra attività passata</div>
+          <div class="wo-type">Aggiungi una sessione già completata</div>
+        </div>
       </div>
     </div>`;
 
@@ -369,34 +516,168 @@ function toggleExpand(id, e){
 function avvia(){
   if(!selectedId) return;
 
-  let pending;
   if(selectedId === 'libero'){
-    pending = {
-      name:'Allenamento libero', day:'Oggi',
-      type:'gym', typeLabel:'Palestra', typeIcon:'🏋️',
-      exs:[
-        {name:'Squat',       sets:4, reps:10, rec:120, icon:'🏋️'},
-        {name:'Panca Piana', sets:4, reps:10, rec:90,  icon:'🏋️'},
-        {name:'Trazioni',    sets:3, reps:8,  rec:90,  icon:'💪'},
-      ]
-    };
-  } else {
-    const wo = WORKOUTS.find(w=>w.id===selectedId);
-    if(!wo) return;
-    const today = new Date();
-    const giorni = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-    pending = {
-      name:      wo.name,
-      day:       `${giorni[today.getDay()]} · ${wo.typeLabel}`,
-      type:      wo.type,
-      typeLabel: wo.typeLabel,
-      typeIcon:  wo.icon,
-      exs:       wo.exs.map(ex=>({name:ex.name, sets:ex.sets, reps:ex.reps, rec:ex.rec||90, icon:ex.icon||'💪', circuitGroup:ex.circuitGroup??null, weight:ex.weight??null, timed:ex.timed||false}))
-    };
+    openCustomizeSheet();
+    return;
   }
 
+  const wo = WORKOUTS.find(w=>w.id===selectedId);
+  if(!wo) return;
+  const today = new Date();
+  const giorni = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+  const pending = {
+    name:      wo.name,
+    day:       `${giorni[today.getDay()]} · ${wo.typeLabel}`,
+    type:      wo.type,
+    typeLabel: wo.typeLabel,
+    typeIcon:  wo.icon,
+    exs:       wo.exs.map(ex=>({name:ex.name, sets:ex.sets, reps:ex.reps, rec:ex.rec||90, icon:ex.icon||'💪', circuitGroup:ex.circuitGroup??null, weight:ex.weight??null, timed:ex.timed||false}))
+  };
   localStorage.setItem('fittrack_pending', JSON.stringify(pending));
   location.href = 'sessione.html';
+}
+
+/* ══════════════════════════════════════════════
+   ALLENAMENTO LIBERO PERSONALIZZABILE
+══════════════════════════════════════════════ */
+let _customExs = [
+  {name:'Squat',       sets:4, reps:10},
+  {name:'Panca Piana', sets:4, reps:10},
+  {name:'Trazioni',    sets:3, reps:8}
+];
+
+function openCustomizeSheet(){
+  renderCustomExList();
+  document.getElementById('cexName').value = '';
+  document.getElementById('cexSets').value = '';
+  document.getElementById('cexReps').value = '';
+  document.getElementById('customizeSheet').classList.add('open');
+}
+function closeCustomizeSheet(){ document.getElementById('customizeSheet').classList.remove('open'); }
+function closeCustomizeOnBg(e){ if(e.target === document.getElementById('customizeSheet')) closeCustomizeSheet(); }
+
+function renderCustomExList(){
+  const list = document.getElementById('customExList');
+  if(!_customExs.length){
+    list.innerHTML = `<div style="text-align:center;color:var(--textm);font-size:12px;padding:12px 0 16px;">Nessun esercizio. Aggiungine uno sotto.</div>`;
+    return;
+  }
+  list.innerHTML = _customExs.map((ex, i) => `
+    <div class="cex-row">
+      <div class="cex-name">${ex.name}</div>
+      <div class="cex-detail">${ex.sets}×${ex.reps}</div>
+      <button class="cex-del" onclick="removeCustomEx(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addCustomEx(){
+  const name = document.getElementById('cexName').value.trim();
+  const sets = parseInt(document.getElementById('cexSets').value) || 3;
+  const reps = parseInt(document.getElementById('cexReps').value) || 10;
+  if(!name){ document.getElementById('cexName').focus(); return; }
+  _customExs.push({name, sets, reps});
+  document.getElementById('cexName').value = '';
+  document.getElementById('cexSets').value = '';
+  document.getElementById('cexReps').value = '';
+  document.getElementById('cexName').focus();
+  renderCustomExList();
+}
+
+function removeCustomEx(i){
+  _customExs.splice(i, 1);
+  renderCustomExList();
+}
+
+function startCustomWorkout(){
+  if(!_customExs.length){ alert('Aggiungi almeno un esercizio.'); return; }
+  const pending = {
+    name: 'Allenamento libero', day: 'Oggi · Palestra',
+    type: 'gym', typeLabel: 'Palestra', typeIcon: '🏋️',
+    exs: _customExs.map(ex => ({name:ex.name, sets:ex.sets, reps:ex.reps, rec:90, icon:'💪'}))
+  };
+  localStorage.setItem('fittrack_pending', JSON.stringify(pending));
+  location.href = 'sessione.html';
+}
+
+/* ══════════════════════════════════════════════
+   LOG MANUALE ATTIVITÀ PASSATA
+══════════════════════════════════════════════ */
+let _logTipo = 'run';
+
+function openLogManuale(){
+  _logTipo = 'run';
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.toggle('sel', b.dataset.tipo === 'run'));
+  document.getElementById('logData').value = new Date().toISOString().slice(0,10);
+  document.getElementById('logDurata').value = '';
+  document.getElementById('logKm').value = '';
+  document.getElementById('logNote').value = '';
+  document.getElementById('logKmWrap').style.display = '';
+  document.getElementById('logManualeSheet').classList.add('open');
+}
+function closeLogManualeSheet(){ document.getElementById('logManualeSheet').classList.remove('open'); }
+function closeLogManualeOnBg(e){ if(e.target === document.getElementById('logManualeSheet')) closeLogManualeSheet(); }
+
+function selectLogTipo(t){
+  _logTipo = t;
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.toggle('sel', b.dataset.tipo === t));
+  document.getElementById('logKmWrap').style.display = (t==='run'||t==='bike') ? '' : 'none';
+}
+
+function saveLogManuale(){
+  const dateVal    = document.getElementById('logData').value;
+  const durMin     = parseInt(document.getElementById('logDurata').value);
+  const km         = parseFloat(document.getElementById('logKm').value) || 0;
+  const note       = document.getElementById('logNote').value.trim();
+
+  if(!dateVal){ alert('Inserisci una data.'); return; }
+  if(!durMin || durMin < 1){ alert('Inserisci una durata valida.'); return; }
+
+  const TICON  = {gym:'🏋️', run:'🏃', bike:'🚴', other:'💪'};
+  const TLABEL = {gym:'Palestra', run:'Corsa', bike:'Bici', other:'Altro'};
+  const MET    = {gym:5.0, run:9.0, bike:7.0, other:5.0};
+
+  const sessSec = durMin * 60;
+  let kcal = Math.round(MET[_logTipo] * 70 * (sessSec/3600));
+  try{
+    const _d = JSON.parse(localStorage.getItem('fittrack_v4')) || {};
+    const kg = _d.currentWeight || _d.profile?.currentWeight || 70;
+    kcal = Math.round(MET[_logTipo] * kg * (sessSec/3600));
+  } catch(e){}
+
+  const dateObj  = new Date(dateVal + 'T12:00:00');
+  const dayIndex = (dateObj.getDay()+6)%7;
+  const dayLabels= ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+
+  const session = {
+    date:      dateVal,
+    dayIndex,
+    dayLabel:  dayLabels[dayIndex],
+    type:      _logTipo,
+    typeLabel: TLABEL[_logTipo],
+    typeIcon:  TICON[_logTipo],
+    kcal,
+    duration:  sessSec,
+    km:        (_logTipo==='run'||_logTipo==='bike') ? km : 0,
+    sessionNote: note,
+    sets:      [],
+    manuale:   true
+  };
+
+  try{
+    const data = JSON.parse(localStorage.getItem('fittrack_v4')) || {};
+    if(!data.sessions) data.sessions = [];
+    /* inserisci in ordine cronologico */
+    const idx = data.sessions.findIndex(s => s.date <= dateVal);
+    if(idx === -1) data.sessions.push(session);
+    else data.sessions.splice(idx, 0, session);
+    localStorage.setItem('fittrack_v4', JSON.stringify(data));
+    closeLogManualeSheet();
+    /* feedback visivo poi torna */
+    const btn = document.querySelector('#logManualeSheet .primary-btn');
+    if(btn){ btn.textContent = '✓ Salvato!'; setTimeout(() => location.href='registra.html', 800); }
+    else location.href = 'registra.html';
+  } catch(e){ alert('Errore nel salvataggio: ' + e.message); }
 }
 
 buildUI();
