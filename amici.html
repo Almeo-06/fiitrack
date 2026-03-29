@@ -179,18 +179,45 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 }
 .friend-row:last-child{ border-bottom:none; }
 .friend-row:active{ background:var(--bg3); }
+
+/* avatar con dot online */
+.friend-av-wrap{ position:relative; flex-shrink:0; }
+.online-dot{
+  position:absolute; bottom:1px; right:1px;
+  width:11px; height:11px; border-radius:50%;
+  background:var(--green); border:2px solid var(--bg2);
+}
+
 .friend-streak{
   font-family:var(--mono); font-size:14px; font-weight:600;
   color:var(--a2); flex-shrink:0; text-align:right;
 }
 .friend-streak.inactive{ color:var(--red); }
 .friend-streak-lbl{ font-size:8px; color:var(--textm); text-transform:uppercase; }
+
+/* badge PR */
+.pr-badge{
+  display:inline-flex; align-items:center; gap:3px;
+  background:rgba(255,170,0,.1); border:1px solid rgba(255,170,0,.2);
+  border-radius:6px; padding:2px 7px;
+  font-size:10px; color:var(--warn); font-weight:500;
+}
+
+.action-btns{ display:flex; gap:6px; flex-shrink:0; }
 .challenge-btn{
   width:30px; height:30px; border-radius:8px; flex-shrink:0;
   background:var(--bg3); border:1px solid var(--border);
-  color:var(--textm); font-size:14px; cursor:pointer;
+  color:var(--textm); font-size:13px; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
 }
+.remove-btn{
+  width:30px; height:30px; border-radius:8px; flex-shrink:0;
+  background:rgba(255,68,85,.07); border:1px solid rgba(255,68,85,.15);
+  color:var(--red); font-size:13px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .1s;
+}
+.remove-btn:active{ background:rgba(255,68,85,.18); }
 
 /* ── EMPTY STATE ── */
 .empty-state{ text-align:center; padding:40px 20px; color:var(--textm); }
@@ -542,6 +569,19 @@ async function saveUsername(){
 }
 
 /* ══════════════════════════════════════════════
+   HELPER FOTO — priorità: app photo > Google photo > emoji
+══════════════════════════════════════════════ */
+function getAvatarHtml(u){
+  if(u.appPhotoDataUrl){
+    return `<img src="${u.appPhotoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+  }
+  if(u.photoURL){
+    return `<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+  }
+  return u.avatarEmoji || '😎';
+}
+
+/* ══════════════════════════════════════════════
    SYNC PROFILO LOCALE → FIRESTORE
 ══════════════════════════════════════════════ */
 function getSessionsThisWeek(sessions){
@@ -559,18 +599,43 @@ async function syncProfile(){
   try{
     const ld = JSON.parse(localStorage.getItem(LS_KEY)) || {};
     const sessThisWeek = getSessionsThisWeek(ld.sessions || []);
+
     /* leggi privacy corrente per non sovrascriverla */
     const snap = await _db.collection('users').doc(_me.uid).get();
     const existingPrivacy = (snap.exists && snap.data().privacy) || { streak:true, bestStreak:true, sessionsThisWeek:true, personalRecords:true, challenges:true };
     const currentAvatar = (ld.profile && ld.profile.avatar) || _me.avatarEmoji;
 
+    /* foto profilo app (max 200KB per non sforare limite Firestore) */
+    let appPhotoDataUrl = null;
+    const appPhoto = ld.profile && ld.profile.photoDataUrl;
+    if(appPhoto && appPhoto.length * 0.75 < 200000){
+      appPhotoDataUrl = appPhoto;
+    }
+
+    /* PR: count + top 3 per peso */
+    const prs = ld.personalRecords || {};
+    const prEntries = Object.entries(prs);
+    const prCount = prEntries.length;
+    const topPRs = prEntries
+      .sort((a,b) => (b[1].maxWeight||0) - (a[1].maxWeight||0))
+      .slice(0,3)
+      .map(([name,d]) => ({ name, weight: d.maxWeight || 0 }));
+
+    /* sfide attive */
+    const activeChallengesCount = (ld.challenges || [])
+      .filter(c => !c.completed && c.status !== 'completed').length;
+
     await _db.collection('users').doc(_me.uid).update({
-      streak:           ld.streak           || 0,
-      bestStreak:       ld.bestStreak        || 0,
-      sessionsThisWeek: sessThisWeek,
-      avatarEmoji:      currentAvatar,
-      lastActive:       firebase.firestore.FieldValue.serverTimestamp(),
-      privacy:          existingPrivacy
+      streak:                ld.streak      || 0,
+      bestStreak:            ld.bestStreak  || 0,
+      sessionsThisWeek:      sessThisWeek,
+      avatarEmoji:           currentAvatar,
+      appPhotoDataUrl:       appPhotoDataUrl,
+      prCount:               prCount,
+      topPRs:                topPRs,
+      activeChallengesCount: activeChallengesCount,
+      lastActive:            firebase.firestore.FieldValue.serverTimestamp(),
+      privacy:               existingPrivacy
     });
   } catch(e){ console.warn('syncProfile error:', e); }
 }
@@ -621,10 +686,7 @@ async function searchUser(username){
 }
 
 function renderUserCard(u, state, targetUid=''){
-  const av = u.photoURL
-    ? `<img src="${u.photoURL}" alt="">`
-    : (u.avatarEmoji || '😎');
-  const avContent = u.photoURL ? `<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">` : (u.avatarEmoji || '😎');
+  const avContent = getAvatarHtml(u);
 
   let btn = '';
   if(state === 'self')    btn = `<button class="add-btn already">Sei tu</button>`;
@@ -760,37 +822,54 @@ async function loadFriends(){
     const now = Date.now();
     const MS_48H = 48 * 60 * 60 * 1000;
 
-    const rows = profiles.map(snap => {
+    const todayStr = new Date().toISOString().slice(0,10);
+
+    const rows = profiles.map((snap, i) => {
       if(!snap.exists) return '';
-      const u = snap.data();
+      const u   = snap.data();
+      const uid = friendsSnap.docs[i].id;
 
-      /* determina inattività */
+      /* attività */
       const lastActiveMs = u.lastActive ? u.lastActive.toDate().getTime() : 0;
-      const inactive = (now - lastActiveMs) > MS_48H || u.streak === 0;
+      const lastActiveDay = u.lastActive ? u.lastActive.toDate().toISOString().slice(0,10) : '';
+      const inactive  = (now - lastActiveMs) > MS_48H || u.streak === 0;
+      const onlineToday = lastActiveDay === todayStr;
 
-      /* rispetta privacy */
-      const showStreak  = u.privacy?.streak  !== false;
-      const showSessions= u.privacy?.sessionsThisWeek !== false;
+      /* privacy */
+      const showStreak   = u.privacy?.streak             !== false;
+      const showSessions = u.privacy?.sessionsThisWeek   !== false;
+      const showPRs      = u.privacy?.personalRecords     !== false;
 
-      const streakVal   = showStreak ? (u.streak || 0) : '—';
-      const streakCls   = inactive ? 'inactive' : '';
-      const sessionsTxt = showSessions ? `${u.sessionsThisWeek || 0} sess. questa sett.` : '';
+      const streakVal    = showStreak   ? (u.streak || 0)            : '—';
+      const streakCls    = showStreak && inactive ? 'inactive'        : '';
+      const sessionsTxt  = showSessions ? `${u.sessionsThisWeek||0} sess. sett.` : '';
+      const prTxt        = showPRs && u.prCount ? `🏆 ${u.prCount} PR` : '';
 
-      const avContent = u.photoURL
-        ? `<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`
-        : (u.avatarEmoji || '😎');
+      const onlineDot    = onlineToday ? `<div class="online-dot"></div>` : '';
+      const metaItems    = [sessionsTxt, prTxt].filter(Boolean);
+      const metaHtml     = metaItems.map(t =>
+        t.startsWith('🏆')
+          ? `<span class="pr-badge">${t}</span>`
+          : `<span>${t}</span>`
+      ).join('');
 
-      return `<div class="friend-row">
-        <div class="user-av" style="width:42px;height:42px;font-size:20px;">${avContent}</div>
+      return `<div class="friend-row" id="friend_${uid}">
+        <div class="friend-av-wrap">
+          <div class="user-av" style="width:46px;height:46px;font-size:22px;">${getAvatarHtml(u)}</div>
+          ${onlineDot}
+        </div>
         <div class="user-info">
           <div class="user-name">@${u.username}</div>
-          <div class="user-meta">${sessionsTxt}</div>
+          <div class="user-meta" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;">${metaHtml}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0;margin-right:8px;">
+        <div style="text-align:right;flex-shrink:0;margin-right:6px;">
           <div class="friend-streak ${streakCls}">${streakVal}🔥</div>
           <div class="friend-streak-lbl">streak</div>
         </div>
-        <div class="challenge-btn" title="Prossimamente" onclick="showToast('Sfide con amici in arrivo!')">⚔️</div>
+        <div class="action-btns">
+          <button class="challenge-btn" title="Sfida (prossimamente)" onclick="showToast('Sfide in arrivo!')">⚔️</button>
+          <button class="remove-btn" title="Rimuovi amico" onclick="removeFriend('${uid}','${u.username}')">🗑</button>
+        </div>
       </div>`;
     }).filter(Boolean);
 
@@ -872,6 +951,25 @@ async function openNotif(){
 
 function closeNotif(){ document.getElementById('notifOverlay').classList.remove('open'); }
 function closeNotifOnBg(e){ if(e.target === document.getElementById('notifOverlay')) closeNotif(); }
+
+/* ══════════════════════════════════════════════
+   RIMUOVI AMICO
+══════════════════════════════════════════════ */
+async function removeFriend(friendUid, friendUsername){
+  if(!confirm(`Rimuovere @${friendUsername} dagli amici?`)) return;
+  if(!_me) return;
+  try{
+    const batch = _db.batch();
+    batch.delete(_db.collection('users').doc(_me.uid).collection('friends').doc(friendUid));
+    batch.delete(_db.collection('users').doc(friendUid).collection('friends').doc(_me.uid));
+    await batch.commit();
+    document.getElementById('friend_'+friendUid)?.remove();
+    /* se lista vuota mostra empty state */
+    const card = document.querySelector('.friends-card');
+    if(card && !card.children.length) loadFriends();
+    showToast('@'+friendUsername+' rimosso dagli amici');
+  } catch(e){ showToast('Errore: '+e.message); }
+}
 </script>
 </body>
 </html>
