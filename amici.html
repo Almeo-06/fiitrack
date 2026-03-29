@@ -569,6 +569,28 @@ async function saveUsername(){
 }
 
 /* ══════════════════════════════════════════════
+   COMPRIMI FOTO → thumbnail 64×64 JPEG (~3KB)
+══════════════════════════════════════════════ */
+function compressToThumbnail(dataUrl, size=64){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      /* center crop quadrato */
+      const min = Math.min(img.width, img.height);
+      const sx  = (img.width  - min) / 2;
+      const sy  = (img.height - min) / 2;
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      resolve(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+
+/* ══════════════════════════════════════════════
    HELPER FOTO — priorità: app photo > Google photo > emoji
 ══════════════════════════════════════════════ */
 function getAvatarHtml(u){
@@ -605,11 +627,11 @@ async function syncProfile(){
     const existingPrivacy = (snap.exists && snap.data().privacy) || { streak:true, bestStreak:true, sessionsThisWeek:true, personalRecords:true, challenges:true };
     const currentAvatar = (ld.profile && ld.profile.avatar) || _me.avatarEmoji;
 
-    /* foto profilo app (max 200KB per non sforare limite Firestore) */
+    /* foto profilo app — compressa a 64×64 JPEG (~3KB) per Firestore */
     let appPhotoDataUrl = null;
     const appPhoto = ld.profile && ld.profile.photoDataUrl;
-    if(appPhoto && appPhoto.length * 0.75 < 200000){
-      appPhotoDataUrl = appPhoto;
+    if(appPhoto){
+      appPhotoDataUrl = await compressToThumbnail(appPhoto);
     }
 
     /* PR: count + top 3 per peso */
