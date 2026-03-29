@@ -248,6 +248,49 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .notif-text{ font-size:13px; color:var(--text); margin-bottom:6px; }
 .notif-time{ font-size:10px; color:var(--textm); }
 
+/* ── SFIDE — SHEET ── */
+.ch-type-row,.ch-metric-row{ display:flex; gap:8px; margin-bottom:14px; }
+.ch-opt-btn{
+  flex:1; padding:10px 6px; border-radius:10px;
+  background:var(--bg3); border:1.5px solid var(--border);
+  color:var(--textm); font-family:var(--font); font-size:12px;
+  font-weight:500; cursor:pointer; text-align:center; transition:all .15s;
+}
+.ch-opt-btn.sel{ border-color:var(--a1); color:var(--a2); background:rgba(0,136,255,.08); }
+
+/* ── SFIDE — CARD ── */
+.challenge-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:14px; padding:14px; margin-bottom:10px;
+}
+.challenge-card.ch-invite{ border-color:rgba(255,170,0,.25); }
+.challenge-card.ch-done{ border-color:rgba(0,230,118,.2); }
+.ch-card-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:5px; gap:8px; }
+.ch-card-title{ font-size:13px; font-weight:600; flex:1; line-height:1.4; }
+.ch-pill{
+  font-size:9px; font-family:var(--mono); padding:2px 8px;
+  border-radius:6px; flex-shrink:0; margin-top:1px;
+}
+.ch-pill.active{ background:rgba(0,136,255,.1); color:var(--a2); }
+.ch-pill.pend{ background:rgba(255,170,0,.1); color:var(--warn); }
+.ch-pill.done{ background:rgba(0,230,118,.1); color:var(--green); }
+.ch-meta{ font-size:11px; color:var(--textm); margin-bottom:12px; line-height:1.6; }
+
+/* barre progresso */
+.ch-part{ display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.ch-part:last-child{ margin-bottom:0; }
+.ch-av{
+  width:26px; height:26px; border-radius:50%;
+  background:var(--bg3); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; flex-shrink:0; overflow:hidden;
+}
+.ch-av img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.ch-name{ font-size:11px; color:var(--textm); width:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; }
+.ch-bar{ flex:1; height:7px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+.ch-bar-fill{ height:100%; border-radius:4px; transition:width .4s ease; }
+.ch-val{ font-family:var(--mono); font-size:10px; color:var(--textm); min-width:42px; text-align:right; flex-shrink:0; }
+
 /* ── TAB BAR ── */
 .tab-bar{
   position:relative; flex-shrink:0;
@@ -344,6 +387,18 @@ body::before{
     <div class="section-title">I tuoi amici</div>
     <div id="friendsList"></div>
 
+    <!-- Inviti sfide ricevuti -->
+    <div id="challengeInvSection" style="display:none">
+      <div class="section-title">Sfide in arrivo</div>
+      <div id="challengeInvList"></div>
+    </div>
+
+    <!-- Sfide attive / completate -->
+    <div id="challengesSection" style="display:none">
+      <div class="section-title">Le tue sfide</div>
+      <div id="challengesList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -381,6 +436,41 @@ body::before{
   </div>
 </div>
 
+<!-- CHALLENGE SHEET -->
+<div class="overlay" id="challengeSheet" onclick="closeChallengeSheetOnBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⚔️ Nuova sfida</div>
+    <div class="sheet-sub">Con <strong id="challengeTargetName"></strong></div>
+
+    <label class="field-lbl">Tipo</label>
+    <div class="ch-type-row">
+      <button class="ch-opt-btn sel" data-ctype="competitive" onclick="selectCType('competitive')">⚔️ Competitiva</button>
+      <button class="ch-opt-btn" data-ctype="group" onclick="selectCType('group')">🤝 Di gruppo</button>
+    </div>
+
+    <label class="field-lbl">Obiettivo</label>
+    <div class="ch-metric-row">
+      <button class="ch-opt-btn sel" data-cmetric="sessions" onclick="selectCMetric('sessions')">💪 Sessioni</button>
+      <button class="ch-opt-btn" data-cmetric="km" onclick="selectCMetric('km')">🏃 Km corsa</button>
+    </div>
+
+    <label class="field-lbl">Quant<span id="cTargetLabel">e sessioni?</span></label>
+    <input class="field-inp" id="cTargetInp" type="number" min="1" max="9999" placeholder="es. 10" style="margin-bottom:14px;">
+
+    <label class="field-lbl">Durata</label>
+    <select class="field-inp" id="cDuration" style="margin-bottom:22px;">
+      <option value="7">1 settimana</option>
+      <option value="14">2 settimane</option>
+      <option value="30">1 mese</option>
+      <option value="0">Senza scadenza</option>
+    </select>
+
+    <button class="primary-btn" id="createChallengeBtn" onclick="createChallenge()">Crea sfida</button>
+    <button style="width:100%;padding:12px;background:none;border:none;color:var(--textm);font-family:var(--font);font-size:13px;cursor:pointer;margin-top:8px;" onclick="closeChallengeSheet()">Annulla</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -403,6 +493,12 @@ const _db    = firebase.firestore();
 const LS_KEY = 'fittrack_v4';
 let _me = null;        /* { uid, username, displayName, avatarEmoji, photoURL } */
 let _searchTimer = null;
+
+/* sfide */
+const _friendsData = {};     /* uid → dati Firestore amico (per apertura sheet) */
+let _challengeTarget = null; /* amico selezionato per la sfida */
+let _cType   = 'competitive';
+let _cMetric = 'sessions';
 
 /* ══════════════════════════════════════════════
    NAVIGAZIONE (stessa logica delle altre pagine)
@@ -455,9 +551,11 @@ _auth.onAuthStateChanged(async function(user){
 
     /* sync profilo locale → Firestore */
     syncProfile();
-    /* carica amici + notifiche */
+    /* carica amici, notifiche, sfide */
     loadFriends();
     loadIncoming();
+    loadChallengeInvitations();
+    loadChallenges();
     loadNotifBadge();
 
   } catch(e){
@@ -850,6 +948,7 @@ async function loadFriends(){
       if(!snap.exists) return '';
       const u   = snap.data();
       const uid = friendsSnap.docs[i].id;
+      _friendsData[uid] = u;  /* salva per sheet sfida */
 
       /* attività */
       const lastActiveMs = u.lastActive ? u.lastActive.toDate().getTime() : 0;
@@ -889,7 +988,7 @@ async function loadFriends(){
           <div class="friend-streak-lbl">streak</div>
         </div>
         <div class="action-btns">
-          <button class="challenge-btn" title="Sfida (prossimamente)" onclick="showToast('Sfide in arrivo!')">⚔️</button>
+          <button class="challenge-btn" title="Crea sfida" onclick="openChallengeSheet('${uid}')">⚔️</button>
           <button class="remove-btn" title="Rimuovi amico" onclick="removeFriend('${uid}','${u.username}')">🗑</button>
         </div>
       </div>`;
@@ -914,10 +1013,16 @@ async function loadFriends(){
 async function loadNotifBadge(){
   if(!_me) return;
   try{
-    const snap = await _db.collection('friendRequests')
-      .where('to','==',_me.uid).where('status','==','pending').get();
+    const [friendSnap, challSnap] = await Promise.all([
+      _db.collection('friendRequests').where('to','==',_me.uid).where('status','==','pending').get(),
+      _db.collection('challenges').where('participantUids','array-contains',_me.uid).where('status','==','pending').get()
+    ]);
+    const challInvites = challSnap.docs.filter(d => {
+      const p = d.data().participants[_me.uid];
+      return p && !p.accepted && d.data().createdBy !== _me.uid;
+    }).length;
+    const count = friendSnap.size + challInvites;
     const badge = document.getElementById('bellBadge');
-    const count = snap.size;
     badge.textContent = count;
     badge.style.display = count > 0 ? 'flex' : 'none';
   } catch(e){}
@@ -934,16 +1039,15 @@ async function openNotif(){
   list.innerHTML = '<div class="notif-empty">Caricamento…</div>';
 
   try{
-    /* richieste in arrivo (pending) */
-    const pendingSnap = await _db.collection('friendRequests')
-      .where('to','==',_me.uid).where('status','==','pending').get();
-
-    /* richieste accettate (amici nuovi) */
-    const acceptedSnap = await _db.collection('friendRequests')
-      .where('from','==',_me.uid).where('status','==','accepted').get();
+    const [pendingSnap, acceptedSnap, challSnap] = await Promise.all([
+      _db.collection('friendRequests').where('to','==',_me.uid).where('status','==','pending').get(),
+      _db.collection('friendRequests').where('from','==',_me.uid).where('status','==','accepted').get(),
+      _db.collection('challenges').where('participantUids','array-contains',_me.uid).where('status','==','pending').get()
+    ]);
 
     const items = [];
 
+    /* richieste amicizia in arrivo */
     pendingSnap.forEach(doc => {
       const r = doc.data();
       items.push(`<div class="notif-item">
@@ -955,10 +1059,27 @@ async function openNotif(){
       </div>`);
     });
 
+    /* amicizie accettate */
     acceptedSnap.forEach(doc => {
       const r = doc.data();
       items.push(`<div class="notif-item">
         <div class="notif-text">${r.fromAvatar || '😎'} <strong>@${r.toUsername}</strong> ha accettato la tua richiesta di amicizia</div>
+      </div>`);
+    });
+
+    /* inviti sfida */
+    challSnap.docs.filter(d => {
+      const p = d.data().participants[_me.uid];
+      return p && !p.accepted && d.data().createdBy !== _me.uid;
+    }).forEach(doc => {
+      const d = doc.data();
+      const creator = d.participants[d.createdBy];
+      items.push(`<div class="notif-item">
+        <div class="notif-text">⚔️ <strong>@${creator?.username||'?'}</strong> ti ha sfidato: <em>${d.title}</em></div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button class="add-btn accept" style="font-size:11px;padding:5px 12px;" onclick="acceptChallengeInvite('${doc.id}');closeNotif();loadNotifBadge();">Accetta</button>
+          <button class="add-btn reject" style="font-size:11px;padding:5px 12px;" onclick="rejectChallengeInvite('${doc.id}');closeNotif();loadNotifBadge();">Rifiuta</button>
+        </div>
       </div>`);
     });
 
@@ -973,6 +1094,272 @@ async function openNotif(){
 
 function closeNotif(){ document.getElementById('notifOverlay').classList.remove('open'); }
 function closeNotifOnBg(e){ if(e.target === document.getElementById('notifOverlay')) closeNotif(); }
+
+/* ══════════════════════════════════════════════
+   SFIDE — SHEET CREAZIONE
+══════════════════════════════════════════════ */
+function openChallengeSheet(uid){
+  const u = _friendsData[uid];
+  if(!u){ showToast('Ricarica la pagina'); return; }
+  _challengeTarget = { uid, ...u };
+  _cType   = 'competitive';
+  _cMetric = 'sessions';
+  document.getElementById('challengeTargetName').textContent = '@' + u.username;
+  document.querySelectorAll('.ch-opt-btn[data-ctype]').forEach(b =>
+    b.classList.toggle('sel', b.dataset.ctype === 'competitive'));
+  document.querySelectorAll('.ch-opt-btn[data-cmetric]').forEach(b =>
+    b.classList.toggle('sel', b.dataset.cmetric === 'sessions'));
+  document.getElementById('cTargetInp').value = '';
+  document.getElementById('cTargetLabel').textContent = 'e sessioni?';
+  document.getElementById('challengeSheet').classList.add('open');
+}
+function closeChallengeSheet(){ document.getElementById('challengeSheet').classList.remove('open'); }
+function closeChallengeSheetOnBg(e){ if(e.target === document.getElementById('challengeSheet')) closeChallengeSheet(); }
+
+function selectCType(t){
+  _cType = t;
+  document.querySelectorAll('.ch-opt-btn[data-ctype]').forEach(b =>
+    b.classList.toggle('sel', b.dataset.ctype === t));
+}
+function selectCMetric(m){
+  _cMetric = m;
+  document.querySelectorAll('.ch-opt-btn[data-cmetric]').forEach(b =>
+    b.classList.toggle('sel', b.dataset.cmetric === m));
+  document.getElementById('cTargetLabel').textContent = m === 'km' ? ' km?' : 'e sessioni?';
+}
+
+async function createChallenge(){
+  if(!_me || !_challengeTarget) return;
+  const target = parseInt(document.getElementById('cTargetInp').value);
+  if(!target || target < 1){ showToast('Inserisci un obiettivo valido'); return; }
+  const duration = parseInt(document.getElementById('cDuration').value);
+  const today  = new Date().toISOString().slice(0,10);
+  const endDate = duration > 0
+    ? new Date(Date.now() + duration * 86400000).toISOString().slice(0,10)
+    : null;
+  const unitLabel = _cMetric === 'km' ? 'km' : 'sessioni';
+  const title = _cType === 'competitive'
+    ? `Chi arriva prima a ${target} ${unitLabel}`
+    : `Obiettivo: ${target} ${unitLabel} insieme`;
+
+  const parts = {};
+  parts[_me.uid] = {
+    username: _me.username, avatarEmoji: _me.avatarEmoji || '😎',
+    appPhotoDataUrl: null, photoURL: _me.photoURL || null,
+    progress: 0, accepted: true, color: '#0088ff'
+  };
+  parts[_challengeTarget.uid] = {
+    username: _challengeTarget.username, avatarEmoji: _challengeTarget.avatarEmoji || '😎',
+    appPhotoDataUrl: _challengeTarget.appPhotoDataUrl || null,
+    photoURL: _challengeTarget.photoURL || null,
+    progress: 0, accepted: false, color: '#7c3aed'
+  };
+
+  const btn = document.getElementById('createChallengeBtn');
+  btn.disabled = true; btn.textContent = 'Creazione…';
+  try{
+    await _db.collection('challenges').add({
+      type: _cType, title, metric: _cMetric, target, unit: unitLabel,
+      createdBy: _me.uid, participants: parts,
+      participantUids: [_me.uid, _challengeTarget.uid],
+      status: 'pending', winnerId: null,
+      startDate: today, endDate,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeChallengeSheet();
+    showToast('✓ Sfida inviata a @' + _challengeTarget.username);
+    loadChallenges();
+    loadChallengeInvitations();
+    loadNotifBadge();
+  } catch(e){ showToast('Errore: ' + e.message); }
+  finally{ btn.disabled = false; btn.textContent = 'Crea sfida'; }
+}
+
+/* ══════════════════════════════════════════════
+   SFIDE — INVITI RICEVUTI
+══════════════════════════════════════════════ */
+async function loadChallengeInvitations(){
+  if(!_me) return;
+  try{
+    const snap = await _db.collection('challenges')
+      .where('participantUids','array-contains',_me.uid)
+      .where('status','==','pending').get();
+
+    const mine = snap.docs.filter(d => {
+      const p = d.data().participants[_me.uid];
+      return p && !p.accepted && d.data().createdBy !== _me.uid;
+    });
+
+    const sec  = document.getElementById('challengeInvSection');
+    const list = document.getElementById('challengeInvList');
+    if(!mine.length){ sec.style.display='none'; return; }
+    sec.style.display = '';
+
+    list.innerHTML = mine.map(doc => {
+      const d = doc.data();
+      const cr = d.participants[d.createdBy] || {};
+      const meta = d.endDate ? `Scade il ${formatDate(d.endDate)}` : 'Senza scadenza';
+      return `<div class="challenge-card ch-invite" id="chinv_${doc.id}">
+        <div class="ch-card-top">
+          <div class="ch-card-title">${d.title}</div>
+          <div class="ch-pill pend">IN ATTESA</div>
+        </div>
+        <div class="ch-meta">@${cr.username||'?'} ti ha sfidato · ${meta}</div>
+        <div style="display:flex;gap:8px;">
+          <button class="add-btn accept" style="flex:1;font-size:12px;" onclick="acceptChallengeInvite('${doc.id}')">✓ Accetta</button>
+          <button class="add-btn reject" style="flex:1;font-size:12px;" onclick="rejectChallengeInvite('${doc.id}')">✕ Rifiuta</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ console.warn('loadChallengeInvitations error:', e); }
+}
+
+async function acceptChallengeInvite(id){
+  if(!_me) return;
+  try{
+    await _db.collection('challenges').doc(id).update({
+      [`participants.${_me.uid}.accepted`]: true,
+      status: 'active'
+    });
+    document.getElementById('chinv_'+id)?.remove();
+    const list = document.getElementById('challengeInvList');
+    if(list && !list.children.length) document.getElementById('challengeInvSection').style.display='none';
+    showToast('✓ Sfida accettata!');
+    loadChallenges();
+    loadNotifBadge();
+  } catch(e){ showToast('Errore: '+e.message); }
+}
+
+async function rejectChallengeInvite(id){
+  if(!_me) return;
+  try{
+    await _db.collection('challenges').doc(id).update({ status: 'cancelled' });
+    document.getElementById('chinv_'+id)?.remove();
+    const list = document.getElementById('challengeInvList');
+    if(list && !list.children.length) document.getElementById('challengeInvSection').style.display='none';
+    showToast('Sfida rifiutata');
+    loadNotifBadge();
+  } catch(e){ showToast('Errore: '+e.message); }
+}
+
+/* ══════════════════════════════════════════════
+   SFIDE — PROGRESSO & LISTA
+══════════════════════════════════════════════ */
+function calcMyProgress(startDate, endDate, metric){
+  const ld = JSON.parse(localStorage.getItem(LS_KEY)) || {};
+  const sessions = ld.sessions || [];
+  const today = new Date().toISOString().slice(0,10);
+  const limit = endDate && endDate < today ? endDate : today;
+  const inRange = sessions.filter(s => s.date >= startDate && s.date <= limit);
+  if(metric === 'km'){
+    return Math.round(inRange.reduce((sum,s) => sum + (parseFloat(s.km)||0), 0) * 10) / 10;
+  }
+  return inRange.length;
+}
+
+async function syncChallengeProgress(id, data){
+  if(!_me) return;
+  const myProg = calcMyProgress(data.startDate, data.endDate, data.metric);
+  const curProg = data.participants[_me.uid]?.progress || 0;
+  const updates = { [`participants.${_me.uid}.progress`]: myProg };
+
+  /* controllo vincitore */
+  if(data.status === 'active'){
+    if(data.type === 'competitive' && myProg >= data.target){
+      updates.status   = 'completed';
+      updates.winnerId = _me.uid;
+    } else if(data.type === 'group'){
+      const others = Object.entries(data.participants)
+        .filter(([uid]) => uid !== _me.uid)
+        .reduce((sum,[,p]) => sum + (p.progress||0), 0);
+      if(myProg + others >= data.target){
+        updates.status   = 'completed';
+        updates.winnerId = null;
+      }
+    }
+  }
+
+  if(myProg === curProg && !updates.status) return; /* niente da aggiornare */
+  try{
+    await _db.collection('challenges').doc(id).update(updates);
+  } catch(e){ console.warn('syncChallengeProgress error:', e); }
+}
+
+async function loadChallenges(){
+  if(!_me) return;
+  try{
+    const snap = await _db.collection('challenges')
+      .where('participantUids','array-contains',_me.uid)
+      .where('status','in',['active','completed']).get();
+
+    const sec  = document.getElementById('challengesSection');
+    const list = document.getElementById('challengesList');
+    if(snap.empty){ sec.style.display='none'; return; }
+    sec.style.display = '';
+
+    /* sync progresso su quelle attive */
+    await Promise.all(
+      snap.docs.filter(d => d.data().status === 'active')
+               .map(d => syncChallengeProgress(d.id, d.data()))
+    );
+
+    /* rileggi dopo update */
+    const snap2 = await _db.collection('challenges')
+      .where('participantUids','array-contains',_me.uid)
+      .where('status','in',['active','completed']).get();
+
+    list.innerHTML = snap2.docs.map(doc => renderChallengeCard(doc.id, doc.data())).join('');
+  } catch(e){ console.warn('loadChallenges error:', e); }
+}
+
+function renderChallengeCard(id, d){
+  const isDone = d.status === 'completed';
+  const pill = isDone
+    ? `<div class="ch-pill done">COMPLETATA</div>`
+    : `<div class="ch-pill active">ATTIVA</div>`;
+
+  const meta = [];
+  meta.push(d.type === 'group' ? '🤝 Obiettivo di gruppo' : '⚔️ Competitiva');
+  if(d.endDate) meta.push(`Scade ${formatDate(d.endDate)}`);
+  else meta.push('Senza scadenza');
+  if(isDone){
+    if(d.type === 'competitive' && d.winnerId){
+      const w = d.participants[d.winnerId];
+      meta.push(`🏆 Vince @${w?.username||'?'}`);
+    } else if(d.type === 'group'){
+      meta.push('🏆 Obiettivo raggiunto!');
+    }
+  }
+
+  const rows = Object.entries(d.participants).map(([uid, p]) => {
+    const pct = d.target > 0 ? Math.min(100, Math.round((p.progress / d.target) * 100)) : 0;
+    const avHtml = p.appPhotoDataUrl
+      ? `<img src="${p.appPhotoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      : (p.photoURL
+          ? `<img src="${p.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+          : (p.avatarEmoji || '😎'));
+    const name = uid === _me?.uid ? 'Tu' : '@'+p.username;
+    return `<div class="ch-part">
+      <div class="ch-av">${avHtml}</div>
+      <div class="ch-name">${name}</div>
+      <div class="ch-bar"><div class="ch-bar-fill" style="width:${pct}%;background:${p.color||'var(--a1)'};"></div></div>
+      <div class="ch-val">${p.progress}/${d.target} ${d.unit}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="challenge-card${isDone?' ch-done':''}" id="ch_${id}">
+    <div class="ch-card-top"><div class="ch-card-title">${d.title}</div>${pill}</div>
+    <div class="ch-meta">${meta.join(' · ')}</div>
+    ${rows}
+  </div>`;
+}
+
+function formatDate(str){
+  if(!str) return '';
+  const [,m,dd] = str.split('-');
+  const months = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  return `${parseInt(dd)} ${months[parseInt(m)-1]}`;
+}
 
 /* ══════════════════════════════════════════════
    RIMUOVI AMICO
