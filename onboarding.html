@@ -197,13 +197,6 @@ body::before{
 }
 @keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
 
-/* skip link */
-.skip-link{
-  font-size:12px; color:var(--textm); cursor:pointer;
-  padding:4px 0; text-decoration:none;
-}
-.skip-link:active{ color:var(--text); }
-
 /* bottone indietro */
 .btn-row{ display:flex; gap:10px; width:100%; }
 .btn-row .next-btn{ flex:1; width:auto; }
@@ -350,7 +343,6 @@ body::before{
     <button class="back-btn" id="backBtn" onclick="prevSlide()" style="display:none">← Indietro</button>
     <button class="next-btn" id="nextBtn" onclick="nextSlide()">Avanti →</button>
   </div>
-  <span class="skip-link" id="skipLink" onclick="skipOnboarding()">Salta</span>
 </div>
 
 <script>
@@ -363,7 +355,6 @@ const track = document.getElementById('track');
 const dots  = document.querySelectorAll('.dot');
 const nextBtn = document.getElementById('nextBtn');
 const backBtn = document.getElementById('backBtn');
-const skipLink = document.getElementById('skipLink');
 
 function goToSlide(n){
   current = Math.max(0, Math.min(TOTAL-1, n));
@@ -372,13 +363,7 @@ function goToSlide(n){
   dots.forEach((d,i) => d.classList.toggle('active', i === current));
   backBtn.style.display = current > 0 ? 'block' : 'none';
 
-  if(current === TOTAL-1){
-    nextBtn.textContent = '🚀 Inizia';
-    skipLink.style.display = 'none';
-  } else {
-    nextBtn.textContent = 'Avanti →';
-    skipLink.style.display = 'block';
-  }
+  nextBtn.textContent = current === TOTAL-1 ? '🚀 Inizia' : 'Avanti →';
 }
 
 function nextSlide(){
@@ -430,13 +415,6 @@ function completeOnboarding(){
   location.href = 'home.html';
 }
 
-function skipOnboarding(){
-  let data = {};
-  try{ data = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){}
-  data.onboardingDone = true;
-  localStorage.setItem(KEY, JSON.stringify(data));
-  location.href = 'home.html';
-}
 
 /* swipe orizzontale touch */
 let touchStartX = 0;

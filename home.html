@@ -52,6 +52,13 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .sdot.today{ background:transparent; border:1.5px solid var(--a1); }
 .sdot-lbl{ font-family:var(--mono); font-size:8px; color:var(--textm); }
 .sdot-lbl.oggi{ color:var(--a2); }
+.streak-legend{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.sl-item{ display:flex; align-items:center; gap:5px; font-size:9px; color:var(--textm); font-family:var(--mono); }
+.sl-dot{ width:14px; height:4px; border-radius:3px; flex-shrink:0; }
+.sl-dot.active{ background:linear-gradient(90deg,var(--a1),var(--a2)); }
+.sl-dot.rest{ background:linear-gradient(90deg,#3344aa,#5566cc); }
+.sl-dot.skipped{ background:#e53935; opacity:.75; }
+.sl-dot.today{ background:transparent; border:1.5px solid var(--a1); width:12px; }
 .goal-nums{ font-size:22px; font-weight:600; color:var(--green); line-height:1; }
 .goal-lbl{ font-size:10px; color:var(--textm); margin-top:2px; }
 .goal-bar-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; margin-top:10px; }
@@ -108,7 +115,16 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .day-row.gym::before{ background:linear-gradient(180deg,var(--a2),var(--a1)); }
 .day-row.run::before{ background:linear-gradient(180deg,#00dd88,#00aa66); }
 .day-row.rest::before{ background:var(--border); }
-.day-row.today{ border-color:rgba(0,136,255,.35); }
+.day-row.today{
+  border-color:rgba(0,136,255,.5);
+  background:linear-gradient(135deg,rgba(0,136,255,.1),rgba(0,204,255,.05));
+  padding:14px 13px;
+}
+@keyframes todayPulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(0,136,255,.0), 0 4px 18px rgba(0,136,255,.18); }
+  50%{     box-shadow:0 0 0 4px rgba(0,136,255,.1), 0 4px 24px rgba(0,136,255,.28); }
+}
+.day-row.today{ animation:todayPulse 2.8s ease-in-out infinite; }
 .day-icon{ font-size:17px; flex-shrink:0; }
 .day-info{ flex:1; min-width:0; }
 .day-name{ font-size:13px; font-weight:500; color:var(--text); }
@@ -178,9 +194,16 @@ body::before{
 @keyframes barFadeIn{ from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
 
 /* day row press effect */
-.day-row{ transition:transform .15s, box-shadow .15s; }
+.day-row{ transition:transform .15s; }
 .day-row:active{ transform:scale(.97); }
-.day-row.today{ box-shadow:0 0 14px rgba(0,136,255,.18); }
+.day-name-oggi{ font-size:14px; font-weight:700; color:var(--a2); }
+.oggi-swipe-hint{
+  font-size:9px; color:var(--a1); font-family:var(--mono);
+  letter-spacing:.5px; margin-top:3px;
+  display:flex; align-items:center; gap:4px;
+}
+@keyframes arrowSlide{ 0%,100%{transform:translateX(0);} 60%{transform:translateX(4px);} }
+.oggi-swipe-hint::after{ content:'›'; font-size:13px; animation:arrowSlide 1.4s ease-in-out infinite; }
 
 /* active indicator tab */
 .tab-item{ position:relative; }
@@ -341,6 +364,12 @@ body::before{
                 <div class="streak-num">12</div>
                 <div class="streak-lbl">giorni streak 🔥</div>
                 <div class="streak-dots" id="streakDots"></div>
+                <div class="streak-legend">
+                  <span class="sl-item"><span class="sl-dot active"></span>Allenato</span>
+                  <span class="sl-item"><span class="sl-dot rest"></span>Riposo</span>
+                  <span class="sl-item"><span class="sl-dot skipped"></span>Saltato</span>
+                  <span class="sl-item"><span class="sl-dot today"></span>Oggi</span>
+                </div>
               </div>
               <div style="text-align:right;">
                 <div class="goal-nums">3/5</div>
@@ -415,7 +444,8 @@ body::before{
   <div class="tab-item on"  onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
   <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
   <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
-  <div class="tab-item"     onclick="navigateTo('impostazioni.html',3)"> <div class="tab-icon">⚙️</div>Impost.</div>
+  <div class="tab-item"     onclick="navigateTo('amici.html',3)">        <div class="tab-icon">👥</div>Amici</div>
+  <div class="tab-item"     onclick="navigateTo('impostazioni.html',4)"> <div class="tab-icon">⚙️</div>Impost.</div>
 </div>
 
 <script>
@@ -544,15 +574,20 @@ const bMap={oggi:'b-oggi OGGI', fatto:'b-fatto FATTO', saltato:'b-saltato SALTAT
 document.getElementById('weekPlan').innerHTML=PIANO.map((d,i)=>{
   const st=getDayStatus(i);
   const [bc,bt]=bMap[st].split(' ');
-  const sub=d.wo?`${d.wo.name} · ${d.wo.exs.length} esercizi`:'Giorno di riposo';
-  const bar=st==='fatto'?`<div class="mini-prog"><div class="mini-fill" style="width:100%"></div></div>`:'';
-  const grab=d.type!=='rest'?'cursor:grab':'cursor:default';
-  return `<div class="day-row ${d.type}${st==='oggi'?' today':''}" id="row_${i}" data-idx="${i}" style="${grab}">
-    <div class="day-icon">${d.icon}</div>
-    <div class="day-info">
-      <div class="day-name">${d.label}${st==='oggi'?` <span class="oggi-tag">● oggi</span>`:''}</div>
-      <div class="day-sub">${sub}</div>${bar}
-    </div>
+  const isOggi = st==='oggi';
+  const sub = d.wo ? `${d.wo.name} · ${d.wo.exs.length} esercizi` : 'Giorno di riposo';
+  const bar = st==='fatto' ? `<div class="mini-prog"><div class="mini-fill" style="width:100%"></div></div>` : '';
+  const grab = d.type!=='rest' ? 'cursor:grab' : 'cursor:default';
+
+  const infoHtml = isOggi && d.wo
+    ? `<div class="day-name-oggi">${d.wo.name}</div>
+       <div class="oggi-swipe-hint">swipe per iniziare</div>`
+    : `<div class="day-name">${d.label}${isOggi ? ` <span class="oggi-tag">● oggi</span>` : ''}</div>
+       <div class="day-sub">${sub}</div>${bar}`;
+
+  return `<div class="day-row ${d.type}${isOggi?' today':''}" id="row_${i}" data-idx="${i}" style="${grab}">
+    <div class="day-icon" style="${isOggi?'font-size:22px;':''}">${d.icon}</div>
+    <div class="day-info">${infoHtml}</div>
     <span class="day-badge ${bc}">${bt}</span>
   </div>`;
 }).join('');
@@ -924,6 +959,41 @@ function navigateTo(url, toIndex){
   dot0.addEventListener('click', e => { e.stopPropagation(); goToHeroCard(0); });
   dot1.addEventListener('click', e => { e.stopPropagation(); goToHeroCard(1); });
 })();
+
+/* ══ QUICK START — card + FAB ══ */
+(function(){
+  const todayWo = PIANO[TODAY];
+  const card = document.getElementById('qsCard');
+  const fab  = document.getElementById('qsFab');
+  if(!card || !fab) return;
+
+  if(todayWo && todayWo.wo){
+    document.getElementById('qsIcon').textContent = todayWo.icon;
+    document.getElementById('qsName').textContent = todayWo.wo.name;
+    document.getElementById('qsMeta').textContent =
+      `${todayWo.wo.exs.length} esercizi · ${_TLABEL[todayWo.type]||'Altro'}`;
+    card.style.display = '';
+    fab.textContent = `▶ Inizia "${todayWo.wo.name}"`;
+  }
+  // Se riposo oggi: card nascosta, FAB rimane generico → porta a scegli.html
+})();
+
+function startTodayWorkout(){
+  const todayWo = PIANO[TODAY];
+  if(todayWo && todayWo.wo){
+    localStorage.setItem('fittrack_pending', JSON.stringify({
+      name:      todayWo.wo.name,
+      day:       todayWo.wo.day,
+      type:      todayWo.type,
+      typeLabel: _TLABEL[todayWo.type] || 'Altro',
+      typeIcon:  todayWo.icon,
+      exs:       todayWo.wo.exs
+    }));
+    location.href = 'sessione.html';
+  } else {
+    location.href = 'scegli.html';
+  }
+}
 </script>
 </body>
 </html>

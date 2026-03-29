@@ -773,7 +773,8 @@ body::before{
   <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
   <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
   <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
-  <div class="tab-item on"  onclick="navigateTo('impostazioni.html',3)"> <div class="tab-icon">⚙️</div>Impost.</div>
+  <div class="tab-item"     onclick="navigateTo('amici.html',3)">        <div class="tab-icon">👥</div>Amici</div>
+  <div class="tab-item on"  onclick="navigateTo('impostazioni.html',4)"> <div class="tab-icon">⚙️</div>Impost.</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1526,7 +1527,7 @@ function saveNotifSettings(){
 })();
 
 /* ══ SLIDE NAVIGATION ══ */
-const PAGE_INDEX = 3; // impostazioni.html = indice 3
+const PAGE_INDEX = 4; // impostazioni.html = indice 4
 
 try{ init(); } catch(e){ console.warn('init error:', e); }
 (function(){

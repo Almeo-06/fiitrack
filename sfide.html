@@ -360,7 +360,10 @@ function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 ══════════════════════════════════════════ */
 function calcCurrent(challenge, appData){
   const sessions = appData.sessions || [];
-  const sDate = challenge.startDate ? new Date(challenge.startDate + 'T00:00') : new Date(0);
+  /* fallback: usa l'ID come timestamp di creazione (id = Date.now()) */
+  const sDate = challenge.startDate
+    ? new Date(challenge.startDate + 'T00:00')
+    : new Date(challenge.id || Date.now());
   const eDate = challenge.endDate   ? new Date(challenge.endDate   + 'T23:59') : new Date('9999-12-31');
 
   const inRange = s => {

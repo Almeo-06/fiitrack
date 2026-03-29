@@ -163,8 +163,11 @@ body{
   pointer-events:all; position:relative; overflow:hidden;
 }
 .start-btn:disabled{
-  background:var(--bg3); box-shadow:none; color:var(--textm); cursor:default;
+  background:transparent; box-shadow:none; color:var(--textm);
+  cursor:default; border:1.5px dashed rgba(48,72,112,.7);
 }
+@keyframes arrowBounce{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }
+.start-btn:disabled .arr{ display:inline-block; animation:arrowBounce 1.4s ease-in-out infinite; }
 .start-btn:not(:disabled):active{ transform:scale(.98); }
 .start-btn::after{
   content:''; position:absolute; top:0; left:-60%;
@@ -284,7 +287,7 @@ body::before{
 <div class="scroll-area" id="scrollArea"></div>
 
 <div class="footer">
-  <button class="start-btn" id="startBtn" disabled onclick="avvia()">Seleziona un allenamento</button>
+  <button class="start-btn" id="startBtn" disabled onclick="avvia()"><span class="arr">↑</span> Seleziona un allenamento</button>
 </div>
 
 <!-- SHEET: PERSONALIZZA ALLENAMENTO LIBERO -->
