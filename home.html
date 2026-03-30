@@ -297,9 +297,36 @@ body::before{
 .ex-dots{ display:flex; gap:5px; }
 .edot{ width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; border:1.5px solid var(--border); background:#030e1a; color:var(--textm); }
 .edot.done{ background:rgba(0,204,255,.1); border-color:rgba(0,204,255,.3); color:var(--a2); }
+/* ══ LIGHT THEME ══ */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-item.on{ color:var(--a1); }
+html.theme-light .streak-hero{
+  background:var(--bg2) !important;
+  border:1px solid var(--border);
+  box-shadow:0 2px 16px rgba(13,148,136,.08);
+  animation:none;
+}
+html.theme-light .streak-hero::before{ display:none; }
+html.theme-light .sfide-hero{
+  background:var(--bg2) !important;
+  border:1px solid var(--border);
+  box-shadow:0 2px 16px rgba(13,148,136,.08);
+}
+html.theme-light .sfide-hero::before{ display:none; }
+html.theme-light .drawer-menu{ background:var(--bg2) !important; }
+html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
+html.theme-light .edot{ background:var(--bg3) !important; }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
 </script>
 </head>
 <body>

@@ -299,6 +299,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .blue-prev{   background:linear-gradient(135deg,#0088ff,#00ccff); }
 .purple-prev{ background:linear-gradient(135deg,#7c3aed,#a855f7); }
 .orange-prev{ background:linear-gradient(135deg,#f97316,#fbbf24); }
+.light-prev{ background:linear-gradient(135deg,#f0fdfb,#14b8a6); border:1px solid #b2ddd7; }
 
 /* ── EFFETTI ── */
 body::before{
@@ -342,6 +343,93 @@ body::before{
 
 /* toast */
 .toast{ position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,230,118,.15); border:1px solid rgba(0,230,118,.3); border-radius:10px; padding:10px 18px; font-size:13px; color:var(--green); white-space:nowrap; z-index:30; display:none; }
+
+/* ── PRESET SHEET ── */
+.preset-overlay{
+  position:fixed; inset:0; z-index:50;
+  background:rgba(0,0,0,.7);
+  display:none; align-items:flex-end; justify-content:center;
+}
+.preset-overlay.open{ display:flex; }
+.preset-sheet{
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border:1px solid var(--border); border-bottom:none;
+  width:100%; max-width:480px;
+  max-height:82vh; display:flex; flex-direction:column;
+  animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+.preset-hdr{ padding:14px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+.preset-title{ font-size:16px; font-weight:600; color:var(--text); }
+.preset-close{ background:none; border:none; color:var(--textm); font-size:20px; cursor:pointer; padding:4px; }
+.preset-body{ flex:1; overflow-y:auto; padding:12px 16px 28px; }
+.preset-body::-webkit-scrollbar{ width:0; }
+.preset-sec-lbl{
+  font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px;
+  margin:14px 0 8px; display:flex; align-items:center; gap:8px;
+}
+.preset-sec-lbl::after{ content:''; flex:1; height:1px; background:var(--border); }
+.preset-sec-lbl:first-child{ margin-top:2px; }
+.preset-card{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:12px; padding:12px 14px; margin-bottom:8px;
+  display:flex; align-items:center; gap:12px; cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.preset-card:active{ background:var(--bg2); border-color:var(--a1); }
+.preset-card-icon{ font-size:26px; flex-shrink:0; }
+.preset-card-info{ flex:1; }
+.preset-card-name{ font-size:13px; font-weight:500; color:var(--text); }
+.preset-card-meta{ font-size:11px; color:var(--textm); margin-top:2px; }
+.preset-card-arrow{ font-size:16px; color:var(--textm); flex-shrink:0; }
+
+/* dettaglio preset */
+.preset-back-btn{
+  display:flex; align-items:center; gap:6px;
+  background:none; border:none; color:var(--textm);
+  font-size:13px; font-weight:500; cursor:pointer;
+  font-family:var(--font); padding:0; margin-bottom:14px;
+  transition:color .15s;
+}
+.preset-back-btn:active{ color:var(--text); }
+.preset-detail-hero{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:14px; padding:16px; margin-bottom:16px;
+  display:flex; align-items:center; gap:14px;
+}
+.preset-detail-icon{ font-size:36px; flex-shrink:0; }
+.preset-detail-name{ font-size:17px; font-weight:600; color:var(--text); }
+.preset-detail-meta{ font-size:12px; color:var(--textm); margin-top:3px; }
+.preset-ex-lbl{
+  font-size:9px; color:var(--textm); text-transform:uppercase;
+  letter-spacing:1.5px; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.preset-ex-lbl::after{ content:''; flex:1; height:1px; background:var(--border); }
+.preset-ex-row{
+  display:flex; align-items:center; gap:10px;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:10px; padding:10px 12px; margin-bottom:7px;
+}
+.preset-ex-num{
+  width:22px; height:22px; border-radius:6px;
+  background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:var(--a1); flex-shrink:0; font-family:var(--mono);
+}
+.preset-ex-name{ font-size:13px; font-weight:500; color:var(--text); flex:1; }
+.preset-ex-detail{ font-size:10px; color:var(--textm); margin-top:2px; }
+.preset-add-btn{
+  width:100%; padding:14px; background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:13px; color:#fff;
+  font-size:15px; font-weight:500; cursor:pointer;
+  font-family:var(--font); margin-top:6px;
+  position:relative; overflow:hidden;
+}
+.preset-add-btn::after{
+  content:''; position:absolute; top:0; left:-60%; width:35%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  transform:skewX(-15deg); animation:btnShine 3s ease infinite;
+}
 
 /* ── FEEDBACK SHEET ── */
 .feedback-overlay{
@@ -397,6 +485,17 @@ body::before{
   transition:background .15s, border-color .15s;
 }
 .fb-open-btn:active{ background:rgba(0,136,255,.12); }
+/* ══ LIGHT THEME ══ */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-item.on{ color:var(--a1); }
 </style>
 </head>
 <body>
@@ -424,6 +523,18 @@ body::before{
       <button class="save-btn" onclick="saveWorkout()">Salva allenamento</button>
       <button class="cancel-btn" onclick="closeEditor()">Annulla</button>
     </div>
+  </div>
+</div>
+
+<!-- PRESET SHEET -->
+<div class="preset-overlay" id="presetOverlay" onclick="closePresetOnBg(event)">
+  <div class="preset-sheet">
+    <div class="editor-handle"></div>
+    <div class="preset-hdr">
+      <div class="preset-title" id="presetTitle">📋 Scegli un modello</div>
+      <button class="preset-close" onclick="closePreset()">✕</button>
+    </div>
+    <div class="preset-body" id="presetBody"></div>
   </div>
 </div>
 
@@ -479,7 +590,10 @@ body::before{
     <div class="sec-body" id="body1">
       <div class="sec-inner">
         <div class="wo-list" id="woList"></div>
-        <button class="add-wo-btn" onclick="openEditor(-1)">+ Nuovo allenamento</button>
+        <div style="display:flex;gap:8px;">
+          <button class="add-wo-btn" style="flex:1;" onclick="openEditor(-1)">+ Nuovo</button>
+          <button class="add-wo-btn" style="flex:1;border-color:rgba(0,136,255,.3);color:var(--a1);" onclick="openPreset()">📋 Da modello</button>
+        </div>
       </div>
     </div>
   </div>
@@ -542,6 +656,10 @@ body::before{
           <div class="theme-chip" data-theme="orange" onclick="setTheme('orange')">
             <div class="theme-preview orange-prev"></div>
             <span>Arancione</span>
+          </div>
+          <div class="theme-chip" data-theme="light" onclick="setTheme('light')">
+            <div class="theme-preview light-prev"></div>
+            <span>Chiaro</span>
           </div>
         </div>
       </div>
@@ -938,12 +1056,14 @@ const THEMES = {
   blue:   { a1:'#0088ff', a2:'#00ccff' },
   purple: { a1:'#7c3aed', a2:'#a855f7' },
   orange: { a1:'#f97316', a2:'#fbbf24' },
+  light:  { a1:'#0d9488', a2:'#14b8a6' },
 };
 
 function applyTheme(name){
   const t = THEMES[name] || THEMES.blue;
   document.documentElement.style.setProperty('--a1', t.a1);
   document.documentElement.style.setProperty('--a2', t.a2);
+  document.documentElement.classList.toggle('theme-light', name === 'light');
 }
 
 function setTheme(name){
@@ -1525,6 +1645,169 @@ function saveNotifSettings(){
     scheduleNotifViaSW(); /* rischedulda in caso il SW fosse stato killato */
   }
 })();
+
+/* ══ PRESET WORKOUT ══ */
+const PRESET_WORKOUTS = [
+  /* ── PALESTRA ── */
+  { section:'🏋️ Palestra', name:'Push A', type:'gym', icon:'🏋️', meta:'4 esercizi · ~45 min',
+    exs:[
+      {id:'',name:'Panca Piana',    sets:4,reps:8, rec:120,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Shoulder Press', sets:3,reps:10,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Dips',           sets:3,reps:12,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Push down cavo', sets:3,reps:15,rec:60, weight:null,timed:false,circuitGroup:null},
+    ]},
+  { section:null, name:'Pull A', type:'gym', icon:'🏋️', meta:'4 esercizi · ~45 min',
+    exs:[
+      {id:'',name:'Trazioni',             sets:4,reps:6, rec:120,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Rematore bilanciere',  sets:3,reps:8, rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Lat machine',          sets:3,reps:10,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Curl bilanciere',      sets:3,reps:12,rec:60, weight:null,timed:false,circuitGroup:null},
+    ]},
+  { section:null, name:'Legs A', type:'gym', icon:'🏋️', meta:'4 esercizi · ~50 min',
+    exs:[
+      {id:'',name:'Squat',             sets:4,reps:8, rec:150,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Leg Press',         sets:3,reps:12,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Romanian Deadlift', sets:3,reps:10,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Leg Curl',          sets:3,reps:12,rec:60, weight:null,timed:false,circuitGroup:null},
+    ]},
+  { section:null, name:'Full Body', type:'gym', icon:'🏋️', meta:'3 esercizi · ~40 min',
+    exs:[
+      {id:'',name:'Squat',             sets:3,reps:8,rec:120,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Panca Piana',       sets:3,reps:8,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Rematore bilanciere',sets:3,reps:8,rec:90,weight:null,timed:false,circuitGroup:null},
+    ]},
+  { section:null, name:'Upper Body', type:'gym', icon:'🏋️', meta:'5 esercizi · ~50 min',
+    exs:[
+      {id:'',name:'Panca Piana',    sets:4,reps:8, rec:120,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Trazioni',       sets:3,reps:8, rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Shoulder Press', sets:3,reps:10,rec:90, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Curl bilanciere',sets:3,reps:12,rec:60, weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Tricipiti cavo', sets:3,reps:12,rec:60, weight:null,timed:false,circuitGroup:null},
+    ]},
+  /* ── CARDIO ── */
+  { section:'🏃 Cardio', name:'Corsa Facile', type:'run', icon:'🏃', meta:'1 esercizio · ~35 min',
+    exs:[
+      {id:'',name:'Corsa',sets:1,reps:30,rec:0,weight:null,timed:true,circuitGroup:null},
+    ]},
+  { section:null, name:'Bici Endurance', type:'bike', icon:'🚴', meta:'1 esercizio · ~50 min',
+    exs:[
+      {id:'',name:'Bici',sets:1,reps:45,rec:0,weight:null,timed:true,circuitGroup:null},
+    ]},
+  /* ── HIIT & FUNZIONALE ── */
+  { section:'⚡ HIIT & Funzionale', name:'HIIT Base', type:'other', icon:'💪', meta:'4 esercizi · ~20 min',
+    exs:[
+      {id:'',name:'Burpees',          sets:4,reps:40,rec:20,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Mountain Climber', sets:4,reps:30,rec:20,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Jump Squat',       sets:4,reps:12,rec:20,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Plank',            sets:4,reps:45,rec:20,weight:null,timed:true, circuitGroup:null},
+    ]},
+  { section:null, name:'Core & Addome', type:'other', icon:'💪', meta:'4 esercizi · ~25 min',
+    exs:[
+      {id:'',name:'Crunch',       sets:3,reps:20,rec:45,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Plank',        sets:3,reps:45,rec:45,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Russian Twist',sets:3,reps:20,rec:45,weight:null,timed:false,circuitGroup:null},
+      {id:'',name:'Leg Raise',    sets:3,reps:15,rec:45,weight:null,timed:false,circuitGroup:null},
+    ]},
+  { section:null, name:'Stretching & Mobilità', type:'other', icon:'🧘', meta:'5 esercizi · ~20 min',
+    exs:[
+      {id:'',name:'Stretching quadricipiti',sets:2,reps:30,rec:10,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Stretching dorsali',     sets:2,reps:30,rec:10,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Hip flexor stretch',     sets:2,reps:40,rec:10,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Cat-Cow',               sets:2,reps:45,rec:10,weight:null,timed:true, circuitGroup:null},
+      {id:'',name:'Pigeon pose',           sets:2,reps:40,rec:10,weight:null,timed:true, circuitGroup:null},
+    ]},
+];
+
+function openPreset(){
+  renderPresetList();
+  document.getElementById('presetOverlay').classList.add('open');
+}
+
+function renderPresetList(){
+  document.getElementById('presetTitle').textContent = '📋 Scegli un modello';
+  const body = document.getElementById('presetBody');
+  let html = '';
+  let lastSection = null;
+  PRESET_WORKOUTS.forEach((p, i) => {
+    if(p.section !== lastSection){
+      html += `<div class="preset-sec-lbl">${p.section}</div>`;
+      lastSection = p.section;
+    }
+    const exists = data.workouts.some(w => w.name.toLowerCase() === p.name.toLowerCase());
+    const existsTxt = exists
+      ? `<span style="font-size:9px;color:var(--textm);margin-left:6px;font-style:italic;">già presente</span>`
+      : '';
+    html += `<div class="preset-card" onclick="showPresetDetail(${i})">
+      <div class="preset-card-icon">${p.icon}</div>
+      <div class="preset-card-info">
+        <div class="preset-card-name">${p.name}${existsTxt}</div>
+        <div class="preset-card-meta">${p.meta}</div>
+      </div>
+      <div class="preset-card-arrow">›</div>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
+function showPresetDetail(i){
+  const p = PRESET_WORKOUTS[i];
+  document.getElementById('presetTitle').textContent = 'Anteprima';
+  const TYPE_LABELS = {gym:'Palestra', run:'Corsa', bike:'Bici', other:'Altro'};
+
+  const exsHTML = p.exs.map((ex, j) => {
+    const detail = ex.timed
+      ? `${ex.sets} serie · ${ex.reps}s · rec ${ex.rec}s`
+      : `${ex.sets} serie × ${ex.reps} rip · rec ${ex.rec}s`;
+    return `<div class="preset-ex-row">
+      <div class="preset-ex-num">${j+1}</div>
+      <div>
+        <div class="preset-ex-name">${ex.name}</div>
+        <div class="preset-ex-detail">${detail}${ex.timed ? ' ⏱' : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const exists = data.workouts.some(w => w.name.toLowerCase() === p.name.toLowerCase());
+  const addLabel = exists ? `➕ Aggiungi copia` : `➕ Aggiungi ai miei allenamenti`;
+
+  document.getElementById('presetBody').innerHTML = `
+    <button class="preset-back-btn" onclick="renderPresetList()">‹ Tutti i modelli</button>
+    <div class="preset-detail-hero">
+      <div class="preset-detail-icon">${p.icon}</div>
+      <div>
+        <div class="preset-detail-name">${p.name}</div>
+        <div class="preset-detail-meta">${TYPE_LABELS[p.type]||'Altro'} · ${p.meta}</div>
+      </div>
+    </div>
+    <div class="preset-ex-lbl">Esercizi</div>
+    ${exsHTML}
+    <button class="preset-add-btn" onclick="applyPreset(${i})">${addLabel}</button>
+  `;
+}
+
+function closePreset(){
+  document.getElementById('presetOverlay').classList.remove('open');
+}
+
+function closePresetOnBg(e){
+  if(e.target === document.getElementById('presetOverlay')) closePreset();
+}
+
+function applyPreset(i){
+  const p = PRESET_WORKOUTS[i];
+  const wo = {
+    id:   'w_' + Date.now(),
+    name: p.name,
+    type: p.type,
+    exs:  p.exs.map(ex => ({ ...ex, id: 'ex_' + Date.now() + '_' + Math.random().toString(36).slice(2) })),
+  };
+  data.workouts.push(wo);
+  saveData(data);
+  renderWoList();
+  renderAssign();
+  closePreset();
+  showToast(`✓ "${p.name}" aggiunto!`);
+}
 
 /* ══ SLIDE NAVIGATION ══ */
 const PAGE_INDEX = 4; // impostazioni.html = indice 4

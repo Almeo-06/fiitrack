@@ -320,9 +320,26 @@ body::before{
   animation:toastIn .3s ease;
 }
 @keyframes toastIn{ from{opacity:0;transform:translateX(-50%) translateY(8px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+/* ══ LIGHT THEME ══ */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-item.on{ color:var(--a1); }
+html.theme-light .peso-hero{
+  background:var(--bg2) !important;
+  border:1px solid var(--border);
+  box-shadow:0 2px 16px rgba(13,148,136,.08);
+}
+html.theme-light .peso-hero::before{ display:none; }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
 </script>
 </head>
 <body>
@@ -795,6 +812,16 @@ function renderChart(){
     document.getElementById('chartRange').textContent = '';
     return;
   }
+
+  /* Attendi che il layout sia pronto prima di leggere clientWidth.
+     Se la pagina non è ancora stata dipinta (clientWidth = 0), riprova
+     al frame successivo — evita viewBox "0 0 -32 140" che rende il grafico invisibile. */
+  const _rawW = svg.parentElement.clientWidth;
+  if(_rawW <= 0){
+    requestAnimationFrame(renderChart);
+    return;
+  }
+
   svg.style.display   = 'block';
   empty.style.display = 'none';
 
@@ -802,7 +829,7 @@ function renderChart(){
   const pts  = ptsMain.slice(-10);
   const ptsC = ptsCmp.length >= 2 ? ptsCmp.slice(-10) : [];
 
-  const W = svg.parentElement.clientWidth - 32;
+  const W = _rawW;
   const H = 140;
   const PAD = { top:12, right:12, bottom:28, left:36 };
   const iW  = W - PAD.left - PAD.right;
@@ -1041,7 +1068,9 @@ function showToast(msg, ok=true){
 const PAGE_INDEX = 2; // peso.html = indice 2
 
 try{ init(); } catch(e){ console.warn('init error:', e); }
-renderChart();
+/* Rimanda il primo render al frame successivo così il browser
+   ha già calcolato il layout e clientWidth è corretto. */
+requestAnimationFrame(renderChart);
 (function(){
   const sa = document.querySelector('.scroll-area');
   if(!sa) return;

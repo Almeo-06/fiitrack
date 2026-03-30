@@ -133,6 +133,10 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .end-ex-detail{ font-size:10px; color:var(--textm); margin-top:2px; font-weight:400; }
 .end-ex-check{ font-size:14px; color:var(--green); }
 
+/* serie breakdown nel riepilogo */
+.end-ex-series{ display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }
+.end-ex-serie-pill{ font-size:9px; padding:2px 7px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); color:var(--textm); font-family:var(--mono); }
+
 /* toast salvato */
 .save-toast{
   position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
@@ -331,14 +335,38 @@ body::before{
 .fa-icon{ font-size:28px; margin-bottom:8px; }
 .fa-title{ font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
 .fa-text{ font-size:12px; color:var(--textm); line-height:1.6; }
+/* ══ LIGHT THEME ══ */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-item.on{ color:var(--a1); }
+html.theme-light #screenEx,
+html.theme-light #screenRec,
+html.theme-light #screenEnd{ background:var(--bg); }
+html.theme-light .ex-big-circle{
+  background:radial-gradient(circle at 35% 35%, var(--bg3), var(--bg)) !important;
+  border-color:var(--a1);
+  box-shadow:0 0 40px rgba(13,148,136,.12);
+  animation:none;
+}
+html.theme-light .ring-wrap::before{
+  background:radial-gradient(circle, rgba(13,148,136,.12) 0%, transparent 70%);
+}
 </style>
 <script>
 (function(){try{
   var d=JSON.parse(localStorage.getItem('fittrack_v4'));
-  var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};
-  var t=th[(d&&d.theme)||'blue']||th.blue;
+  var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};
+  var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;
   document.documentElement.style.setProperty('--a1',t[0]);
   document.documentElement.style.setProperty('--a2',t[1]);
+  if(tn==='light')document.documentElement.classList.add('theme-light');
   /* colori contrastanti per il timer esercizi a tempo */
   var tt={blue:['#7c3aed','#a855f7','124,58,237','168,85,247'],
           purple:['#f97316','#fbbf24','249,115,22','251,191,36'],
@@ -704,13 +732,16 @@ function saveSession(sessSec){
     exsCompleted: WORKOUT.exs.map((ex,i)=>{
       const data    = exData[i];
       const weights = data.weights.filter(w=>w!==null && !isNaN(w));
-      const repsArr = data.reps.filter(r=>r!==null && !isNaN(r));
       return {
         name:   ex.name,
         sets:   sd[i],
         reps:   ex.reps,
         weight: weights.length ? Math.max(...weights) : null,
         notes:  data.note || '',
+        sets_data: Array.from({length: sd[i]}, (_,j) => ({
+          kg:   (data.weights[j] != null && !isNaN(data.weights[j])) ? data.weights[j] : null,
+          reps: (data.reps[j]   != null && !isNaN(data.reps[j]))    ? data.reps[j]    : ex.reps,
+        })),
       };
     }),
   });
@@ -1169,11 +1200,25 @@ function endSession(){
     const weightTxt = maxW !== null ? ` · ${maxW} kg` : '';
     const prBadge   = isPR ? `<span class="pr-badge">🏆 PR</span>` : '';
     const noteTxt   = data.note ? `<div class="end-ex-detail" style="font-style:italic;margin-top:3px">🖊️ ${data.note}</div>` : '';
+    /* Pillole per-serie: mostra solo se ci sono dati reali */
+    const seriesHTML = (() => {
+      if(sd[i] === 0) return '';
+      const parts = Array.from({length: sd[i]}, (_,j) => {
+        const w = data.weights[j]; const r = data.reps[j];
+        const kgOk  = w != null && !isNaN(w);
+        const repOk = r != null && !isNaN(r);
+        if(!kgOk && !repOk) return null;
+        return (kgOk ? w+'kg' : '') + (kgOk && repOk ? '×' : '') + (repOk ? r+'r' : '');
+      }).filter(Boolean);
+      if(!parts.length) return '';
+      return `<div class="end-ex-series">${parts.map(p=>`<span class="end-ex-serie-pill">${p}</span>`).join('')}</div>`;
+    })();
     return `<div class="end-ex-row" style="animation-delay:${delay}s">
       <div class="end-ex-icon">${ex.icon}</div>
       <div style="flex:1">
         <div class="end-ex-name">${ex.name}${prBadge}</div>
         <div class="end-ex-detail">${sd[i]} / ${ex.sets} serie · ${ex.timed ? ex.reps+'s' : ex.reps+' rep'}${weightTxt}</div>
+        ${seriesHTML}
         ${noteTxt}
       </div>
       <div class="end-ex-check">${sd[i]>=ex.sets?'✓':'—'}</div>

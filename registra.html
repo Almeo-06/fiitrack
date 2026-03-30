@@ -243,6 +243,21 @@ body::before{
 }
 .sess-row:last-child{ border-bottom:none; padding-bottom:0; }
 .sess-icon{ font-size:20px; flex-shrink:0; width:28px; text-align:center; }
+.sess-date-box{
+  width:40px; flex-shrink:0;
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; overflow:hidden; text-align:center;
+}
+.sess-date-day{
+  display:block; font-family:var(--mono); font-size:15px; font-weight:600;
+  color:var(--text); padding:5px 0 2px; line-height:1;
+}
+.sess-date-mon{
+  display:block; font-family:var(--mono); font-size:8px;
+  text-transform:uppercase; color:var(--textm);
+  background:rgba(0,136,255,.08); border-top:1px solid var(--border);
+  padding:2px 0; letter-spacing:.5px;
+}
 .sess-info{ flex:1; min-width:0; }
 .sess-name{ font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sess-meta{ font-family:var(--mono); font-size:10px; color:var(--textm); margin-top:2px; }
@@ -334,9 +349,26 @@ body::before{
 .tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; }
 .tab-item.on{ color:var(--a2); }
 .tab-icon{ font-size:18px; }
+/* ══ LIGHT THEME ══ */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-item.on{ color:var(--a1); }
+html.theme-light .streak-hero{
+  background:var(--bg2) !important;
+  border:1px solid var(--border);
+  box-shadow:0 2px 16px rgba(13,148,136,.08);
+}
+html.theme-light .streak-hero::before{ display:none; }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};var t=th[(d&&d.theme)||'blue']||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
 </script>
 </head>
 <body>
@@ -753,8 +785,8 @@ function renderStoricoSessioni() {
     row.className = 'sess-row';
 
     const iconEl = document.createElement('div');
-    iconEl.className = 'sess-icon';
-    iconEl.textContent = icon;
+    iconEl.className = 'sess-date-box';
+    iconEl.innerHTML = `<span class="sess-date-day">${dateObj.getDate()}</span><span class="sess-date-mon">${MONTHS_SHORT[dateObj.getMonth()]}</span>`;
 
     const infoEl = document.createElement('div');
     infoEl.className = 'sess-info';
@@ -765,7 +797,14 @@ function renderStoricoSessioni() {
 
     const metaEl = document.createElement('div');
     metaEl.className = 'sess-meta';
-    metaEl.textContent = dateStr;
+    const _dur = sess.duration;
+    if(_dur){
+      const _m = Math.floor(_dur / 60);
+      const _h = Math.floor(_m / 60);
+      metaEl.textContent = _h > 0 ? `${_h}h ${_m % 60}min` : `${_m} min`;
+    } else {
+      metaEl.textContent = '—';
+    }
 
     infoEl.appendChild(nameEl);
     infoEl.appendChild(metaEl);

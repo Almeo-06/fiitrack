@@ -230,15 +230,27 @@ body::before{
 /* ── SLIDE IN ── */
 @keyframes slideInUp{ from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
 .challenge-card{ animation:slideInUp .3s ease both; }
+/* ══ LIGHT THEME ══ */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-item.on{ color:var(--a1); }
 </style>
 <script>
 (function(){
   try{
     const d=JSON.parse(localStorage.getItem('fittrack_v4'));
-    const th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24']};
-    const t=th[(d&&d.theme)||'blue']||th.blue;
+    const th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};
+    const tn=(d&&d.theme)||'blue';const t=th[tn]||th.blue;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
+    if(tn==='light')document.documentElement.classList.add('theme-light');
   } catch(e){}
 })();
 </script>
