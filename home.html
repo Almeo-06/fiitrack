@@ -331,6 +331,19 @@ html.theme-light .drawer-menu{ background:var(--bg2) !important; }
 html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
 html.theme-light .edot{ background:var(--bg3) !important; }
 
+/* ── PWA standalone: tab-bar sempre visibile ── */
+@media all and (display-mode: standalone) {
+  .tab-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  .scroll-area {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 /* ══ INSTALL BANNER ══ */
 #installBanner{
   position:fixed; bottom:calc(64px + env(safe-area-inset-bottom,0px) + 8px);

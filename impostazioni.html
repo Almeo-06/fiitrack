@@ -502,6 +502,19 @@ html.theme-light body{ background:var(--bg); }
 html.theme-light body::before{ display:none; }
 html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
 html.theme-light .tab-item.on{ color:var(--a1); }
+
+/* ── PWA standalone: tab-bar sempre visibile ── */
+@media all and (display-mode: standalone) {
+  .tab-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  .scroll-area {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
 </style>
 </head>
 <body>
