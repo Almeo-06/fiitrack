@@ -2,15 +2,22 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FitTrack · Benvenuto</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-visual">
+<title>FitTrack</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitTrack">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})()</script>
 <style>
 :root{
   --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
   --a1:#0088ff; --a2:#00ccff;
   --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --red:#ff4455; --warn:#ffaa00;
+  --green:#00e676; --red:#ff4455;
   --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
@@ -18,414 +25,1178 @@ html,body{ height:100%; overflow:hidden; }
 body{
   background:var(--bg); color:var(--text); font-family:var(--font);
   max-width:480px; margin:0 auto;
-  height:100vh; height:100dvh;
-  position:relative; overflow:hidden;
+  height:100dvh;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  opacity:0; animation:fadeIn .35s ease .05s forwards;
 }
+@keyframes fadeIn{ to{ opacity:1; } }
 
-/* sfondo effetti */
 body::before{
   content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(0,136,255,.12), transparent),
-    radial-gradient(ellipse 60% 35% at 90% 100%, rgba(0,60,180,.08), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,136,255,.1), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(0,60,180,.07), transparent);
 }
 
-/* ── SLIDER CONTAINER ── */
-.slider-wrap{
-  position:absolute; inset:0; z-index:1;
-  display:flex; overflow:hidden;
+/* ── BARRA PROGRESSO ── */
+.prog-wrap{
+  position:relative; z-index:10; flex-shrink:0;
+  padding:calc(env(safe-area-inset-top,0px) + 20px) 28px 0;
 }
+.prog-track{ height:3px; background:var(--border); border-radius:99px; overflow:hidden; }
+.prog-fill{
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--a1),var(--a2));
+  width:10%;
+  transition:width .45s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── SLIDES ── */
+.slider-wrap{ flex:1; overflow:hidden; position:relative; z-index:1; min-height:0; }
 .slides-track{
-  display:flex;
-  width:400%; /* 4 slides */
-  height:100%;
-  transition:transform .45s cubic-bezier(.4,0,.2,1);
+  display:flex; width:1000%; height:100%;
+  transition:transform .42s cubic-bezier(.4,0,.2,1);
   will-change:transform;
 }
 .slide{
-  width:25%; /* 1/4 di .slides-track = 100% viewport */
-  height:100%;
+  width:10%; height:100%;
   display:flex; flex-direction:column;
-  align-items:center; justify-content:flex-start;
-  padding:calc(60px + env(safe-area-inset-top,0px)) 28px 120px;
-  position:relative;
-  flex-shrink:0;
+  padding:0 28px; overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.slide::-webkit-scrollbar{ width:0; }
+
+/* ── BODY COMUNI ── */
+.s1-body,.s2-body,.s4-body,.s5-body{
+  flex:1; display:flex; flex-direction:column;
+  justify-content:center; padding:20px 0 24px;
+}
+.s3-body,.s6-body,.s7-body,.s8-body,.s9-body,.s10-body{
+  flex:1; display:flex; flex-direction:column;
+  padding:24px 0;
 }
 
-/* ── CONTENUTO SLIDE ── */
-.slide-icon{
-  font-size:80px; margin-bottom:28px;
-  filter:drop-shadow(0 0 24px rgba(0,136,255,.35));
-  animation:iconFloat 3s ease-in-out infinite;
+/* ── TESTI COMUNI ── */
+.slide-q{
+  font-size:32px; font-weight:700; color:var(--text);
+  letter-spacing:-.8px; line-height:1.15; margin-bottom:10px;
 }
-@keyframes iconFloat{
-  0%,100%{ transform:translateY(0); }
-  50%{ transform:translateY(-8px); }
+.slide-q em{ color:var(--a2); font-style:normal; }
+.slide-hint{ font-size:14px; color:var(--textm); margin-bottom:28px; }
+.slide-sec{
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--a1); text-transform:uppercase; margin-bottom:12px;
 }
-.slide-tag{
-  font-family:var(--mono); font-size:9px; color:var(--a1);
-  letter-spacing:2px; text-transform:uppercase;
-  margin-bottom:14px;
-  background:rgba(0,136,255,.08);
-  border:1px solid rgba(0,136,255,.2);
-  padding:4px 12px; border-radius:20px;
-}
-.slide-title{
-  font-size:28px; font-weight:600; color:var(--text);
-  text-align:center; line-height:1.25;
-  margin-bottom:16px;
-  letter-spacing:-0.5px;
-}
-.slide-title span{ color:var(--a2); }
-.slide-desc{
-  font-size:15px; color:var(--textm); text-align:center;
-  line-height:1.6; max-width:300px;
-}
-.slide-desc strong{ color:var(--text); }
 
-/* feature cards nelle slide 2-3 */
-.feature-list{
-  width:100%; margin-top:24px;
-  display:flex; flex-direction:column; gap:10px;
+/* ─────────────────────────────────────
+   SLIDE 1 — WELCOME
+───────────────────────────────────── */
+.s1-emoji{
+  font-size:76px; margin-bottom:30px;
+  display:inline-block; line-height:1;
+  filter:drop-shadow(0 0 22px rgba(0,136,255,.28));
+  animation:float 3.5s ease-in-out infinite;
 }
-.feature-item{
+@keyframes float{
+  0%,100%{ transform:translateY(0) rotate(-2deg); }
+  50%{     transform:translateY(-10px) rotate(2deg); }
+}
+.s1-kicker{
+  font-family:var(--mono); font-size:10px; letter-spacing:2.5px;
+  color:var(--a1); text-transform:uppercase; margin-bottom:14px;
+}
+.s1-title{
+  font-size:40px; font-weight:700; color:var(--text);
+  line-height:1.1; letter-spacing:-1.5px; margin-bottom:16px;
+}
+.s1-title em{ color:var(--a2); font-style:normal; }
+.s1-sub{
+  font-size:16px; color:var(--textm); line-height:1.65;
+  margin-bottom:36px; max-width:300px;
+}
+.streak-preview{
   background:var(--bg2); border:1px solid var(--border);
-  border-radius:14px; padding:14px 16px;
-  display:flex; align-items:center; gap:14px;
-}
-.feature-icon{
-  width:42px; height:42px; border-radius:12px;
-  background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; flex-shrink:0;
-}
-.feature-text{ flex:1; }
-.feature-name{ font-size:13px; font-weight:500; color:var(--text); margin-bottom:2px; }
-.feature-sub{ font-size:11px; color:var(--textm); }
-
-/* stats demo slide 3 */
-.stats-demo{
-  width:100%; margin-top:20px;
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:16px; padding:16px;
-}
-.stats-row{ display:flex; gap:8px; }
-.stat-box{
-  flex:1; background:var(--bg3); border:1px solid var(--border);
-  border-radius:11px; padding:12px 8px; text-align:center;
-}
-.stat-num{ font-size:22px; font-weight:600; line-height:1; }
-.stat-lbl{ font-size:9px; color:var(--textm); margin-top:3px; text-transform:uppercase; letter-spacing:.8px; }
-.streak-demo{
-  margin-top:10px; background:var(--bg3); border:1px solid var(--border);
-  border-radius:11px; padding:12px 16px;
-  display:flex; align-items:center; gap:12px;
-}
-.streak-fire{ font-size:28px; }
-.streak-demo-num{ font-size:32px; font-weight:600; color:var(--a2); letter-spacing:-1px; }
-.streak-demo-lbl{ font-size:11px; color:var(--textm); margin-top:1px; }
-
-/* ── SLIDE 4: FORM ── */
-.form-wrap{ width:100%; margin-top:20px; display:flex; flex-direction:column; gap:14px; }
-.field-group{ display:flex; flex-direction:column; gap:6px; }
-.field-lbl{
-  font-size:9px; color:var(--textm); text-transform:uppercase;
-  letter-spacing:1.5px; font-family:var(--mono);
-}
-.field-inp{
-  width:100%; background:var(--bg2); border:1.5px solid var(--border);
-  border-radius:12px; padding:14px 16px;
-  color:var(--text); font-family:var(--font); font-size:16px;
-  outline:none; transition:border-color .2s;
-}
-.field-inp:focus{ border-color:var(--a1); box-shadow:0 0 0 3px rgba(0,136,255,.08); }
-.field-inp::placeholder{ color:var(--textm); }
-
-/* goal chips */
-.goal-chips{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.goal-chip{
-  padding:12px 10px; background:var(--bg2);
-  border:1.5px solid var(--border); border-radius:12px;
-  cursor:pointer; text-align:center;
-  transition:all .18s;
-}
-.goal-chip:active{ transform:scale(.97); }
-.goal-chip.sel{
-  background:rgba(0,136,255,.1);
-  border-color:rgba(0,136,255,.45);
-  box-shadow:0 0 12px rgba(0,136,255,.15);
-}
-.goal-chip-icon{ font-size:26px; margin-bottom:5px; }
-.goal-chip-name{ font-size:13px; font-weight:500; color:var(--text); }
-.goal-chip-sub{ font-size:10px; color:var(--textm); margin-top:1px; }
-.goal-chip.sel .goal-chip-name{ color:var(--a2); }
-
-/* ── BOTTOM BAR (dots + bottone) ── */
-.bottom-bar{
-  position:absolute; bottom:0; left:0; right:0;
-  padding:20px 28px 36px;
-  background:linear-gradient(to top, rgba(2,8,16,.98) 60%, transparent);
-  z-index:10;
-  display:flex; flex-direction:column; align-items:center; gap:16px;
-}
-.dot-indicators{ display:flex; gap:8px; }
-.dot{
-  width:8px; height:8px; border-radius:50%;
-  background:var(--border); transition:all .3s;
-}
-.dot.active{
-  width:24px; border-radius:4px;
-  background:linear-gradient(90deg,var(--a1),var(--a2));
-  box-shadow:0 0 8px rgba(0,136,255,.4);
-}
-.next-btn{
-  width:100%; padding:16px;
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border:none; border-radius:14px;
-  color:#fff; font-size:16px; font-weight:600;
-  cursor:pointer; font-family:var(--font);
-  box-shadow:0 4px 24px rgba(0,136,255,.3);
-  transition:transform .12s, box-shadow .12s;
+  border-radius:18px; padding:16px 20px;
+  display:flex; align-items:center; gap:16px;
   position:relative; overflow:hidden;
 }
-.next-btn:active{ transform:scale(.98); box-shadow:0 2px 12px rgba(0,136,255,.2); }
-.next-btn::after{
+.streak-preview::before{
+  content:''; position:absolute; top:-20px; right:-20px;
+  width:100px; height:100px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,136,255,.12),transparent 70%);
+  pointer-events:none;
+}
+.sp-fire{ font-size:38px; flex-shrink:0; }
+.sp-info{ flex:1; }
+.sp-num{
+  font-size:44px; font-weight:700; color:var(--a2);
+  letter-spacing:-2px; line-height:1;
+}
+.sp-lbl{ font-size:12px; color:var(--textm); margin-top:2px; }
+.sp-dots{ display:flex; gap:5px; margin-top:10px; }
+.spdot{ height:5px; border-radius:3px; }
+
+/* ─────────────────────────────────────
+   SLIDE 2 — NOME
+───────────────────────────────────── */
+.big-input{
+  width:100%; background:var(--bg2); border:2px solid var(--border);
+  border-radius:16px; padding:18px 20px;
+  color:var(--text); font-family:var(--font);
+  font-size:24px; font-weight:600; outline:none;
+  transition:border-color .2s, box-shadow .2s;
+  caret-color:var(--a2);
+}
+.big-input:focus{
+  border-color:var(--a1);
+  box-shadow:0 0 0 4px rgba(0,136,255,.1);
+}
+.big-input::placeholder{
+  color:var(--border); font-weight:400; font-size:18px;
+}
+
+/* ─────────────────────────────────────
+   SLIDE 3 — OBIETTIVO
+───────────────────────────────────── */
+.goal-grid{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; flex:1; min-height:0;
+}
+.goal-card{
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:20px; padding:20px 14px 18px;
+  cursor:pointer; text-align:center;
+  display:flex; flex-direction:column;
+  align-items:center; gap:10px;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  position:relative; overflow:hidden;
+}
+.goal-card::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  opacity:0; transition:opacity .2s; border-radius:18px;
+}
+.goal-card.sel{
+  border-color:var(--a1);
+  transform:scale(1.04);
+  box-shadow:0 6px 24px rgba(0,136,255,.18);
+}
+.goal-card.sel::after{ opacity:.08; }
+.goal-emoji{
+  font-size:32px; line-height:1;
+  position:relative; z-index:1;
+  transition:transform .2s;
+}
+.goal-card.sel .goal-emoji{ transform:scale(1.2); }
+.goal-name{
+  font-size:14px; font-weight:600; color:var(--text);
+  position:relative; z-index:1;
+  transition:color .2s;
+}
+.goal-card.sel .goal-name{ color:var(--a2); }
+
+/* ─────────────────────────────────────
+   SLIDE 4 — DATI FISICI
+───────────────────────────────────── */
+.gender-row{
+  display:flex; gap:10px; margin-bottom:18px;
+}
+.gender-btn{
+  flex:1; padding:16px 12px; text-align:center;
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:16px; cursor:pointer;
+  font-size:16px; font-weight:600; color:var(--textm);
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.gender-btn.sel{
+  border-color:var(--a1); color:var(--a2);
+  background:rgba(0,136,255,.06);
+  transform:scale(1.02);
+}
+.stat-grid{
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;
+}
+.stat-field{
+  background:var(--bg2); border:1.5px solid var(--border);
+  border-radius:14px; padding:12px 14px;
+  transition:border-color .2s;
+}
+.stat-field:focus-within{ border-color:var(--a1); }
+.stat-lbl{
+  font-size:10px; color:var(--textm);
+  text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px;
+}
+.stat-val-row{ display:flex; align-items:baseline; gap:4px; }
+.stat-input{
+  flex:1; background:none; border:none; outline:none;
+  color:var(--text); font-size:22px; font-weight:700;
+  font-family:var(--mono); width:0; min-width:0;
+  -moz-appearance:textfield;
+}
+.stat-input::-webkit-inner-spin-button,
+.stat-input::-webkit-outer-spin-button{ -webkit-appearance:none; }
+.stat-unit{ font-size:11px; color:var(--textm); white-space:nowrap; }
+
+/* ─────────────────────────────────────
+   SLIDE 5 — PESO TARGET
+───────────────────────────────────── */
+.opt-badge{
+  display:inline-block; background:rgba(0,136,255,.1);
+  color:var(--a1); font-size:10px; font-weight:600;
+  padding:3px 10px; border-radius:99px; margin-bottom:12px;
+  text-transform:uppercase; letter-spacing:1.5px;
+  border:1px solid rgba(0,136,255,.2);
+}
+.target-input-wrap{
+  display:flex; align-items:center; gap:10px;
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:16px; padding:18px 20px; margin-top:20px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.target-input-wrap:focus-within{
+  border-color:var(--a1);
+  box-shadow:0 0 0 4px rgba(0,136,255,.1);
+}
+.target-input{
+  flex:1; background:none; border:none; outline:none;
+  color:var(--text); font-size:32px; font-weight:700;
+  font-family:var(--mono); min-width:0;
+  caret-color:var(--a2);
+  -moz-appearance:textfield;
+}
+.target-input::-webkit-inner-spin-button,
+.target-input::-webkit-outer-spin-button{ -webkit-appearance:none; }
+.target-input::placeholder{ color:var(--border); font-size:28px; }
+.target-unit{ font-size:18px; color:var(--textm); font-weight:500; }
+.skip-hint{
+  text-align:center; margin-top:16px;
+  font-size:13px; color:var(--textm);
+}
+.skip-hint button{
+  background:none; border:none; color:var(--textm);
+  font-family:var(--font); font-size:13px; cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px;
+}
+
+/* ─────────────────────────────────────
+   SLIDE 6 — ESPERIENZA
+───────────────────────────────────── */
+.vchip-list{ display:flex; flex-direction:column; gap:10px; flex:1; }
+.vchip{
+  display:flex; align-items:center; gap:14px;
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:16px; padding:15px 16px; cursor:pointer;
+  transition:all .2s;
+}
+.vchip.sel{ border-color:var(--a1); background:rgba(0,136,255,.04); }
+.vchip-ic{ font-size:22px; flex-shrink:0; }
+.vchip-txt{ flex:1; }
+.vchip-name{ font-size:15px; font-weight:600; color:var(--text); }
+.vchip-sub{ font-size:12px; color:var(--textm); margin-top:2px; }
+.vchip-dot{
+  width:20px; height:20px; border-radius:50%;
+  border:2px solid var(--border); flex-shrink:0;
+  transition:all .2s; position:relative;
+}
+.vchip.sel .vchip-dot{ background:var(--a1); border-color:var(--a1); }
+.vchip.sel .vchip-dot::after{
+  content:'✓'; position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-51%); font-size:10px; color:#fff; font-weight:700;
+}
+
+/* ─────────────────────────────────────
+   SLIDE 7 — FREQUENZA
+───────────────────────────────────── */
+.freq-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;
+}
+.freq-opt{
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:18px; padding:20px 14px;
+  cursor:pointer; text-align:center;
+  display:flex; flex-direction:column; align-items:center;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  position:relative; overflow:hidden;
+}
+.freq-opt.sel{
+  border-color:var(--a1);
+  transform:scale(1.03);
+  box-shadow:0 6px 20px rgba(0,136,255,.15);
+}
+.freq-opt::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  opacity:0; transition:opacity .2s; border-radius:16px;
+}
+.freq-opt.sel::after{ opacity:.06; }
+.freq-num{
+  font-size:34px; font-weight:700; color:var(--a2);
+  font-family:var(--mono); line-height:1;
+  position:relative; z-index:1;
+}
+.freq-lbl{
+  font-size:13px; color:var(--textm); margin-top:6px;
+  position:relative; z-index:1;
+}
+.freq-opt.sel .freq-lbl{ color:var(--a1); }
+
+/* ─────────────────────────────────────
+   SLIDE 8 — GIORNI
+───────────────────────────────────── */
+.day-row{
+  display:flex; gap:8px; justify-content:space-between;
+  margin-top:8px;
+}
+.day-btn{
+  flex:1; aspect-ratio:1; max-width:48px;
+  border-radius:50%; border:2px solid var(--border);
+  background:var(--bg2); color:var(--textm);
+  font-size:13px; font-weight:600; font-family:var(--font);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.day-btn.sel{
+  background:var(--a1); border-color:var(--a1);
+  color:#fff;
+  transform:scale(1.08);
+  box-shadow:0 4px 14px rgba(0,136,255,.35);
+}
+.days-sub{
+  font-size:12px; color:var(--textm); margin-top:14px;
+  text-align:center;
+}
+.days-count{
+  font-size:13px; font-weight:600; color:var(--a1);
+}
+
+/* ─────────────────────────────────────
+   SLIDE 9 — DOVE + TIPO
+───────────────────────────────────── */
+.loc-grid{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; margin-bottom:24px;
+}
+.loc-opt{
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:16px; padding:18px 12px;
+  cursor:pointer; text-align:center;
+  display:flex; flex-direction:column;
+  align-items:center; gap:8px;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.loc-opt.sel{
+  border-color:var(--a1);
+  transform:scale(1.03);
+  box-shadow:0 4px 16px rgba(0,136,255,.15);
+  background:rgba(0,136,255,.04);
+}
+.loc-ic{ font-size:26px; }
+.loc-lbl{ font-size:13px; font-weight:600; color:var(--text); }
+.loc-opt.sel .loc-lbl{ color:var(--a2); }
+.type-chips{
+  display:flex; flex-wrap:wrap; gap:8px;
+}
+.type-chip{
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:99px; padding:9px 18px;
+  font-size:14px; font-weight:500; color:var(--textm);
+  cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:6px;
+}
+.type-chip.sel{
+  border-color:var(--a1); color:var(--a1);
+  background:rgba(0,136,255,.06);
+}
+
+/* ─────────────────────────────────────
+   SLIDE 10 — NOTIFICHE
+───────────────────────────────────── */
+.notif-card{
+  background:var(--bg2); border:2px solid var(--border);
+  border-radius:20px; padding:18px 20px; cursor:pointer;
+  display:flex; align-items:center; gap:14px;
+  transition:border-color .2s, background .2s;
+}
+.notif-card.on{ border-color:var(--a1); background:rgba(0,136,255,.04); }
+.notif-left{ display:flex; align-items:center; gap:14px; flex:1; }
+.notif-icon{ font-size:30px; }
+.notif-name{ font-size:15px; font-weight:600; color:var(--text); }
+.notif-sub{ font-size:12px; color:var(--textm); margin-top:2px; }
+.ntoggle{
+  width:50px; height:28px; border-radius:14px;
+  background:var(--border); position:relative;
+  transition:background .25s; flex-shrink:0;
+}
+.ntoggle::after{
+  content:''; position:absolute; top:3px; left:3px;
+  width:22px; height:22px; border-radius:50%;
+  background:#fff; transition:transform .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.notif-card.on .ntoggle{ background:var(--a1); }
+.notif-card.on .ntoggle::after{ transform:translateX(22px); }
+.notif-time-wrap{
+  margin-top:20px;
+  opacity:0; transform:translateY(8px);
+  transition:opacity .25s, transform .25s;
+  pointer-events:none;
+}
+.notif-time-wrap.visible{
+  opacity:1; transform:translateY(0);
+  pointer-events:all;
+}
+.notif-time-lbl{
+  font-size:11px; color:var(--textm);
+  text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px;
+}
+.time-chip-row{ display:flex; gap:8px; }
+.time-chip{
+  flex:1; background:var(--bg2); border:2px solid var(--border);
+  border-radius:14px; padding:14px 8px; text-align:center;
+  cursor:pointer; font-size:13px; color:var(--text); font-weight:500;
+  transition:all .2s; line-height:1.5;
+}
+.time-chip span{
+  display:block; font-size:11px; color:var(--textm);
+  font-family:var(--mono); margin-top:2px;
+}
+.time-chip.sel{
+  border-color:var(--a1); color:var(--a1);
+  background:rgba(0,136,255,.06);
+}
+.time-chip.sel span{ color:var(--a1); }
+.notif-skip{
+  text-align:center; margin-top:24px;
+  font-size:13px; color:var(--textm);
+}
+.notif-skip span{ opacity:.6; }
+
+/* ─────────────────────────────────────
+   BOTTOM CTA
+───────────────────────────────────── */
+.bottom-cta{
+  flex-shrink:0; position:relative; z-index:10;
+  padding:14px 28px calc(env(safe-area-inset-bottom,0px) + 28px);
+}
+.cta-btn{
+  width:100%; padding:18px 24px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:16px;
+  color:#fff; font-size:17px; font-weight:600;
+  cursor:pointer; font-family:var(--font);
+  box-shadow:0 6px 28px rgba(0,136,255,.3);
+  transition:transform .12s, box-shadow .12s, opacity .2s;
+  position:relative; overflow:hidden;
+  letter-spacing:-.2px;
+}
+.cta-btn:disabled{
+  opacity:.35; cursor:default;
+  box-shadow:none; transform:none !important;
+}
+.cta-btn:not(:disabled):active{
+  transform:scale(.98);
+  box-shadow:0 3px 14px rgba(0,136,255,.2);
+}
+.cta-btn::after{
   content:''; position:absolute; top:0; left:-60%;
   width:35%; height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
-  transform:skewX(-15deg); animation:btnShine 2.5s ease infinite;
+  transform:skewX(-15deg); animation:shine 2.8s ease infinite;
 }
-@keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
+.cta-btn:disabled::after{ display:none; }
+@keyframes shine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
 
-/* bottone indietro */
-.btn-row{ display:flex; gap:10px; width:100%; }
-.btn-row .next-btn{ flex:1; width:auto; }
-.back-btn{
-  padding:16px 18px;
-  background:var(--bg3); border:1.5px solid var(--border);
-  border-radius:14px; color:var(--textm);
-  font-size:15px; font-weight:500;
-  cursor:pointer; font-family:var(--font);
-  transition:border-color .15s, color .15s;
-  white-space:nowrap; flex-shrink:0;
+/* ── LIGHT THEME ── */
+html.theme-light{
+  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
+  --a1:#0d9488; --a2:#14b8a6;
+  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --green:#059669; --red:#dc2626;
 }
-.back-btn:active{ border-color:rgba(0,136,255,.3); color:var(--a2); }
+html.theme-light body{ background:var(--bg); }
+html.theme-light body::before{ display:none; }
+html.theme-light .streak-preview{
+  box-shadow:0 2px 16px rgba(13,148,136,.08);
+}
+html.theme-light .cta-btn{
+  box-shadow:0 6px 24px rgba(13,148,136,.25);
+}
+html.theme-light .day-btn.sel{
+  box-shadow:0 4px 14px rgba(13,148,136,.3);
+}
+html.theme-light .goal-card.sel{
+  box-shadow:0 6px 24px rgba(13,148,136,.2);
+}
 </style>
 </head>
 <body>
 
-<div class="slider-wrap">
-  <div class="slides-track" id="track">
-
-    <!-- SLIDE 1: Benvenuto -->
-    <div class="slide">
-      <div class="slide-tag">FitTrack · v4</div>
-      <div class="slide-icon">💪</div>
-      <div class="slide-title">Benvenuto in <span>FitTrack</span></div>
-      <div class="slide-desc">
-        Il tuo compagno di allenamento personale.<br><br>
-        <strong>Traccia sessioni, monitora il peso,</strong> tieni il tuo streak acceso ogni giorno.
-      </div>
-    </div>
-
-    <!-- SLIDE 2: Traccia allenamenti -->
-    <div class="slide">
-      <div class="slide-tag">Funzionalità 1</div>
-      <div class="slide-icon">🏋️</div>
-      <div class="slide-title">Traccia i tuoi <span>allenamenti</span></div>
-      <div class="slide-desc">Registra ogni sessione in pochi secondi.</div>
-      <div class="feature-list">
-        <div class="feature-item">
-          <div class="feature-icon">📅</div>
-          <div class="feature-text">
-            <div class="feature-name">Calendario visivo</div>
-            <div class="feature-sub">Vedi tutti i giorni allenati a colpo d'occhio</div>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">⚡</div>
-          <div class="feature-text">
-            <div class="feature-name">Sessioni rapide</div>
-            <div class="feature-sub">Kcal, durata, km — tutto registrato</div>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🎯</div>
-          <div class="feature-text">
-            <div class="feature-name">Obiettivo settimanale</div>
-            <div class="feature-sub">Imposta le sessioni target per settimana</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 3: Monitora progresso -->
-    <div class="slide">
-      <div class="slide-tag">Funzionalità 2</div>
-      <div class="slide-icon">📊</div>
-      <div class="slide-title">Monitora il tuo <span>progresso</span></div>
-      <div class="slide-desc">Dati reali, motivazione reale.</div>
-      <div class="stats-demo">
-        <div class="stats-row">
-          <div class="stat-box">
-            <div class="stat-num" style="color:var(--a2)">48</div>
-            <div class="stat-lbl">sessioni</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-num" style="color:var(--green)">-4.2</div>
-            <div class="stat-lbl">kg persi</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-num" style="color:var(--a1)">12k</div>
-            <div class="stat-lbl">kcal</div>
-          </div>
-        </div>
-        <div class="streak-demo">
-          <div class="streak-fire">🔥</div>
-          <div>
-            <div class="streak-demo-num">21</div>
-            <div class="streak-demo-lbl">giorni di streak consecutivi</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SLIDE 4: Nome + Obiettivo -->
-    <div class="slide">
-      <div class="slide-tag">Quasi fatto</div>
-      <div class="slide-icon" style="font-size:52px; margin-bottom:14px;">👋</div>
-      <div class="slide-title" style="font-size:22px;">Come ti <span>chiami?</span></div>
-      <div class="form-wrap">
-        <div class="field-group">
-          <label class="field-lbl" for="nameInput">Il tuo nome</label>
-          <input class="field-inp" id="nameInput" type="text" placeholder="es. Marco" maxlength="30" autocomplete="off" />
-        </div>
-        <div class="field-group">
-          <div class="field-lbl">Il tuo obiettivo</div>
-          <div class="goal-chips" id="goalChips">
-            <div class="goal-chip" data-goal="dimagrire" onclick="selectGoal(this)">
-              <div class="goal-chip-icon">🔥</div>
-              <div class="goal-chip-name">Dimagrire</div>
-              <div class="goal-chip-sub">Perdita di peso</div>
-            </div>
-            <div class="goal-chip" data-goal="massa" onclick="selectGoal(this)">
-              <div class="goal-chip-icon">💪</div>
-              <div class="goal-chip-name">Massa</div>
-              <div class="goal-chip-sub">Crescita muscolare</div>
-            </div>
-            <div class="goal-chip" data-goal="resistenza" onclick="selectGoal(this)">
-              <div class="goal-chip-icon">🏃</div>
-              <div class="goal-chip-name">Resistenza</div>
-              <div class="goal-chip-sub">Cardio e stamina</div>
-            </div>
-            <div class="goal-chip" data-goal="salute" onclick="selectGoal(this)">
-              <div class="goal-chip-icon">🌿</div>
-              <div class="goal-chip-name">Salute</div>
-              <div class="goal-chip-sub">Stile di vita sano</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /slides-track -->
-</div><!-- /slider-wrap -->
-
-<!-- BOTTOM BAR -->
-<div class="bottom-bar">
-  <div class="dot-indicators" id="dotIndicators">
-    <div class="dot active"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-  <div class="btn-row">
-    <button class="back-btn" id="backBtn" onclick="prevSlide()" style="display:none">← Indietro</button>
-    <button class="next-btn" id="nextBtn" onclick="nextSlide()">Avanti →</button>
+<!-- PROGRESS BAR -->
+<div class="prog-wrap">
+  <div class="prog-track">
+    <div class="prog-fill" id="progFill"></div>
   </div>
 </div>
 
+<!-- SLIDES -->
+<div class="slider-wrap">
+  <div class="slides-track" id="track">
+
+    <!-- ── SLIDE 1: BENVENUTO ── -->
+    <div class="slide">
+      <div class="s1-body">
+        <div class="s1-emoji">💪</div>
+        <div class="s1-kicker">FitTrack</div>
+        <div class="s1-title">Allena la<br><em>costanza.</em></div>
+        <div class="s1-sub">Traccia ogni sessione, monitora il peso e costruisci una streak giorno dopo giorno.</div>
+        <div class="streak-preview">
+          <div class="sp-fire">🔥</div>
+          <div class="sp-info">
+            <div class="sp-num">21</div>
+            <div class="sp-lbl">giorni di streak</div>
+            <div class="sp-dots">
+              <div class="spdot" style="width:28px;background:var(--a1)"></div>
+              <div class="spdot" style="width:28px;background:var(--a1);opacity:.8"></div>
+              <div class="spdot" style="width:28px;background:var(--a1);opacity:.6"></div>
+              <div class="spdot" style="width:28px;background:var(--a2);opacity:.5"></div>
+              <div class="spdot" style="width:28px;background:var(--border)"></div>
+              <div class="spdot" style="width:28px;background:var(--border)"></div>
+              <div class="spdot" style="width:28px;background:var(--border)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 2: NOME ── -->
+    <div class="slide">
+      <div class="s2-body">
+        <div class="slide-q">Come ti<br><em>chiami?</em></div>
+        <div class="slide-hint">Ti chiamerò così nell'app 👋</div>
+        <input
+          class="big-input" id="nameInput"
+          type="text" placeholder="Il tuo nome"
+          maxlength="30" autocomplete="given-name" autocapitalize="words"
+          oninput="onNameInput()"
+        />
+      </div>
+    </div>
+
+    <!-- ── SLIDE 3: OBIETTIVO ── -->
+    <div class="slide">
+      <div class="s3-body">
+        <div class="slide-q">Qual è il tuo<br><em>obiettivo?</em></div>
+        <div class="slide-hint">Puoi cambiarlo quando vuoi dalle impostazioni.</div>
+        <div class="goal-grid">
+          <div class="goal-card" data-goal="dimagrire" onclick="selectGoal(this)">
+            <div class="goal-emoji">🔥</div>
+            <div class="goal-name">Dimagrire</div>
+          </div>
+          <div class="goal-card" data-goal="massa" onclick="selectGoal(this)">
+            <div class="goal-emoji">💪</div>
+            <div class="goal-name">Massa</div>
+          </div>
+          <div class="goal-card" data-goal="resistenza" onclick="selectGoal(this)">
+            <div class="goal-emoji">🏃</div>
+            <div class="goal-name">Resistenza</div>
+          </div>
+          <div class="goal-card" data-goal="salute" onclick="selectGoal(this)">
+            <div class="goal-emoji">🌿</div>
+            <div class="goal-name">Salute</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 4: DATI FISICI ── -->
+    <div class="slide">
+      <div class="s4-body">
+        <div class="slide-q">Quanti anni<br><em>hai?</em></div>
+        <div class="slide-hint">Ho bisogno anche di sesso, peso e altezza per calcolare le calorie bruciate.</div>
+        <div class="slide-sec">Sesso</div>
+        <div class="gender-row" style="margin-bottom:24px;">
+          <div class="gender-btn" data-val="m" onclick="selectGender(this)">♂ Maschio</div>
+          <div class="gender-btn" data-val="f" onclick="selectGender(this)">♀ Femmina</div>
+        </div>
+        <div class="slide-sec">Misure</div>
+        <div class="stat-grid">
+          <div class="stat-field">
+            <div class="stat-lbl">Età</div>
+            <div class="stat-val-row">
+              <input class="stat-input" type="number" id="ageInput" placeholder="25" min="13" max="99" inputmode="numeric" oninput="updateCta()">
+              <span class="stat-unit">anni</span>
+            </div>
+          </div>
+          <div class="stat-field">
+            <div class="stat-lbl">Peso</div>
+            <div class="stat-val-row">
+              <input class="stat-input" type="number" id="weightInput" placeholder="70" min="30" max="300" step="0.1" inputmode="decimal" oninput="updateCta()">
+              <span class="stat-unit">kg</span>
+            </div>
+          </div>
+          <div class="stat-field">
+            <div class="stat-lbl">Altezza</div>
+            <div class="stat-val-row">
+              <input class="stat-input" type="number" id="heightInput" placeholder="170" min="100" max="250" inputmode="numeric" oninput="updateCta()">
+              <span class="stat-unit">cm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 5: PESO TARGET ── -->
+    <div class="slide">
+      <div class="s5-body">
+        <div class="opt-badge">Facoltativo</div>
+        <div class="slide-q">Peso<br><em>obiettivo?</em></div>
+        <div class="slide-hint">Ti creo subito una sfida personalizzata.</div>
+        <div class="target-input-wrap">
+          <input class="target-input" type="number" id="targetWeightInput"
+            placeholder="65" min="30" max="300" step="0.1" inputmode="decimal">
+          <span class="target-unit">kg</span>
+        </div>
+        <div class="skip-hint">
+          <button onclick="goToSlide(cur+1)">Salta questo passaggio →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 6: ESPERIENZA ── -->
+    <div class="slide">
+      <div class="s6-body">
+        <div class="slide-q">Da quanto<br><em>ti alleni?</em></div>
+        <div class="slide-hint">Adatto i consigli e i workout al tuo livello.</div>
+        <div class="vchip-list">
+          <div class="vchip" data-val="mai" onclick="selectExp(this)">
+            <div class="vchip-ic">🌱</div>
+            <div class="vchip-txt">
+              <div class="vchip-name">Non mi sono mai allenato</div>
+              <div class="vchip-sub">Partiamo dall'inizio</div>
+            </div>
+            <div class="vchip-dot"></div>
+          </div>
+          <div class="vchip" data-val="principiante" onclick="selectExp(this)">
+            <div class="vchip-ic">🔵</div>
+            <div class="vchip-txt">
+              <div class="vchip-name">Principiante</div>
+              <div class="vchip-sub">Meno di 1 anno di esperienza</div>
+            </div>
+            <div class="vchip-dot"></div>
+          </div>
+          <div class="vchip" data-val="intermedio" onclick="selectExp(this)">
+            <div class="vchip-ic">⚡</div>
+            <div class="vchip-txt">
+              <div class="vchip-name">Intermedio</div>
+              <div class="vchip-sub">1-3 anni, conosco le basi</div>
+            </div>
+            <div class="vchip-dot"></div>
+          </div>
+          <div class="vchip" data-val="esperto" onclick="selectExp(this)">
+            <div class="vchip-ic">🔥</div>
+            <div class="vchip-txt">
+              <div class="vchip-name">Esperto</div>
+              <div class="vchip-sub">Allenamento avanzato e strutturato</div>
+            </div>
+            <div class="vchip-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 7: FREQUENZA ── -->
+    <div class="slide">
+      <div class="s7-body">
+        <div class="slide-q">Quante volte<br><em>a settimana?</em></div>
+        <div class="slide-hint">Scegli la frequenza che riesci a mantenere.</div>
+        <div class="freq-grid">
+          <div class="freq-opt" data-val="1x" onclick="selectFreq(this)">
+            <div class="freq-num">1×</div>
+            <div class="freq-lbl">a settimana</div>
+          </div>
+          <div class="freq-opt" data-val="2-3x" onclick="selectFreq(this)">
+            <div class="freq-num">2-3×</div>
+            <div class="freq-lbl">a settimana</div>
+          </div>
+          <div class="freq-opt" data-val="4-5x" onclick="selectFreq(this)">
+            <div class="freq-num">4-5×</div>
+            <div class="freq-lbl">a settimana</div>
+          </div>
+          <div class="freq-opt" data-val="daily" onclick="selectFreq(this)">
+            <div class="freq-num">7×</div>
+            <div class="freq-lbl">ogni giorno</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 8: GIORNI ── -->
+    <div class="slide">
+      <div class="s8-body">
+        <div class="slide-q">Quali<br><em>giorni?</em></div>
+        <div class="slide-hint">Li ho pre-selezionati in base alla tua frequenza. Puoi cambiarli.</div>
+        <div class="day-row" id="dayRow">
+          <button class="day-btn" data-day="0" onclick="toggleDay(this)">L</button>
+          <button class="day-btn" data-day="1" onclick="toggleDay(this)">M</button>
+          <button class="day-btn" data-day="2" onclick="toggleDay(this)">M</button>
+          <button class="day-btn" data-day="3" onclick="toggleDay(this)">G</button>
+          <button class="day-btn" data-day="4" onclick="toggleDay(this)">V</button>
+          <button class="day-btn" data-day="5" onclick="toggleDay(this)">S</button>
+          <button class="day-btn" data-day="6" onclick="toggleDay(this)">D</button>
+        </div>
+        <div class="days-sub" id="daysSub"></div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 9: DOVE + TIPO ── -->
+    <div class="slide">
+      <div class="s9-body">
+        <div class="slide-q">Come ti<br><em>alleni?</em></div>
+        <div class="slide-sec" style="margin-bottom:10px;">Dove</div>
+        <div class="loc-grid">
+          <div class="loc-opt" data-val="palestra" onclick="selectLocation(this)">
+            <div class="loc-ic">🏋️</div>
+            <div class="loc-lbl">Palestra</div>
+          </div>
+          <div class="loc-opt" data-val="casa" onclick="selectLocation(this)">
+            <div class="loc-ic">🏠</div>
+            <div class="loc-lbl">Casa</div>
+          </div>
+          <div class="loc-opt" data-val="entrambi" onclick="selectLocation(this)">
+            <div class="loc-ic">🔄</div>
+            <div class="loc-lbl">Entrambi</div>
+          </div>
+          <div class="loc-opt" data-val="outdoor" onclick="selectLocation(this)">
+            <div class="loc-ic">🌳</div>
+            <div class="loc-lbl">All'aperto</div>
+          </div>
+        </div>
+        <div class="slide-sec" style="margin-bottom:10px;">Tipo di attività</div>
+        <div class="type-chips">
+          <div class="type-chip" data-val="pesi" onclick="toggleType(this)">🏋️ Pesi</div>
+          <div class="type-chip" data-val="corsa" onclick="toggleType(this)">🏃 Corsa</div>
+          <div class="type-chip" data-val="bici" onclick="toggleType(this)">🚴 Ciclismo</div>
+          <div class="type-chip" data-val="misto" onclick="toggleType(this)">💪 Misto</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SLIDE 10: NOTIFICHE ── -->
+    <div class="slide">
+      <div class="s10-body">
+        <div class="slide-q">Ti mando un<br><em>promemoria?</em></div>
+        <div class="slide-hint">Nessun problema se dici no. Puoi attivarlo quando vuoi dalle impostazioni.</div>
+        <div class="notif-card" id="notifCard" onclick="toggleNotif()">
+          <div class="notif-left">
+            <div class="notif-icon">🔔</div>
+            <div>
+              <div class="notif-name">Attiva notifiche</div>
+              <div class="notif-sub">Ricorda il tuo allenamento</div>
+            </div>
+          </div>
+          <div class="ntoggle" id="nToggle"></div>
+        </div>
+        <div class="notif-time-wrap" id="notifTimeWrap">
+          <div class="notif-time-lbl">A che ora?</div>
+          <div class="time-chip-row">
+            <div class="time-chip" data-time="07:00" onclick="selectNotifTime(this)">🌅 Mattina<span>07:00</span></div>
+            <div class="time-chip" data-time="13:00" onclick="selectNotifTime(this)">☀️ Pranzo<span>13:00</span></div>
+            <div class="time-chip" data-time="20:00" onclick="selectNotifTime(this)">🌙 Sera<span>20:00</span></div>
+          </div>
+        </div>
+        <div class="notif-skip"><span>Puoi attivarlo dopo da Impostazioni</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="bottom-cta">
+  <button class="cta-btn" id="ctaBtn" onclick="onCta()">Iniziamo →</button>
+</div>
+
 <script>
-const KEY = 'fittrack_v4';
-let current = 0;
-const TOTAL = 4;
-let selectedGoal = null;
+const KEY   = 'fittrack_v4';
+const TOTAL = 10;
+let cur = 0;
 
-const track = document.getElementById('track');
-const dots  = document.querySelectorAll('.dot');
-const nextBtn = document.getElementById('nextBtn');
-const backBtn = document.getElementById('backBtn');
+/* stato selezioni */
+let selectedGoal     = null;
+let selectedGender   = null;
+let selectedExp      = null;
+let selectedFreq     = null;
+let selectedDays     = new Set();
+let selectedLocation = null;
+let selectedTypes    = new Set();
+let notifOn          = false;
+let selectedNotifTime = null;
 
+const track    = document.getElementById('track');
+const progFill = document.getElementById('progFill');
+const ctaBtn   = document.getElementById('ctaBtn');
+
+/* ── Navigazione ── */
 function goToSlide(n){
-  current = Math.max(0, Math.min(TOTAL-1, n));
-  track.style.transform = `translateX(${-current * 25}%)`;
+  cur = Math.max(0, Math.min(TOTAL - 1, n));
+  track.style.transform = `translateX(${-cur * (100 / TOTAL)}%)`;
+  progFill.style.width  = `${((cur + 1) / TOTAL) * 100}%`;
 
-  dots.forEach((d,i) => d.classList.toggle('active', i === current));
-  backBtn.style.display = current > 0 ? 'block' : 'none';
+  /* pre-popola giorni quando si entra nella slide 8 (cur=7) */
+  if(cur === 7){ preselectDays(); renderDayBtns(); }
 
-  nextBtn.textContent = current === TOTAL-1 ? '🚀 Inizia' : 'Avanti →';
+  updateCta();
+  if(cur === 1) setTimeout(()=>{ document.getElementById('nameInput').focus(); }, 420);
+  if(cur === 4) setTimeout(()=>{ document.getElementById('targetWeightInput').focus(); }, 420);
 }
 
-function nextSlide(){
-  if(current < TOTAL-1){
-    goToSlide(current+1);
+/* ── CTA dinamico ── */
+function updateCta(){
+  switch(cur){
+    case 0:
+      ctaBtn.textContent = 'Iniziamo →';
+      ctaBtn.disabled    = false;
+      break;
+    case 1: {
+      const name = document.getElementById('nameInput').value.trim();
+      ctaBtn.disabled    = !name;
+      ctaBtn.textContent = name ? `Avanti, ${name} →` : 'Scrivi il tuo nome';
+      break;
+    }
+    case 2:
+      ctaBtn.disabled    = !selectedGoal;
+      ctaBtn.textContent = selectedGoal ? 'Avanti →' : 'Scegli un obiettivo';
+      break;
+    case 3: {
+      const ok = selectedGender
+        && document.getElementById('ageInput').value
+        && document.getElementById('weightInput').value
+        && document.getElementById('heightInput').value;
+      ctaBtn.disabled    = !ok;
+      ctaBtn.textContent = ok ? 'Avanti →' : 'Compila tutti i campi';
+      break;
+    }
+    case 4:
+      ctaBtn.disabled    = false;
+      ctaBtn.textContent = 'Avanti →';
+      break;
+    case 5:
+      ctaBtn.disabled    = !selectedExp;
+      ctaBtn.textContent = selectedExp ? 'Avanti →' : 'Scegli il tuo livello';
+      break;
+    case 6:
+      ctaBtn.disabled    = !selectedFreq;
+      ctaBtn.textContent = selectedFreq ? 'Avanti →' : 'Quante volte a settimana?';
+      break;
+    case 7: {
+      const ok = selectedDays.size > 0;
+      ctaBtn.disabled    = !ok;
+      ctaBtn.textContent = ok ? 'Avanti →' : 'Seleziona almeno un giorno';
+      break;
+    }
+    case 8: {
+      const ok = selectedLocation && selectedTypes.size > 0;
+      ctaBtn.disabled    = !ok;
+      ctaBtn.textContent = ok ? 'Avanti →' : 'Completa la selezione';
+      break;
+    }
+    case 9:
+      ctaBtn.disabled    = false;
+      ctaBtn.textContent = '🚀 Entra in FitTrack';
+      break;
+  }
+}
+
+/* ── Slide 2: Nome ── */
+function onNameInput(){
+  updateCta();
+  document.getElementById('nameInput').style.borderColor = '';
+}
+
+/* ── Slide 3: Obiettivo ── */
+function selectGoal(el){
+  document.querySelectorAll('.goal-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedGoal = el.dataset.goal;
+  updateCta();
+}
+
+/* ── Slide 4: Sesso ── */
+function selectGender(el){
+  document.querySelectorAll('.gender-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedGender = el.dataset.val;
+  updateCta();
+}
+
+/* ── Slide 6: Esperienza ── */
+function selectExp(el){
+  document.querySelectorAll('.vchip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedExp = el.dataset.val;
+  updateCta();
+}
+
+/* ── Slide 7: Frequenza ── */
+function selectFreq(el){
+  document.querySelectorAll('.freq-opt').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedFreq = el.dataset.val;
+  updateCta();
+}
+
+/* ── Slide 8: Giorni ── */
+const DAY_NAMES = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+const FREQ_PRESETS = {
+  '1x':   [5],
+  '2-3x': [0,2,4],
+  '4-5x': [0,1,3,4],
+  'daily':[0,1,2,3,4,5,6]
+};
+
+function preselectDays(){
+  selectedDays.clear();
+  const preset = FREQ_PRESETS[selectedFreq] || [0,2,4];
+  preset.forEach(d=>selectedDays.add(d));
+}
+
+function renderDayBtns(){
+  document.querySelectorAll('.day-btn').forEach(btn=>{
+    const day = parseInt(btn.dataset.day);
+    btn.classList.toggle('sel', selectedDays.has(day));
+  });
+  updateDaysSub();
+}
+
+function toggleDay(btn){
+  const day = parseInt(btn.dataset.day);
+  if(selectedDays.has(day)){
+    if(selectedDays.size > 1) selectedDays.delete(day); /* almeno 1 giorno */
+  } else {
+    selectedDays.add(day);
+  }
+  btn.classList.toggle('sel', selectedDays.has(day));
+  updateDaysSub();
+  updateCta();
+}
+
+function updateDaysSub(){
+  const sub = document.getElementById('daysSub');
+  const n = selectedDays.size;
+  const names = [...selectedDays].sort((a,b)=>a-b).map(d=>DAY_NAMES[d].slice(0,3)).join(', ');
+  sub.innerHTML = `<span class="days-count">${n} giorn${n===1?'o':'i'}</span> — ${names}`;
+}
+
+/* ── Slide 9: Dove + Tipo ── */
+function selectLocation(el){
+  document.querySelectorAll('.loc-opt').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedLocation = el.dataset.val;
+  updateCta();
+}
+
+function toggleType(el){
+  el.classList.toggle('sel');
+  const v = el.dataset.val;
+  if(selectedTypes.has(v)) selectedTypes.delete(v);
+  else selectedTypes.add(v);
+  updateCta();
+}
+
+/* ── Slide 10: Notifiche ── */
+function toggleNotif(){
+  notifOn = !notifOn;
+  document.getElementById('notifCard').classList.toggle('on', notifOn);
+  const tw = document.getElementById('notifTimeWrap');
+  tw.classList.toggle('visible', notifOn);
+  if(notifOn && !selectedNotifTime){
+    /* pre-seleziona Sera */
+    const sera = document.querySelector('.time-chip[data-time="20:00"]');
+    if(sera) selectNotifTime(sera);
+  }
+}
+
+function selectNotifTime(el){
+  document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedNotifTime = el.dataset.time;
+}
+
+/* ── Avanti / Completa ── */
+function onCta(){
+  if(ctaBtn.disabled) return;
+  if(cur < TOTAL - 1){
+    goToSlide(cur + 1);
   } else {
     completeOnboarding();
   }
 }
 
-function prevSlide(){
-  if(current > 0) goToSlide(current - 1);
-}
-
-function selectGoal(el){
-  document.querySelectorAll('.goal-chip').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
-  selectedGoal = el.dataset.goal;
-}
-
+/* ── Salva e vai alla home ── */
 function completeOnboarding(){
-  const name = document.getElementById('nameInput').value.trim();
-  if(!name){
-    const inp = document.getElementById('nameInput');
-    inp.style.borderColor = 'var(--red)';
-    inp.focus();
-    setTimeout(()=>{ inp.style.borderColor = ''; }, 1500);
-    return;
-  }
-  if(!selectedGoal){
-    document.getElementById('goalChips').style.outline = '2px solid rgba(255,68,85,.4)';
-    document.getElementById('goalChips').style.borderRadius = '14px';
-    setTimeout(()=>{ document.getElementById('goalChips').style.outline = ''; }, 1500);
-    return;
-  }
+  const name    = document.getElementById('nameInput').value.trim() || 'Atleta';
+  const targetW = parseFloat(document.getElementById('targetWeightInput').value) || null;
+  const age     = parseInt(document.getElementById('ageInput').value)   || null;
+  const weight  = parseFloat(document.getElementById('weightInput').value) || null;
+  const height  = parseInt(document.getElementById('heightInput').value) || null;
+  const days    = [...selectedDays].sort((a,b)=>a-b);
 
-  // Leggi dati esistenti (se ci sono) e aggiorna
   let data = {};
-  try{ data = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){}
+  try{ data = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){}
 
   data.onboardingDone = true;
-  data.name  = name;
-  data.goal  = selectedGoal;
-  if(!data.profile) data.profile = {};
-  data.profile.name     = name;
-  data.profile.goalType = selectedGoal;
+  data.name           = name;
+  data.goal           = selectedGoal;
 
-  localStorage.setItem(KEY, JSON.stringify(data));
-  location.href = 'home.html';
+  if(!data.profile) data.profile = {};
+  Object.assign(data.profile, {
+    name,
+    goalType:     selectedGoal,
+    targetWeight: targetW,
+    gender:       selectedGender,
+    age,
+    weight,
+    height,
+    experience:   selectedExp,
+    weekFreq:     selectedFreq,
+    weekDays:     days,
+    location:     selectedLocation,
+    workoutTypes: [...selectedTypes]
+  });
+
+  /* prima misurazione peso */
+  if(weight){
+    if(!data.weights) data.weights = [];
+    if(!data.weights.length){
+      data.weights.push({ date: new Date().toISOString().split('T')[0], kg: weight });
+    }
+  }
+
+  /* sfida peso obiettivo */
+  if(targetW && weight && targetW !== weight){
+    if(!data.challenges) data.challenges = [];
+    const hasW = data.challenges.some(c=>c.type==='peso');
+    if(!hasW){
+      data.challenges.push({
+        id: Date.now(), type:'peso',
+        title: 'Raggiungi il peso obiettivo',
+        target: targetW, current: weight,
+        startDate: new Date().toISOString().split('T')[0],
+        active: true
+      });
+    }
+  }
+
+  /* workout di default + piano settimanale */
+  if(days.length > 0){
+    const wos = _buildDefaultWorkouts([...selectedTypes], selectedLocation);
+    if(!data.workouts || !data.workouts.length){
+      data.workouts = wos;
+      if(!data.assignment) data.assignment = {};
+      days.forEach((d,i)=>{
+        data.assignment[String(d)] = wos[i % wos.length].id;
+      });
+    }
+  }
+
+  /* notifiche */
+  data.notifEnabled = notifOn;
+  if(notifOn) data.notifTime = selectedNotifTime || '20:00';
+
+  try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){}
+
+  /* richiedi permesso notifiche */
+  if(notifOn && 'Notification' in window){
+    Notification.requestPermission().then(p=>{
+      if(p === 'granted' && 'serviceWorker' in navigator){
+        navigator.serviceWorker.ready.then(reg=>{
+          reg.active && reg.active.postMessage({
+            type:'SCHEDULE', enabled:true,
+            time: data.notifTime,
+            body: 'Ora di allenarti! 💪',
+            icon: 'icons/icon-192.png'
+          });
+        });
+      }
+    });
+  }
+
+  document.body.style.transition = 'opacity .3s';
+  document.body.style.opacity    = '0';
+  setTimeout(()=>{ location.href = 'home.html'; }, 300);
 }
 
+/* ── Costruisce 1-2 workout di default in base a tipo e location ── */
+function _buildDefaultWorkouts(types, location){
+  const ts  = new Set(types);
+  const now = Date.now();
+  const wos = [];
 
-/* swipe orizzontale touch */
-let touchStartX = 0;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if(Math.abs(dx) > 50){
-    if(dx < 0 && current < TOTAL-1) goToSlide(current+1);
-    else if(dx > 0 && current > 0) goToSlide(current-1);
+  if(ts.has('pesi') || ts.has('misto') || (!ts.has('corsa') && !ts.has('bici'))){
+    wos.push({
+      id:   'wo_gym_' + now,
+      name: 'Il mio allenamento',
+      type: 'gym',
+      exs: [
+        {id:'e1_'+now, name:'Squat',       sets:3, reps:10, rec:90,  weight:null},
+        {id:'e2_'+now, name:'Panca Piana',  sets:3, reps:10, rec:90,  weight:null},
+        {id:'e3_'+now, name:'Rematore',     sets:3, reps:10, rec:90,  weight:null},
+      ]
+    });
+  }
+  if(ts.has('corsa')){
+    wos.push({
+      id:   'wo_run_' + now,
+      name: 'Corsa',
+      type: 'run',
+      exs: [{id:'erun_'+now, name:'Corsa', sets:1, reps:1, rec:0}]
+    });
+  }
+  if(ts.has('bici')){
+    wos.push({
+      id:   'wo_bike_' + now,
+      name: 'Ciclismo',
+      type: 'bike',
+      exs: [{id:'ebike_'+now, name:'Ciclismo', sets:1, reps:1, rec:0}]
+    });
+  }
+  if(!wos.length){
+    wos.push({
+      id:   'wo_default_' + now,
+      name: 'Il mio allenamento',
+      type: 'other',
+      exs: [{id:'edef_'+now, name:'Esercizio', sets:3, reps:10, rec:60, weight:null}]
+    });
+  }
+  return wos;
+}
+
+/* ── Swipe orizzontale ── */
+let _tx = 0, _ty = 0;
+document.addEventListener('touchstart', e=>{
+  _tx = e.touches[0].clientX;
+  _ty = e.touches[0].clientY;
+}, { passive:true });
+document.addEventListener('touchend', e=>{
+  const dx = e.changedTouches[0].clientX - _tx;
+  const dy = Math.abs(e.changedTouches[0].clientY - _ty);
+  if(Math.abs(dx) > 60 && dy < 50){
+    if(dx < 0 && cur < TOTAL - 1 && !ctaBtn.disabled) goToSlide(cur + 1);
+    else if(dx > 0 && cur > 0)                         goToSlide(cur - 1);
   }
 }, { passive:true });
+
+/* Enter su input testo */
+document.getElementById('nameInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter' && !ctaBtn.disabled) onCta();
+});
+document.getElementById('targetWeightInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') onCta();
+});
+
+/* Init */
+goToSlide(0);
 </script>
 </body>
 </html>

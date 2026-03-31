@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FitTrack · Home</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitTrack">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -324,12 +330,96 @@ html.theme-light .sfide-hero::before{ display:none; }
 html.theme-light .drawer-menu{ background:var(--bg2) !important; }
 html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
 html.theme-light .edot{ background:var(--bg3) !important; }
+
+/* ══ INSTALL BANNER ══ */
+#installBanner{
+  position:fixed; bottom:calc(64px + env(safe-area-inset-bottom,0px) + 8px);
+  left:50%; transform:translateX(-50%) translateY(20px);
+  width:calc(100% - 32px); max-width:448px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px; padding:16px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  z-index:50;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s, transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+#installBanner.visible{
+  opacity:1; pointer-events:all;
+  transform:translateX(-50%) translateY(0);
+}
+.ib-row{ display:flex; align-items:center; gap:12px; }
+.ib-icon-wrap{
+  width:44px; height:44px; border-radius:12px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.ib-text{ flex:1; min-width:0; }
+.ib-title{ font-size:14px; font-weight:700; color:var(--text); }
+.ib-sub{ font-size:12px; color:var(--textm); margin-top:2px; }
+.ib-install-btn{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:10px; padding:9px 16px;
+  color:#fff; font-size:13px; font-weight:600;
+  cursor:pointer; font-family:var(--font); white-space:nowrap;
+  flex-shrink:0;
+}
+.ib-close{
+  background:none; border:none; color:var(--textm);
+  font-size:18px; cursor:pointer; padding:4px; flex-shrink:0;
+  line-height:1;
+}
+.ib-ios-steps{
+  font-size:13px; color:var(--textm); margin-top:12px;
+  background:var(--bg3); border-radius:10px; padding:10px 12px;
+  line-height:1.6;
+}
+.ib-ios-steps strong{ color:var(--text); }
+.ib-share-icon{
+  display:inline-block; background:var(--a1);
+  color:#fff; border-radius:5px;
+  padding:1px 5px; font-size:11px; margin:0 2px;
+}
+html.theme-light #installBanner{
+  box-shadow:0 4px 24px rgba(13,148,136,.15);
+  border-color:var(--border);
+}
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
 </script>
 </head>
 <body>
+
+<!-- ══ INSTALL BANNER ══ -->
+<div id="installBanner">
+  <!-- Android / Chrome -->
+  <div id="ibAndroid">
+    <div class="ib-row">
+      <div class="ib-icon-wrap">💪</div>
+      <div class="ib-text">
+        <div class="ib-title">Installa FitTrack</div>
+        <div class="ib-sub">Accedi in un tap · funziona offline</div>
+      </div>
+      <button class="ib-install-btn" onclick="triggerInstall()">Installa</button>
+      <button class="ib-close" onclick="dismissBanner()" aria-label="Chiudi">✕</button>
+    </div>
+  </div>
+  <!-- iOS / Safari -->
+  <div id="ibIOS" style="display:none">
+    <div class="ib-row">
+      <div class="ib-icon-wrap">💪</div>
+      <div class="ib-text">
+        <div class="ib-title">Aggiungi alla schermata Home</div>
+        <div class="ib-sub">Installa l'app per un accesso rapido</div>
+      </div>
+      <button class="ib-close" onclick="dismissBanner()" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="ib-ios-steps">
+      Tap <span class="ib-share-icon">⬆</span> in basso, poi scegli <strong>"Aggiungi alla schermata Home"</strong>
+    </div>
+  </div>
+</div>
 
 <!-- PAGINA A -->
 <div id="pageA">
@@ -1003,6 +1093,67 @@ function navigateTo(url, toIndex){
     fab.textContent = `▶ Inizia "${todayWo.wo.name}"`;
   }
   // Se riposo oggi: card nascosta, FAB rimane generico → porta a scegli.html
+})();
+
+/* ══ INSTALL PROMPT ══ */
+(function(){
+  /* Già in modalità standalone (installata) → non mostrare nulla */
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  if(isStandalone) return;
+
+  /* Già dismissed in questa sessione → non mostrare (torna alla prossima apertura) */
+  if(sessionStorage.getItem('ft_install_dismissed')) return;
+
+  const isIOS    = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  let _deferredPrompt = null;
+
+  /* ── Android / Chrome: intercetta beforeinstallprompt ── */
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _deferredPrompt = e;
+    _showBanner('android');
+  });
+
+  /* ── iOS / Safari: istruzioni manuali dopo 1.5s ── */
+  if(isIOS && isSafari){
+    setTimeout(() => _showBanner('ios'), 1500);
+  }
+
+  function _showBanner(type){
+    const banner = document.getElementById('installBanner');
+    if(!banner) return;
+    if(type === 'ios'){
+      document.getElementById('ibAndroid').style.display = 'none';
+      document.getElementById('ibIOS').style.display = 'block';
+    }
+    banner.style.display = 'block';
+    requestAnimationFrame(() => requestAnimationFrame(() => banner.classList.add('visible')));
+  }
+
+  /* ── Bottone "Installa" (Android) ── */
+  window.triggerInstall = async function(){
+    if(!_deferredPrompt) return;
+    _deferredPrompt.prompt();
+    const { outcome } = await _deferredPrompt.userChoice;
+    _deferredPrompt = null;
+    dismissBanner(true);
+  };
+
+  /* ── Chiudi banner ── */
+  window.dismissBanner = function(installed = false){
+    const banner = document.getElementById('installBanner');
+    if(banner){
+      banner.classList.remove('visible');
+      setTimeout(() => { banner.style.display = 'none'; }, 320);
+    }
+    if(!installed) sessionStorage.setItem('ft_install_dismissed', '1');
+  };
+
+  /* ── Nasconde automaticamente se l'utente installa dall'esterno ── */
+  window.addEventListener('appinstalled', () => dismissBanner(true));
 })();
 
 function startTodayWorkout(){
