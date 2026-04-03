@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})()</script>
+<script>(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})()</script>
 <style>
 :root{
   --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
@@ -44,7 +44,7 @@ body::before{
   position:relative; z-index:10; flex-shrink:0;
   padding:calc(env(safe-area-inset-top,0px) + 20px) 28px 0;
 }
-.prog-track{ height:3px; background:var(--border); border-radius:99px; overflow:hidden; }
+.prog-track{ height:5px; background:var(--border); border-radius:99px; overflow:hidden; }
 .prog-fill{
   height:100%; border-radius:99px;
   background:linear-gradient(90deg,var(--a1),var(--a2));
@@ -509,28 +509,215 @@ body::before{
 
 /* ── LIGHT THEME ── */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626;
 }
 html.theme-light body{ background:var(--bg); }
 html.theme-light body::before{ display:none; }
 html.theme-light .streak-preview{
-  box-shadow:0 2px 16px rgba(13,148,136,.08);
+  box-shadow:0 2px 16px rgba(0,102,221,.08);
 }
 html.theme-light .cta-btn{
-  box-shadow:0 6px 24px rgba(13,148,136,.25);
+  box-shadow:0 6px 24px rgba(0,102,221,.25);
 }
 html.theme-light .day-btn.sel{
-  box-shadow:0 4px 14px rgba(13,148,136,.3);
+  box-shadow:0 4px 14px rgba(0,102,221,.3);
 }
 html.theme-light .goal-card.sel{
-  box-shadow:0 6px 24px rgba(13,148,136,.2);
+  box-shadow:0 6px 24px rgba(0,102,221,.2);
 }
+
+/* ══════════════════════════════════════════
+   SELEZIONE — tutto il rettangolo diventa blu
+══════════════════════════════════════════ */
+@keyframes selPop{
+  0%  { transform:scale(1); }
+  55% { transform:scale(1.08); }
+  100%{ transform:scale(1.035); }
+}
+@keyframes selPopFlat{          /* per elementi senza transform di base */
+  0%  { transform:scale(1); }
+  55% { transform:scale(1.06); }
+  100%{ transform:scale(1.02); }
+}
+
+/* goal cards (slide 3) */
+.goal-card.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;
+  transform:scale(1.035);
+  box-shadow:0 8px 28px rgba(0,136,255,.4);
+  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+.goal-card.sel::after{ display:none; }
+.goal-card.sel .goal-name{ color:#fff; }
+.goal-card.sel .goal-emoji{ transform:scale(1.2); filter:drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
+
+/* gender buttons (slide 4) */
+.gender-btn.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent; color:#fff;
+  transform:scale(1.03);
+  box-shadow:0 6px 20px rgba(0,136,255,.35);
+  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* frequenza (slide 7) */
+.freq-opt.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;
+  transform:scale(1.035);
+  box-shadow:0 8px 24px rgba(0,136,255,.38);
+  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+.freq-opt.sel::after{ display:none; }
+.freq-opt.sel .freq-num{ color:#fff; }
+.freq-opt.sel .freq-lbl{ color:rgba(255,255,255,.8); }
+
+/* vchip — esperienza (slide 6) */
+.vchip.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;
+  box-shadow:0 6px 22px rgba(0,136,255,.32);
+  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+.vchip.sel .vchip-name{ color:#fff; }
+.vchip.sel .vchip-sub{ color:rgba(255,255,255,.75); }
+.vchip.sel .vchip-dot{ background:#fff; border-color:rgba(255,255,255,.5); }
+.vchip.sel .vchip-dot::after{ color:var(--a1); }
+
+/* location opts (slide 9) */
+.loc-opt.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;
+  transform:scale(1.03);
+  box-shadow:0 6px 20px rgba(0,136,255,.32);
+  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+.loc-opt.sel .loc-lbl{ color:#fff; }
+
+/* type chips (slide 9) */
+.type-chip.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent; color:#fff;
+  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* time chips (slide 10) */
+.time-chip.sel{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent; color:#fff;
+  box-shadow:0 4px 14px rgba(0,136,255,.28);
+  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
+}
+.time-chip.sel span{ color:rgba(255,255,255,.8); }
 </style>
 </head>
 <body>
+
+<!-- LINEA PERCORSO — una curva per slide, i punti di giunzione coincidono -->
+<svg id="journeyPath"
+  style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"
+  viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"
+  xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="jpGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!--
+    Waypoints (punti di giunzione tra slide):
+    WP0  195, 40   — ingresso slide 0
+    WP1  340,165   — fine slide 0 / inizio slide 1
+    WP2   55,295   — fine slide 1 / inizio slide 2
+    WP3  345,415   — fine slide 2 / inizio slide 3
+    WP4   65,535   — fine slide 3 / inizio slide 4
+    WP5  335,645   — fine slide 4 / inizio slide 5
+    WP6   75,750   — fine slide 5 / inizio slide 6
+    WP7  345,858   — fine slide 6 / inizio slide 7
+    WP8  110,960   — fine slide 7 / inizio slide 8 (sotto viewport)
+    WP9  315,1045  — fine slide 8 / inizio slide 9 (sotto viewport)
+    WP10 185,1110  — uscita slide 9 (sotto viewport)
+  -->
+
+  <!-- slide 0  WP0→WP1 -->
+  <g class="jp-slide" data-slide="0" opacity="1" style="transition:opacity .4s ease;">
+    <path d="M 195,40  C 280,38  420,110  340,165" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 195,40  C 280,38  420,110  340,165" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 195,40  C 280,38  420,110  340,165" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 1  WP1→WP2 -->
+  <g class="jp-slide" data-slide="1" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M 340,165 C 430,220  -20,230   55,295" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 340,165 C 430,220  -20,230   55,295" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 340,165 C 430,220  -20,230   55,295" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 2  WP2→WP3 -->
+  <g class="jp-slide" data-slide="2" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M  55,295 C -30,360  430,360  345,415" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M  55,295 C -30,360  430,360  345,415" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M  55,295 C -30,360  430,360  345,415" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 3  WP3→WP4 -->
+  <g class="jp-slide" data-slide="3" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M 345,415 C 440,475  -20,490   65,535" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 345,415 C 440,475  -20,490   65,535" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 345,415 C 440,475  -20,490   65,535" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 4  WP4→WP5 -->
+  <g class="jp-slide" data-slide="4" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M  65,535 C -20,590  420,595  335,645" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M  65,535 C -20,590  420,595  335,645" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M  65,535 C -20,590  420,595  335,645" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 5  WP5→WP6 -->
+  <g class="jp-slide" data-slide="5" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M 335,645 C 430,695    0,705   75,750" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 335,645 C 430,695    0,705   75,750" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 335,645 C 430,695    0,705   75,750" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 6  WP6→WP7 -->
+  <g class="jp-slide" data-slide="6" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M  75,750 C  -5,800  440,810  345,858" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M  75,750 C  -5,800  440,810  345,858" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M  75,750 C  -5,800  440,810  345,858" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 7  WP7→WP8 -->
+  <g class="jp-slide" data-slide="7" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M 345,858 C 440,900   20,930  110,960" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 345,858 C 440,900   20,930  110,960" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 345,858 C 440,900   20,930  110,960" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 8  WP8→WP9 -->
+  <g class="jp-slide" data-slide="8" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M 110,960 C  20,1005  430,1010 315,1045" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 110,960 C  20,1005  430,1010 315,1045" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 110,960 C  20,1005  430,1010 315,1045" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- slide 9  WP9→WP10 -->
+  <g class="jp-slide" data-slide="9" opacity="0" style="transition:opacity .4s ease;">
+    <path d="M 315,1045 C 410,1065  50,1090  185,1110" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 315,1045 C 410,1065  50,1090  185,1110" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 315,1045 C 410,1065  50,1090  185,1110" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+  </g>
+</svg>
 
 <!-- PROGRESS BAR -->
 <div class="prog-wrap">
@@ -847,6 +1034,7 @@ function goToSlide(n){
   if(cur === 7){ preselectDays(); renderDayBtns(); }
 
   updateCta();
+  updateJourneyPath(cur);
   if(cur === 1) setTimeout(()=>{ document.getElementById('nameInput').focus(); }, 420);
   if(cur === 4) setTimeout(()=>{ document.getElementById('targetWeightInput').focus(); }, 420);
 }
@@ -1122,6 +1310,9 @@ function completeOnboarding(){
     });
   }
 
+  /* Avvia tutorial prima di andare alla home */
+  startTutorial();
+
   document.body.style.transition = 'opacity .3s';
   document.body.style.opacity    = '0';
   setTimeout(()=>{ location.href = 'home.html'; }, 300);
@@ -1195,8 +1386,17 @@ document.getElementById('targetWeightInput').addEventListener('keydown', e=>{
   if(e.key === 'Enter') onCta();
 });
 
+
+/* ── LINEA PERCORSO: una curva per slide ── */
+function updateJourneyPath(slideIdx){
+  document.querySelectorAll('.jp-slide').forEach(g => {
+    g.style.opacity = (parseInt(g.dataset.slide) === slideIdx) ? '1' : '0';
+  });
+}
+
 /* Init */
 goToSlide(0);
 </script>
+<script src="tutorial.js"></script>
 </body>
 </html>

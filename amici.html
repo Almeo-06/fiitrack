@@ -326,9 +326,9 @@ body::before{
 }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -353,7 +353,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 (function(){
   try{
     var d=JSON.parse(localStorage.getItem('fittrack_v4'));
-    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};
+    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};
     var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
@@ -383,13 +383,25 @@ html.theme-light .tab-item.on{ color:var(--a1); }
       <div class="login-card-icon">👥</div>
       <div class="login-card-title">Connettiti con i tuoi amici</div>
       <div class="login-card-sub">
-        Accedi con Google per cercare amici, vedere le loro streak e sfidarli.
-        L'app continua a funzionare normalmente senza account.
+        Accedi con Google per sbloccare le funzioni social.<br>
+        <strong style="color:var(--text);">L'app funziona normalmente senza account.</strong>
       </div>
-      <button class="google-btn" onclick="loginGoogle()">
+      <div style="text-align:left;margin-bottom:20px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--textm);">
+          <span style="font-size:16px;">🔥</span> Vedi la streak e i PR dei tuoi amici
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--textm);">
+          <span style="font-size:16px;">⚔️</span> Sfide 1vs1 e di gruppo
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--textm);">
+          <span style="font-size:16px;">🔒</span> Nessun dato di allenamento condiviso senza consenso
+        </div>
+      </div>
+      <button class="google-btn" id="googleLoginBtn" onclick="loginGoogle()">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
-        Accedi con Google
+        <span id="googleLoginTxt">Accedi con Google</span>
       </button>
+      <div id="loginError" style="display:none;margin-top:12px;font-size:12px;color:#e57373;text-align:center;"></div>
     </div>
   </div>
 
@@ -600,10 +612,27 @@ _auth.onAuthStateChanged(async function(user){
    LOGIN GOOGLE
 ══════════════════════════════════════════════ */
 async function loginGoogle(){
+  const btn = document.getElementById('googleLoginBtn');
+  const txt = document.getElementById('googleLoginTxt');
+  const err = document.getElementById('loginError');
+  if(btn) { btn.disabled = true; }
+  if(txt) txt.textContent = 'Accesso in corso…';
+  if(err) err.style.display = 'none';
   try{
     await _auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    /* onAuthStateChanged gestisce il resto */
   } catch(e){
-    showToast('Errore accesso: ' + e.message);
+    if(btn) btn.disabled = false;
+    if(txt) txt.textContent = 'Accedi con Google';
+    if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'){
+      /* L'utente ha chiuso il popup — nessun messaggio necessario */
+      return;
+    }
+    const msg = e.code === 'auth/network-request-failed'
+      ? 'Connessione assente. Riprova con internet attivo.'
+      : 'Accesso non riuscito. Riprova.';
+    if(err){ err.textContent = msg; err.style.display = 'block'; }
+    else showToast(msg);
   }
 }
 
@@ -1412,5 +1441,6 @@ async function removeFriend(friendUid, friendUsername){
   } catch(e){ showToast('Errore: '+e.message); }
 }
 </script>
+<script src="tutorial.js"></script>
 </body>
 </html>

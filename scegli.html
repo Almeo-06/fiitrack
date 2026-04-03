@@ -15,7 +15,7 @@
 (function(){
   try{
     var d=JSON.parse(localStorage.getItem('fittrack_v4'));
-    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};
+    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};
     var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
@@ -154,11 +154,12 @@ body{
 
 /* footer fisso */
 .footer{
-  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  position:fixed !important; bottom:0; left:50%; transform:translateX(-50%);
   width:100%; max-width:480px;
   padding:16px 20px 32px;
   background:linear-gradient(transparent, var(--bg) 35%);
   pointer-events:none;
+  z-index:15;
 }
 .start-btn{
   width:100%; padding:16px; border:none; border-radius:16px;
@@ -192,7 +193,7 @@ body::before{
     radial-gradient(ellipse 80% 35% at 50% -5%, rgba(0,136,255,.08), transparent),
     radial-gradient(ellipse 40% 25% at 85% 90%, rgba(0,60,180,.05), transparent);
 }
-.scroll-area, .footer, .hdr{ position:relative; z-index:1; }
+.scroll-area, .hdr{ position:relative; z-index:1; }
 
 @keyframes fadeUp{
   from{ opacity:0; transform:translateY(14px); }
@@ -281,9 +282,9 @@ body::before{
 .wo-card.manuale .wo-name{ color:var(--warn, #ffaa00); }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -300,7 +301,10 @@ html.theme-light .tab-item.on{ color:var(--a1); }
     right: 0 !important;
   }
   .scroll-area {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .footer {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
 }
 </style>

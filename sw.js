@@ -1,14 +1,15 @@
 /* ══════════════════════════════════════════════════════
-   FitTrack Service Worker — Promemoria Streak
-   Versione: 2025-03-25-1
+   FitTrack Service Worker — Promemoria Streak + Auto-update
+   Versione: 2026-04-03-1
    ↑ Cambia questa stringa per forzare l'aggiornamento
      su tutti i dispositivi che hanno la PWA installata.
 
-   Questo SW NON fa caching dei file HTML/JS/CSS:
-   ogni caricamento legge sempre l'ultima versione dal server.
+   Strategia fetch: network-first per file HTML.
+   I file HTML vengono sempre scaricati freschi dal server;
+   se la rete non è disponibile si usa la risposta del browser.
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-03-25-1'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-03-1'; /* bump per forzare aggiornamento */
 
 let _cfg   = null;   /* configurazione attiva */
 let _timer = null;   /* handle del setTimeout */
@@ -24,6 +25,20 @@ self.addEventListener('activate', e => {
     caches.keys()
       .then(keys => Promise.all(keys.map(k => caches.delete(k))))
       .then(() => self.clients.claim()) /* prende controllo di tutte le tab aperte */
+  );
+});
+
+/* ── Fetch: network-first per i file HTML ── */
+self.addEventListener('fetch', e => {
+  const url = e.request.url;
+  /* Intercetta solo richieste same-origin a file .html */
+  if(e.request.method !== 'GET') return;
+  if(!url.includes(self.location.origin)) return;
+  if(!url.endsWith('.html') && !url.endsWith('/')) return;
+
+  e.respondWith(
+    fetch(e.request, { cache: 'no-cache' })
+      .catch(() => fetch(e.request)) /* fallback senza no-cache se offline */
   );
 });
 

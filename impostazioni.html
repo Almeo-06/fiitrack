@@ -305,7 +305,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .blue-prev{   background:linear-gradient(135deg,#0088ff,#00ccff); }
 .purple-prev{ background:linear-gradient(135deg,#7c3aed,#a855f7); }
 .orange-prev{ background:linear-gradient(135deg,#f97316,#fbbf24); }
-.light-prev{ background:linear-gradient(135deg,#f0fdfb,#14b8a6); border:1px solid #b2ddd7; }
+.light-prev{ background:linear-gradient(135deg,#f0f7ff,#0099ff); border:1px solid #c0d8f5; }
 
 /* ── EFFETTI ── */
 body::before{
@@ -493,9 +493,9 @@ body::before{
 .fb-open-btn:active{ background:rgba(0,136,255,.12); }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -515,6 +515,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+@keyframes pulse{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
 </style>
 </head>
 <body>
@@ -702,6 +703,9 @@ html.theme-light .tab-item.on{ color:var(--a1); }
         </div>
         <button class="fb-open-btn" onclick="openFeedback()">
           ✏️ Scrivi un feedback
+        </button>
+        <button class="backup-btn" onclick="restartTutorial()" style="margin-top:10px;width:100%;justify-content:center;">
+          🎓 Ripristina tutorial
         </button>
       </div>
     </div>
@@ -906,6 +910,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 
 </div>
 
+<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.2</p>
 <div class="tab-bar">
   <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
   <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
@@ -1075,7 +1080,7 @@ const THEMES = {
   blue:   { a1:'#0088ff', a2:'#00ccff' },
   purple: { a1:'#7c3aed', a2:'#a855f7' },
   orange: { a1:'#f97316', a2:'#fbbf24' },
-  light:  { a1:'#0d9488', a2:'#14b8a6' },
+  light:  { a1:'#0066dd', a2:'#0099ff' },
 };
 
 function applyTheme(name){
@@ -1111,7 +1116,16 @@ function renderWoList(){
   sub.textContent = `${data.workouts.length} allenament${data.workouts.length===1?'o':'i'}`;
 
   if(!data.workouts.length){
-    el.innerHTML = '<div style="font-size:12px;color:var(--textm);text-align:center;padding:12px 0;">Nessun allenamento ancora</div>';
+    el.innerHTML = `<div style="background:rgba(0,136,255,.06);border:1px dashed rgba(0,136,255,.3);border-radius:12px;padding:16px 14px;margin-bottom:12px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">🏋️</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;">Nessun allenamento ancora</div>
+      <div style="font-size:11px;color:var(--textm);line-height:1.6;margin-bottom:12px;">Crea la tua prima scheda in 3 passi:<br>
+        <span style="color:var(--a2);">①</span> Dai un nome all'allenamento &nbsp;
+        <span style="color:var(--a2);">②</span> Aggiungi gli esercizi &nbsp;
+        <span style="color:var(--a2);">③</span> Salva e assegnalo ai giorni
+      </div>
+      <div style="font-size:12px;color:var(--a1);animation:pulse 1.5s ease-in-out infinite;">↓ Tocca "+ Nuovo" qui sotto ↓</div>
+    </div>`;
     refreshHeight(1); return;
   }
 
@@ -1310,9 +1324,16 @@ function renderExRows(){
               oninput="editExs[${i}].sets=+this.value;updateExHdr(${i})">
           </div>
           <div class="ex-field">
-            <label class="ex-field-lbl">${ex.timed?'Durata (sec)':'Ripetizioni'}</label>
-            <input class="ex-field-inp" type="number" value="${ex.reps}" min="1" max="${ex.timed?600:100}"
-              oninput="editExs[${i}].reps=+this.value;updateExHdr(${i})">
+            <label class="ex-field-lbl">${ex.timed?'Durata (min:sec)':'Ripetizioni'}</label>
+            ${ex.timed
+              ? `<input class="ex-field-inp" type="text" inputmode="text"
+                   value="${secsToMMSS(ex.reps)}" placeholder="es. 1:30"
+                   style="font-family:var(--mono);letter-spacing:1px;"
+                   oninput="setTimedDuration(${i},this.value)"
+                   onblur="this.value=secsToMMSS(editExs[${i}].reps)">`
+              : `<input class="ex-field-inp" type="number" value="${ex.reps}" min="1" max="100"
+                   oninput="editExs[${i}].reps=+this.value;updateExHdr(${i})">`
+            }
           </div>
           <div class="ex-field">
             <label class="ex-field-lbl">Recupero (sec)</label>
@@ -1349,7 +1370,7 @@ function updateExHdr(i){
   const n = document.getElementById('exrn_'+i);
   const s = document.getElementById('exrs_'+i);
   if(n) n.textContent = ex.name||'Esercizio '+(i+1);
-  if(s) s.textContent = ex.sets+'×'+ex.reps;
+  if(s) s.textContent = ex.timed ? ex.sets+'×'+secsToMMSS(ex.reps) : ex.sets+'×'+ex.reps;
 }
 
 /* ══ DRAG & DROP ESERCIZI ══
@@ -1459,6 +1480,28 @@ function setExTimed(i, val, e){
   if(e) e.stopPropagation();
   editExs[i].timed = val;
   renderExRows();
+}
+
+/* ── Conversione MM:SS ↔ secondi per esercizi a tempo ── */
+function secsToMMSS(s){
+  s = Math.max(0, Math.round(s||0));
+  return Math.floor(s/60) + ':' + (s%60).toString().padStart(2,'0');
+}
+function mmssToSecs(str){
+  str = (str||'').trim();
+  if(/^\d+$/.test(str)) return Math.min(+str, 599); /* solo secondi */
+  const parts = str.split(':');
+  if(parts.length !== 2) return null;
+  const m = parseInt(parts[0],10), s = parseInt(parts[1],10);
+  if(isNaN(m)||isNaN(s)||s>59) return null;
+  return m*60+s;
+}
+function setTimedDuration(i, val){
+  const secs = mmssToSecs(val);
+  if(secs !== null && secs > 0){
+    editExs[i].reps = secs;
+    updateExHdr(i);
+  }
 }
 
 function delEx(e, i){
@@ -2093,5 +2136,6 @@ async function sendFeedback(){
   }
 }
 </script>
+<script src="tutorial.js"></script>
 </body>
 </html>

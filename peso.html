@@ -328,9 +328,9 @@ body::before{
 @keyframes toastIn{ from{opacity:0;transform:translateX(-50%) translateY(8px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -340,7 +340,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 html.theme-light .peso-hero{
   background:var(--bg2) !important;
   border:1px solid var(--border);
-  box-shadow:0 2px 16px rgba(13,148,136,.08);
+  box-shadow:0 2px 16px rgba(0,102,221,.08);
 }
 html.theme-light .peso-hero::before{ display:none; }
 
@@ -358,7 +358,7 @@ html.theme-light .peso-hero::before{ display:none; }
 }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
 </script>
 </head>
 <body>
@@ -384,8 +384,10 @@ html.theme-light .peso-hero::before{ display:none; }
     <div class="reminder-cta">Registra →</div>
   </div>
 
+  <div id="wgt-container">
+
   <!-- hero peso -->
-  <div class="peso-hero">
+  <div class="peso-hero" id="wgt-phero">
     <div class="peso-hero-top">
       <div>
         <div class="peso-attuale-lbl">Peso attuale</div>
@@ -411,7 +413,7 @@ html.theme-light .peso-hero::before{ display:none; }
   </div>
 
   <!-- input pesata -->
-  <div class="input-card">
+  <div class="input-card" id="wgt-input">
     <div class="card-title"><div class="card-dot" style="background:var(--a1)"></div>Aggiungi pesata</div>
     <div class="peso-input-row">
       <input class="peso-inp" type="number" id="newPeso" placeholder="75.0" step="0.1" min="30" max="300">
@@ -444,7 +446,7 @@ html.theme-light .peso-hero::before{ display:none; }
   </div>
 
   <!-- grafico -->
-  <div class="chart-card">
+  <div class="chart-card" id="wgt-chart">
     <div class="chart-header">
       <div class="card-title" style="margin-bottom:0"><div class="card-dot" style="background:var(--a2)"></div>Andamento</div>
       <div class="chart-range" id="chartRange"></div>
@@ -485,7 +487,7 @@ html.theme-light .peso-hero::before{ display:none; }
   </div>
 
   <!-- storico -->
-  <div class="storico-card">
+  <div class="storico-card" id="wgt-storico-p">
     <div class="card-title" style="margin-bottom:0;cursor:pointer;justify-content:space-between;" onclick="toggleStorico()">
       <div style="display:flex;align-items:center;gap:7px;">
         <div class="card-dot" style="background:var(--green)"></div>
@@ -497,6 +499,8 @@ html.theme-light .peso-hero::before{ display:none; }
       <div style="padding-top:12px;" id="storicoList"></div>
     </div>
   </div>
+
+  </div><!-- /wgt-container -->
 
 </div>
 
@@ -548,10 +552,28 @@ function loadData(){
   try{
     const d = JSON.parse(localStorage.getItem(KEY));
     if(!d) return getDefault();
-    if(!d.weightLog)  d.weightLog  = [];
+    if(!d.weightLog) d.weightLog = [];
     if(!d.reminderDays) d.reminderDays = 3;
+
+    /* Sanifica: rimuovi voci con kg non numerico (causa NaN nel grafico) */
+    d.weightLog = d.weightLog.filter(p =>
+      p && typeof p.date === 'string' && p.date.length >= 10 &&
+      isFinite(+p.kg) && +p.kg > 0
+    ).map(p => ({ ...p, kg: +p.kg })); /* forza kg a number anche se era stringa */
+
+    /* Migrazione: porta voci da data.weights (onboarding) in weightLog se mancano */
+    if(Array.isArray(d.weights) && d.weights.length){
+      d.weights.forEach(p => {
+        if(p && typeof p.date === 'string' && isFinite(+p.kg) && +p.kg > 0){
+          if(!d.weightLog.some(w => w.date === p.date))
+            d.weightLog.push({ date: p.date, kg: +p.kg });
+        }
+      });
+      d.weightLog.sort((a, b) => b.date.localeCompare(a.date)); /* più recente prima */
+    }
+
     return d;
-  } catch{ return getDefault(); }
+  } catch(e){ return getDefault(); }
 }
 
 function getDefault() {
@@ -854,8 +876,9 @@ function renderChart(){
   const iW  = W - PAD.left - PAD.right;
   const iH  = H - PAD.top  - PAD.bottom;
 
-  // scala Y unificata su entrambe le serie
-  const allWeights = [...pts.map(p=>p.kg), ...ptsC.map(p=>p.kg)];
+  // scala Y unificata su entrambe le serie (filtra NaN/undefined per sicurezza)
+  const allWeights = [...pts.map(p=>p.kg), ...ptsC.map(p=>p.kg)].filter(v => isFinite(v));
+  if(!allWeights.length){ svg.style.display='none'; empty.style.display='block'; return; }
   const minW = Math.min(...allWeights);
   const maxW = Math.max(...allWeights);
   const range = maxW - minW || 1;
@@ -991,7 +1014,9 @@ function renderStorico(){
   }
   log.forEach((p, i) => {
     const prev = log[i+1];
-    const dateStr = new Date(p.date).toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
+    /* Parsifica la data localmente per evitare offset UTC→locale (es. "2026-04-01" → 31 mar) */
+    const [_y, _m, _d] = (p.date||'').split('-').map(Number);
+    const dateStr = new Date(_y, _m-1, _d).toLocaleDateString('it-IT',{day:'2-digit',month:'short'});
 
     // swipe-wrap
     const wrap = document.createElement('div');
@@ -1109,5 +1134,7 @@ function navigateTo(url, toIndex){
   setTimeout(()=>{ location.href = url; }, 230);
 }
 </script>
+<script src="tutorial.js"></script>
+<script src="widgetLayout.js"></script>
 </body>
 </html>

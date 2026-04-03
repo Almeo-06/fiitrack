@@ -293,9 +293,9 @@ body::before{
 .slide-out-right { animation: slideOutToRight 0.22s cubic-bezier(.4,0,.6,1) forwards; }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -317,7 +317,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();
 </script>
 </head>
 <body>
@@ -331,8 +331,10 @@ html.theme-light .tab-item.on{ color:var(--a1); }
     <button class="save-btn-top" onclick="saveProfilo()">Salva</button>
   </div>
 
+  <div id="wgt-container">
+
   <!-- Avatar hero -->
-  <div class="avatar-hero">
+  <div class="avatar-hero" id="wgt-avatar">
     <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('photoInput').click()">
       <span id="avatarEmoji">😎</span>
       <img id="avatarImg" src="" alt="" style="display:none;" />
@@ -362,7 +364,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
   </div>
 
   <!-- Statistiche personali -->
-  <div class="stats-card">
+  <div class="stats-card" id="wgt-stats">
     <div class="card-title">
       <div class="card-dot" style="background:var(--a2)"></div>
       Statistiche personali
@@ -384,7 +386,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
   </div>
 
   <!-- Dati personali -->
-  <div class="form-card">
+  <div class="form-card" id="wgt-dati">
     <div class="card-title">
       <div class="card-dot" style="background:var(--green)"></div>
       Dati personali
@@ -428,7 +430,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
   </div>
 
   <!-- Obiettivo fitness -->
-  <div class="form-card">
+  <div class="form-card" id="wgt-goal">
     <div class="card-title">
       <div class="card-dot" style="background:var(--a1)"></div>
       Obiettivo fitness
@@ -459,6 +461,8 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 
   <!-- Bottone salva principale -->
   <button class="save-btn-main" onclick="saveProfilo()">💾 Salva profilo</button>
+
+  </div><!-- /wgt-container -->
 
 </div><!-- /scroll-area -->
 
@@ -639,5 +643,6 @@ function saveProfilo(){
   setTimeout(()=> toast.classList.remove('show'), 2200);
 }
 </script>
+<script src="widgetLayout.js"></script>
 </body>
 </html>

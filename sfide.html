@@ -238,9 +238,9 @@ body::before{
 .challenge-card{ animation:slideInUp .3s ease both; }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -265,7 +265,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 (function(){
   try{
     const d=JSON.parse(localStorage.getItem('fittrack_v4'));
-    const th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};
+    const th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};
     const tn=(d&&d.theme)||'blue';const t=th[tn]||th.blue;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
@@ -288,21 +288,29 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 <!-- SCROLL AREA -->
 <div class="scroll-area" id="scrollArea">
 
+  <div id="wgt-container">
+
   <!-- Sfide attive -->
-  <div class="section-title" style="margin-top:4px;">
-    <div class="section-dot" style="background:var(--a2)"></div>
-    Sfide attive
+  <div id="wgt-sfide-active">
+    <div class="section-title" style="margin-top:4px;">
+      <div class="section-dot" style="background:var(--a2)"></div>
+      Sfide attive
+    </div>
+    <div id="activeList"></div>
   </div>
-  <div id="activeList"></div>
 
   <!-- Sfide completate (collapsible) -->
-  <div id="completedSection" style="display:none">
-    <button class="collapse-btn" id="collapseBtn">
-      <span id="collapseBtnLabel">Sfide completate</span>
-      <span class="collapse-arrow" id="collapseArrow">▼</span>
-    </button>
-    <div id="completedList"></div>
+  <div id="wgt-sfide-completed">
+    <div id="completedSection" style="display:none">
+      <button class="collapse-btn" id="collapseBtn">
+        <span id="collapseBtnLabel">Sfide completate</span>
+        <span class="collapse-arrow" id="collapseArrow">▼</span>
+      </button>
+      <div id="completedList"></div>
+    </div>
   </div>
+
+  </div><!-- /wgt-container -->
 
 </div>
 
@@ -699,5 +707,6 @@ function sfideNavigateTo(url){ location.href = url; }
 ══════════════════════════════════════════ */
 renderAll();
 </script>
+<script src="widgetLayout.js"></script>
 </body>
 </html>

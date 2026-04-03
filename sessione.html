@@ -143,16 +143,65 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .end-ex-series{ display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }
 .end-ex-serie-pill{ font-size:9px; padding:2px 7px; border-radius:5px; background:var(--bg3); border:1px solid var(--border); color:var(--textm); font-family:var(--mono); }
 
-/* toast salvato */
-.save-toast{
-  position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
-  background:rgba(0,230,118,.15); border:1px solid rgba(0,230,118,.3);
-  border-radius:10px; padding:10px 18px;
-  font-size:13px; color:var(--green); white-space:nowrap;
-  animation:toastIn .3s ease both;
-  z-index:20;
+/* ── Matita modifica stat ── */
+.stat-pencil{
+  position:absolute; top:6px; right:6px;
+  width:22px; height:22px; border:none; background:transparent;
+  color:var(--textm); font-size:11px; cursor:pointer; padding:0; line-height:1;
+  opacity:.5; transition:opacity .15s;
 }
-@keyframes toastIn{ from{opacity:0;transform:translateX(-50%) translateY(10px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+.stat-pencil:hover{ opacity:1; color:var(--a1); }
+.end-stat-inp{
+  width:100%; background:transparent; border:none;
+  border-bottom:1.5px solid var(--a1); color:var(--green);
+  font-family:var(--mono); font-size:24px; font-weight:600;
+  text-align:center; outline:none; padding:2px 0; margin-bottom:4px;
+}
+
+/* ── Preview foto Strava ── */
+.strava-preview{
+  width:100%; border-radius:10px; margin-top:12px;
+  object-fit:contain; max-height:200px; display:block;
+  border:1px solid var(--border);
+}
+
+/* ── Overlay salvataggio sessione ── */
+.save-flash{
+  position:fixed; inset:0; z-index:100;
+  background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:0;
+  animation:sfFade 2s cubic-bezier(.4,0,.2,1) forwards;
+  pointer-events:none;
+}
+@keyframes sfFade{
+  0%   { opacity:0; }
+  12%  { opacity:1; }
+  72%  { opacity:1; }
+  100% { opacity:0; }
+}
+.sf-ring{
+  width:96px; height:96px; border-radius:50%;
+  background:rgba(0,230,118,.08);
+  border:2px solid var(--green);
+  display:flex; align-items:center; justify-content:center;
+  animation:sfPop .45s cubic-bezier(.34,1.56,.64,1) .15s both;
+}
+.sf-check{
+  font-size:42px; line-height:1;
+  color:var(--green);
+}
+.sf-title{
+  margin-top:20px;
+  font-size:20px; font-weight:600; color:var(--text);
+  animation:sfPop .4s ease .35s both;
+}
+.sf-sub{
+  margin-top:6px;
+  font-size:12px; color:var(--textm);
+  animation:sfPop .4s ease .45s both;
+}
+@keyframes sfPop{ from{opacity:0;transform:scale(.7) translateY(8px);} to{opacity:1;transform:scale(1) translateY(0);} }
 
 .end-footer{ padding:0 20px calc(24px + env(safe-area-inset-bottom, 0px)); flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
 .home-btn{ width:100%; padding:15px; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:500; cursor:pointer; font-family:var(--font); box-shadow:0 4px 20px rgba(0,0,0,.2); }
@@ -343,9 +392,9 @@ body::before{
 .fa-text{ font-size:12px; color:var(--textm); line-height:1.6; }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
-  --bg:#f0fdfb; --bg2:#ffffff; --bg3:#e2f5f0;
-  --a1:#0d9488; --a2:#14b8a6; --t1:#0d9488; --t2:#14b8a6;
-  --text:#134e4a; --textm:#5f8c87; --border:#b2ddd7;
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
   --green:#059669; --red:#dc2626; --warn:#d97706;
 }
 html.theme-light body{ background:var(--bg); }
@@ -358,17 +407,17 @@ html.theme-light #screenEnd{ background:var(--bg); }
 html.theme-light .ex-big-circle{
   background:radial-gradient(circle at 35% 35%, var(--bg3), var(--bg)) !important;
   border-color:var(--a1);
-  box-shadow:0 0 40px rgba(13,148,136,.12);
+  box-shadow:0 0 40px rgba(0,102,221,.12);
   animation:none;
 }
 html.theme-light .ring-wrap::before{
-  background:radial-gradient(circle, rgba(13,148,136,.12) 0%, transparent 70%);
+  background:radial-gradient(circle, rgba(0,102,221,.12) 0%, transparent 70%);
 }
 </style>
 <script>
 (function(){try{
   var d=JSON.parse(localStorage.getItem('fittrack_v4'));
-  var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0d9488','#14b8a6']};
+  var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};
   var tn=(d&&d.theme)||'blue';var t=th[tn]||th.blue;
   document.documentElement.style.setProperty('--a1',t[0]);
   document.documentElement.style.setProperty('--a2',t[1]);
@@ -541,9 +590,10 @@ html.theme-light .ring-wrap::before{
         <div class="end-stat-val" id="endTime" style="color:var(--a2)">0:00</div>
         <div class="end-stat-lbl">Durata</div>
       </div>
-      <div class="end-stat">
+      <div class="end-stat" style="position:relative">
         <div class="end-stat-val" id="endKcal" style="color:var(--green)">0</div>
         <div class="end-stat-lbl">Kcal stimate</div>
+        <button class="stat-pencil" onclick="editKcal()" title="Modifica kcal">✏️</button>
       </div>
       <div class="end-stat">
         <div class="end-stat-val" id="endSeries" style="color:var(--a1)">0</div>
@@ -559,13 +609,18 @@ html.theme-light .ring-wrap::before{
 
     <!-- Input km per sessioni corsa/bici -->
     <div id="kmWrap" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 14px;margin-bottom:16px;">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--textm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">📍 Distanza percorsa (facoltativo)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--textm);letter-spacing:1.5px;text-transform:uppercase;">📍 Distanza percorsa (facoltativo)</div>
+        <button onclick="importStravaPhoto()" style="background:transparent;border:1px solid rgba(0,136,255,.3);border-radius:7px;color:var(--a1);font-size:11px;padding:3px 9px;cursor:pointer;font-family:var(--font);">📷 Importa foto</button>
+      </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <input id="kmInput" type="number" step="0.1" min="0" max="999" placeholder="es. 5.0"
           oninput="saveKmNow(this.value)"
           style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:22px;font-weight:500;text-align:center;padding:10px;outline:none;">
         <span style="font-size:14px;color:var(--textm);font-family:var(--mono);font-weight:500;">km</span>
       </div>
+      <input type="file" id="stravaFileInp" accept="image/*" style="display:none" onchange="onStravaPhoto(this)">
+      <img id="stravaPreview" class="strava-preview" style="display:none" alt="Foto Strava">
     </div>
 
     <!-- Nota generale sessione -->
@@ -701,14 +756,25 @@ function localDateStr(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-/* ── Aggiorna streak (stessa logica dell'app originale) ── */
+/* ── Streak settimanale ── */
+function _weekKey(dateStr){
+  const d = new Date(dateStr + 'T12:00');
+  const dow = d.getDay() || 7;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() - (dow - 1));
+  return mon.getFullYear()+'-'+String(mon.getMonth()+1).padStart(2,'0')+'-'+String(mon.getDate()).padStart(2,'0');
+}
 function updateStreak(data, todayStr){
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate()-1);
-  const yStr = localDateStr(yesterday);
-  if(data.lastDate === todayStr) return; /* già registrata oggi */
-  data.streak   = (data.lastDate === yStr) ? data.streak + 1 : 1;
-  data.lastDate = todayStr;
+  const thisWeek = _weekKey(todayStr);
+  if(data.lastStreakWeek === thisWeek) return; // già contata
+  const goal = parseInt(data.profile?.weekFreq) || 3;
+  const sessThisWeek = (data.sessions||[]).filter(s => _weekKey(s.date) === thisWeek).length;
+  if(sessThisWeek < goal) return; // obiettivo non ancora raggiunto
+  const mon = new Date(thisWeek + 'T12:00');
+  mon.setDate(mon.getDate() - 7);
+  const prevWeek = mon.getFullYear()+'-'+String(mon.getMonth()+1).padStart(2,'0')+'-'+String(mon.getDate()).padStart(2,'0');
+  data.streak = (data.lastStreakWeek === prevWeek) ? data.streak + 1 : 1;
+  data.lastStreakWeek = thisWeek;
   if(data.streak > data.bestStreak) data.bestStreak = data.streak;
 }
 
@@ -904,7 +970,9 @@ function updateTimedDisplay(){
   const fill = document.getElementById('timedRingFill');
   const num  = document.getElementById('timedRingNum');
   if(fill) fill.style.strokeDashoffset = Math.max(0, CIRC * (1 - pct));
-  if(num)  num.textContent = timedExSec + 's';
+  if(num)  num.textContent = timedExSec >= 60
+    ? Math.floor(timedExSec/60) + ':' + (timedExSec%60).toString().padStart(2,'0')
+    : timedExSec + 's';
 }
 
 /* ── Feedback stanchezza ── */
@@ -1167,8 +1235,8 @@ function skipRec(){
 function endSession(){
   clearInterval(sessInt); clearInterval(recInt);
 
-  /* 1. Salva in localStorage e aggiorna streak */
-  const result = saveSession(sessSec);
+  /* 1. Salva in localStorage e aggiorna streak (salta se è il workout tutorial) */
+  const result = WORKOUT._tutorial ? { newStreak: 0, prevStreak: 0, isRecord: false, isTutorial: true } : saveSession(sessSec);
 
   /* 2. Render riepilogo */
   const min = Math.floor(sessSec/60);
@@ -1183,10 +1251,11 @@ function endSession(){
 
   /* badge streak */
   const isRecord = result.isRecord && result.newStreak > result.prevStreak;
-  document.getElementById('streakBadge').innerHTML = `
-    <div class="streak-badge${isRecord?' new-record':''}">
-      🔥 ${result.newStreak} giorni di streak${isRecord?' · Nuovo record! 🏆':''}
-    </div>`;
+  document.getElementById('streakBadge').innerHTML = result.isTutorial
+    ? `<div class="streak-badge">🎓 Sessione demo — non salvata</div>`
+    : `<div class="streak-badge${isRecord?' new-record':''}">
+        🔥 ${result.newStreak} giorni di streak${isRecord?' · Nuovo record! 🏆':''}
+      </div>`;
 
   /* confetti se nuovo record streak */
   if(isRecord){
@@ -1223,7 +1292,7 @@ function endSession(){
       <div class="end-ex-icon">${ex.icon}</div>
       <div style="flex:1">
         <div class="end-ex-name">${ex.name}${prBadge}</div>
-        <div class="end-ex-detail">${sd[i]} / ${ex.sets} serie · ${ex.timed ? ex.reps+'s' : ex.reps+' rep'}${weightTxt}</div>
+        <div class="end-ex-detail">${sd[i]} / ${ex.sets} serie · ${ex.timed ? (ex.reps>=60 ? Math.floor(ex.reps/60)+':'+(ex.reps%60).toString().padStart(2,'0') : ex.reps+'s') : ex.reps+' rep'}${weightTxt}</div>
         ${seriesHTML}
         ${noteTxt}
       </div>
@@ -1254,20 +1323,67 @@ function endSession(){
     if(_kmInp) _kmInp.focus();
   }
 
-  show('screenEnd');
+  /* 3. Overlay di conferma salvataggio — appare sopra tutto, poi svanisce */
+  (function(){
+    const fl = document.createElement('div');
+    fl.className = 'save-flash';
+    fl.innerHTML = `
+      <div class="sf-ring"><span class="sf-check">✓</span></div>
+      <div class="sf-title">Sessione salvata!</div>
+      <div class="sf-sub">Il tuo allenamento è stato registrato</div>`;
+    document.body.appendChild(fl);
+    setTimeout(()=>fl.remove(), 2100);
+  })();
 
-  /* 3. Toast di conferma salvataggio */
-  setTimeout(()=>{
-    const t = document.createElement('div');
-    t.className = 'save-toast';
-    t.textContent = '✓ Sessione salvata automaticamente';
-    document.body.appendChild(t);
-    setTimeout(()=>t.remove(), 3000);
-  }, 400);
+  show('screenEnd');
 }
 
 function confirmEnd(){
   if(confirm('Vuoi abbandonare l\'allenamento?\nI progressi non verranno salvati.')) goHome();
+}
+
+/* ── Modifica kcal manuale ── */
+function editKcal(){
+  const el = document.getElementById('endKcal');
+  if(!el || el.tagName === 'INPUT') return;
+  const cur = el.textContent.trim();
+  const inp = document.createElement('input');
+  inp.type='number'; inp.min=0; inp.max=9999; inp.value=cur;
+  inp.className='end-stat-inp';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const val = Math.max(0, Math.round(+inp.value || 0));
+    const div = document.createElement('div');
+    div.className='end-stat-val'; div.id='endKcal'; div.style.color='var(--green)';
+    div.textContent = val;
+    inp.replaceWith(div);
+    try{
+      const _d = JSON.parse(localStorage.getItem(KEY))||{};
+      if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].kcal = val;
+      localStorage.setItem(KEY, JSON.stringify(_d));
+    }catch(e){}
+  }
+  inp.onblur = commit;
+  inp.onkeydown = e=>{ if(e.key==='Enter'||e.key==='Escape') inp.blur(); };
+}
+
+/* ── Importa foto Strava ── */
+function importStravaPhoto(){
+  document.getElementById('stravaFileInp').click();
+}
+function onStravaPhoto(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const img = document.getElementById('stravaPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    /* Attiva la matita kcal così l'utente è guidato a inserire i dati che vede nella foto */
+    setTimeout(editKcal, 200);
+  };
+  reader.readAsDataURL(file);
 }
 
 function saveSessionNote(val){
@@ -1289,6 +1405,9 @@ function saveKmNow(val){
 }
 
 function goHome() {
+  /* Garantisce che i km siano scritti anche se l'utente non ha tolto il focus dall'input */
+  const _kmEl = document.getElementById('kmInput');
+  if(_kmEl && _kmEl.value) saveKmNow(_kmEl.value);
   const isRecord = sessionStorage.getItem('ft_new_streak_record') === '1';
   sessionStorage.removeItem('ft_new_streak_record');
   location.href = isRecord ? 'home.html?newRecord=1' : 'home.html';
