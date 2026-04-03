@@ -37,7 +37,7 @@ body::before{
 }
 
 .scroll-area{
-  padding:20px 16px 0;
+  padding:20px 16px calc(80px + env(safe-area-inset-bottom, 0px));
   position:relative; z-index:1;
   animation:pageIn .35s ease both;
 }

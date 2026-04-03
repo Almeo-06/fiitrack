@@ -135,7 +135,7 @@
       page: 'home.html',
       sel:  '.plan-card',
       title: 'Piano Settimanale 📅',
-      text:  'Ogni giorno ha il suo allenamento assegnato. Tocca un giorno per avviarlo direttamente.',
+      text:  'Ogni giorno ha il suo allenamento assegnato. Trascinalo verso sinistra per avviarlo direttamente.',
       scroll: true
     },
     {

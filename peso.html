@@ -24,7 +24,7 @@ html,body{ height:100%; overflow:hidden; }
 html{ height:-webkit-fill-available; }
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; display:flex; flex-direction:column; overflow:hidden; padding-top:env(safe-area-inset-top,0px); }
 
-.scroll-area{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px 16px 24px; }
+.scroll-area{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px 16px calc(80px + env(safe-area-inset-bottom, 0px)); }
 .scroll-area::-webkit-scrollbar{ width:0; }
 
 /* header */
