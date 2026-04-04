@@ -348,7 +348,7 @@ body::before{
 
 /* tab bar */
 .tab-bar{
-  position:relative; flex-shrink:0;
+  position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
   background:rgba(6,13,26,.97); border-top:1px solid var(--border);
   display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:20;
 }
@@ -373,13 +373,10 @@ html.theme-light .streak-hero{
 }
 html.theme-light .streak-hero::before{ display:none; }
 
-/* ── PWA standalone: tab-bar sempre visibile ── */
+/* ── PWA standalone: padding extra per il safe-area ── */
 @media all and (display-mode: standalone) {
-  .tab-bar {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+  .scroll-area {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -1008,7 +1005,7 @@ const MONTHS_SHORT = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott
 function renderStoricoSessioni() {
   const el = document.getElementById('storicoSessList');
   if (!el) return;
-  const sessions = [...(data.sessions || [])].reverse(); // più recente prima
+  const sessions = [...(data.sessions || [])]; // più recente prima (unshift → sessions[0] = più recente)
   el.innerHTML = '';
 
   if (!sessions.length) {

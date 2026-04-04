@@ -9,7 +9,7 @@
    se la rete non è disponibile si usa la risposta del browser.
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-04-03-2'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-04-1'; /* bump per forzare aggiornamento */
 
 let _cfg   = null;   /* configurazione attiva */
 let _timer = null;   /* handle del setTimeout */

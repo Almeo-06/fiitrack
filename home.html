@@ -220,7 +220,7 @@ body::before{
 }
 
 /* tab bar */
-.tab-bar{ position:relative; flex-shrink:0; background:rgba(6,13,26,.97); border-top:1px solid var(--border); display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:5; }
+.tab-bar{ position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; background:rgba(6,13,26,.97); border-top:1px solid var(--border); display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:20; }
 
 /* ══ CONFETTI ══ */
 .confetti-particle {
@@ -241,7 +241,42 @@ body::before{
 .tab-icon{ font-size:18px; }
 
 /* dimmer */
-#dimmer{ position:fixed; inset:0; z-index:18; background:rgba(0,0,0,0); pointer-events:none; }
+#dimmer{ position:fixed; inset:0; z-index:21; background:rgba(0,0,0,0); pointer-events:none; }
+
+/* ── RECAP SESSIONE (swipe ← su giorno FATTO) ── */
+#recapDimmer{ position:fixed; inset:0; z-index:24; background:rgba(0,0,0,0); pointer-events:none; transition:background .36s; }
+#recapPanel{
+  position:fixed; top:0; right:0; bottom:0;
+  width:88%; max-width:420px;
+  background:var(--bg); border-left:1px solid var(--border);
+  border-radius:16px 0 0 16px; z-index:25;
+  transform:translateX(100%); will-change:transform;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.rp-hdr{ padding:calc(14px + env(safe-area-inset-top,0px)) 14px 12px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:flex-start; gap:10px; }
+.rp-close{ width:28px; height:28px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.rp-done-lbl{ font-family:var(--mono); font-size:9px; color:var(--green); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+.rp-title{ font-size:16px; font-weight:600; color:var(--text); }
+.rp-body{ flex:1; overflow-y:auto; padding:16px 14px calc(30px + env(safe-area-inset-bottom,0px)); -webkit-overflow-scrolling:touch; }
+.rp-body::-webkit-scrollbar{ width:0; }
+.rp-stats{ display:flex; gap:8px; margin-bottom:16px; }
+.rp-stat{ flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:10px 8px; text-align:center; }
+.rp-val{ font-size:16px; font-weight:700; color:var(--a2); margin-bottom:2px; }
+.rp-lbl{ font-size:9px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; }
+.rp-section-title{ font-size:9px; font-weight:500; color:var(--textm); letter-spacing:2px; text-transform:uppercase; margin:0 0 10px; }
+.rp-ex-row{ display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.rp-ex-row:last-child{ border-bottom:none; }
+.rp-ex-name{ font-size:13px; font-weight:500; color:var(--text); margin-bottom:2px; }
+.rp-ex-detail{ font-size:10px; color:var(--textm); }
+.rp-ex-check{ font-size:13px; color:var(--green); flex-shrink:0; margin-top:2px; }
+.rp-ex-note{ font-size:10px; color:var(--textm); margin-top:3px; font-style:italic; }
+.rp-pills{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.rp-pill{ background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:2px 7px; font-size:10px; color:var(--text); font-family:var(--mono); }
+.rp-note-box{ background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--text); line-height:1.5; }
+/* hint ← riepilogo sui giorni completati */
+.fatto-hint{ font-size:9px; color:var(--a1); font-family:var(--mono); letter-spacing:.5px; margin-top:3px; display:flex; align-items:center; gap:3px; }
+@keyframes arrowLeft{ 0%,100%{transform:translateX(0);} 60%{transform:translateX(-3px);} }
+.fatto-hint::before{ content:'‹'; font-size:11px; animation:arrowLeft 1.5s ease-in-out infinite; }
 
 /* ════ CASSETTO PARZIALE (giorni non-oggi) ════
    Esce da sinistra, 85% larghezza, con bordo-radius a destra */
@@ -251,7 +286,7 @@ body::before{
   background:#060d1a;
   border-right:1px solid var(--border);
   border-radius:0 16px 16px 0;
-  z-index:19;
+  z-index:22;
   transform:translateX(-100%);
   will-change:transform;
   display:flex; flex-direction:column; overflow:hidden;
@@ -264,21 +299,22 @@ body::before{
 .d-meta{ font-size:10px; color:var(--textm); display:flex; gap:8px; }
 .d-list{ flex:1; overflow-y:auto; padding:11px 13px; }
 .d-list::-webkit-scrollbar{ width:0; }
-.d-footer{ padding:10px 13px 13px; border-top:1px solid var(--border); flex-shrink:0; }
+.d-footer{ padding:10px 13px calc(13px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--border); flex-shrink:0; }
 .d-btn{ width:100%; padding:10px; background:var(--bg3); border:1px solid rgba(0,136,255,.2); border-radius:10px; color:var(--textm); font-size:12px; cursor:pointer; font-family:var(--font); }
 
 /* ════ PAGINA PIENA (oggi) ════
    Esce da sinistra, copre tutto lo schermo */
 #pageB{
-  position:fixed; inset:0; z-index:20;
+  position:fixed; inset:0; z-index:23;
   background:#060d1a;
   transform:translateX(-100%);
   will-change:transform;
   display:flex; flex-direction:column; overflow:hidden;
 }
 .pb-hdr{ padding:14px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.pb-top{ display:flex; align-items:flex-start; gap:10px; }
+.pb-top{ display:flex; align-items:center; gap:10px; }
 .pb-back{ width:30px; height:30px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.pb-start{ width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-left:auto; box-shadow:0 2px 12px rgba(0,136,255,.4); }
 .pb-day-lbl{ font-family:var(--mono); font-size:9px; color:var(--textm); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
 .pb-title{ font-size:18px; font-weight:600; color:var(--text); margin-bottom:2px; }
 .pb-meta{ font-size:10px; color:var(--textm); display:flex; gap:10px; }
@@ -413,13 +449,10 @@ html.theme-light .drawer-menu{ background:var(--bg2) !important; }
 html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
 html.theme-light .edot{ background:#dbeeff !important; }
 
-/* ── PWA standalone: tab-bar sempre visibile ── */
+/* ── PWA standalone: padding extra per il safe-area ── */
 @media all and (display-mode: standalone) {
-  .tab-bar {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+  .scroll-area {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -539,17 +572,28 @@ html.theme-light #installBanner{
     <div class="pb-hdr">
       <div class="pb-top">
         <button class="pb-back" id="pbBack">‹</button>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="pb-day-lbl" id="pbDayLbl"></div>
           <div class="pb-title" id="pbTitle"></div>
           <div class="pb-meta" id="pbMeta"></div>
         </div>
+        <button class="pb-start" id="startBtn" title="Inizia allenamento">▶</button>
       </div>
     </div>
     <div class="pb-list" id="pbList"></div>
-    <div class="pb-footer">
-      <button class="start-btn" id="startBtn">Inizia allenamento →</button>
+  </div>
+
+  <!-- RECAP SESSIONE (slide da destra — swipe ← su giorno FATTO) -->
+  <div id="recapDimmer" onclick="closeRecap()"></div>
+  <div id="recapPanel">
+    <div class="rp-hdr">
+      <button class="rp-close" onclick="closeRecap()">✕</button>
+      <div>
+        <div class="rp-done-lbl" id="recapDayLbl">✓ completato</div>
+        <div class="rp-title" id="recapTitle"></div>
+      </div>
     </div>
+    <div class="rp-body" id="recapBody"></div>
   </div>
 
   <div class="scroll-area">
@@ -793,7 +837,7 @@ document.getElementById('weekPlan').innerHTML=PIANO.map((d,i)=>{
   const [bc,bt]=bMap[st].split(' ');
   const isOggi = st==='oggi';
   const sub = d.wo ? `${d.wo.name} · ${d.wo.exs.length} esercizi` : 'Giorno di riposo';
-  const bar = st==='fatto' ? `<div class="mini-prog"><div class="mini-fill" style="width:100%"></div></div>` : '';
+  const bar = st==='fatto' ? `<div class="mini-prog"><div class="mini-fill" style="width:100%"></div></div><div class="fatto-hint">riepilogo</div>` : '';
   const grab = d.type!=='rest' ? 'cursor:grab' : 'cursor:default';
 
   const infoHtml = isOggi && d.wo
@@ -860,6 +904,7 @@ const drawer=document.getElementById('drawer');
 const pageB=document.getElementById('pageB');
 const DUR=360, EI='cubic-bezier(0.25,1,0.3,1)', EO='cubic-bezier(0.4,0,0.6,1)';
 let isOpen=false, activeRow=null, activeFullPage=false;
+let recapOpen=false;
 let sx=0,sy=0,lx=0,lt=0,vel=0,drag=false,axis=null;
 
 function W(){ return document.body.getBoundingClientRect().width; }
@@ -907,30 +952,56 @@ document.getElementById('pbBack').onclick=closeAll;
 function attachSwipe(idx, full){
   const row=document.getElementById('row_'+idx);
   const SNAPTHR=full?.28:.22;
+  const isFatto=getDayStatus(idx)==='fatto';
+  let leftMode=false;
+
+  const recapPanel=document.getElementById('recapPanel');
+  const recapDimmer=document.getElementById('recapDimmer');
 
   function start(cx,cy){
-    if(isOpen) return;
+    if(isOpen||recapOpen) return;
     activeRow=row; activeFullPage=full;
-    sx=lx=cx; sy=cy; lt=Date.now(); vel=0; drag=false; axis=null;
+    sx=lx=cx; sy=cy; lt=Date.now(); vel=0; drag=false; axis=null; leftMode=false;
     [row, dimmer, full?pageB:drawer].forEach(el=>el.style.transition='');
+    if(isFatto){ recapPanel.style.transition=''; recapDimmer.style.transition=''; }
   }
   function move(cx,cy){
-    if(isOpen||!activeRow||activeRow!==row) return;
+    if(isOpen||recapOpen||!activeRow||activeRow!==row) return;
     const now=Date.now(),dt=now-lt;
     if(dt>0) vel=vel*.6+(cx-lx)/dt*.4;
     lx=cx; lt=now;
     const dx=cx-sx, dy=cy-sy;
     if(!axis){ if(Math.abs(dx)<5&&Math.abs(dy)<5)return; axis=Math.abs(dx)>Math.abs(dy)?'x':'y'; }
     if(axis==='y') return;
+    if(!drag) leftMode=isFatto&&dx<0;
     drag=true;
-    const w=W(), ref=full?w:w*0.85;
-    setP(row, Math.max(0,Math.min(1,dx/ref)), full);
+    if(leftMode){
+      const w=W(), pw=w*0.88;
+      const p=Math.max(0,Math.min(1,-dx/pw));
+      row.style.transform=`translateX(${Math.min(0,dx)}px)`;
+      recapPanel.style.transform=`translateX(${(1-p)*100}%)`;
+      recapDimmer.style.background=`rgba(0,0,0,${p*.55})`;
+      recapDimmer.style.pointerEvents=p>0.02?'all':'none';
+    } else {
+      const w=W(), ref=full?w:w*0.85;
+      setP(row, Math.max(0,Math.min(1,dx/ref)), full);
+    }
   }
   function end(cx){
-    if(!drag||isOpen||!activeRow||activeRow!==row) return;
+    if(!drag||isOpen||recapOpen||!activeRow||activeRow!==row) return;
     drag=false;
-    const w=W(), ref=full?w:w*0.85;
-    snap(row, (cx-sx)/ref>SNAPTHR||vel>0.3, full);
+    if(leftMode){
+      const w=W(), pw=w*0.88, p=(sx-cx)/pw;
+      leftMode=false;
+      if(p>0.22||vel<-0.3){
+        row.style.transition=`transform ${DUR}ms ${EI}`; row.style.transform='translateX(0)';
+        setTimeout(()=>row.style.transition='', DUR+10);
+        renderRecap(idx); snapRecap(true);
+      } else { snapRecap(false); row.style.transition=`transform ${DUR}ms ${EO}`; row.style.transform='translateX(0)'; setTimeout(()=>row.style.transition='',DUR+10); }
+    } else {
+      const w=W(), ref=full?w:w*0.85;
+      snap(row, (cx-sx)/ref>SNAPTHR||vel>0.3, full);
+    }
   }
 
   row.addEventListener('touchstart',e=>start(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
@@ -938,8 +1009,8 @@ function attachSwipe(idx, full){
   row.addEventListener('touchend',  e=>end(e.changedTouches[0].clientX));
   let md=false;
   row.addEventListener('mousedown',e=>{md=true;start(e.clientX,e.clientY);});
-  window.addEventListener('mousemove',e=>{if(md&&!isOpen)move(e.clientX,e.clientY);});
-  window.addEventListener('mouseup',e=>{if(md){md=false;if(!isOpen)end(e.clientX);}});
+  window.addEventListener('mousemove',e=>{if(md&&!isOpen&&!recapOpen)move(e.clientX,e.clientY);});
+  window.addEventListener('mouseup',e=>{if(md){md=false;if(!isOpen&&!recapOpen)end(e.clientX);}});
 }
 
 function exCardHTML(ex,i){
@@ -982,6 +1053,63 @@ function renderPageB(idx){
     }));
     location.href = 'sessione.html';
   };
+}
+
+/* ══ RECAP SESSIONE ══ */
+function snapRecap(open){
+  const panel=document.getElementById('recapPanel');
+  const rd=document.getElementById('recapDimmer');
+  const ease=open?EI:EO;
+  [panel,rd].forEach(el=>el.style.transition=`all ${DUR}ms ${ease}`);
+  panel.style.transform=open?'translateX(0)':'translateX(100%)';
+  rd.style.background=open?'rgba(0,0,0,.55)':'rgba(0,0,0,0)';
+  rd.style.pointerEvents=open?'all':'none';
+  setTimeout(()=>{ [panel,rd].forEach(el=>el.style.transition=''); recapOpen=open; }, DUR+10);
+}
+function closeRecap(){ if(recapOpen) snapRecap(false); }
+
+function renderRecap(idx){
+  const sess=_weekSessions.find(s=>s.dayIndex===idx);
+  const dayLabel=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'][idx]||'';
+  document.getElementById('recapDayLbl').textContent='✓ '+dayLabel;
+  if(!sess){
+    document.getElementById('recapTitle').textContent='Sessione non trovata';
+    document.getElementById('recapBody').innerHTML='<div style="text-align:center;color:var(--textm);padding:30px 0;">Nessun dato disponibile</div>';
+    return;
+  }
+  document.getElementById('recapTitle').textContent=sess.workout||'Allenamento';
+  const durMin=Math.floor((sess.duration||0)/60), durSec=(sess.duration||0)%60;
+  const durTxt=durMin>0?`${durMin}m ${durSec}s`:`${durSec}s`;
+  let html=`<div class="rp-stats">
+    <div class="rp-stat"><div class="rp-val">${durTxt}</div><div class="rp-lbl">Durata</div></div>
+    <div class="rp-stat"><div class="rp-val" style="color:var(--warn)">${sess.kcal||0}</div><div class="rp-lbl">Kcal 🔥</div></div>
+    ${sess.km>0?`<div class="rp-stat"><div class="rp-val" style="color:var(--green)">${sess.km}</div><div class="rp-lbl">Km 📍</div></div>`:''}
+  </div>`;
+  if(sess.exsCompleted&&sess.exsCompleted.length){
+    html+=`<div class="rp-section-title">Esercizi completati</div>`;
+    html+=sess.exsCompleted.map(ex=>{
+      let seriesHTML='';
+      if(ex.sets_data&&ex.sets_data.length){
+        const pills=ex.sets_data.map(s=>{
+          const kgOk=s.kg!=null&&!isNaN(s.kg), rOk=s.reps!=null&&!isNaN(s.reps);
+          if(!kgOk&&!rOk) return null;
+          return (kgOk?s.kg+'kg':'')+(kgOk&&rOk?'×':'')+(rOk?s.reps+'r':'');
+        }).filter(Boolean);
+        if(pills.length) seriesHTML=`<div class="rp-pills">${pills.map(p=>`<span class="rp-pill">${p}</span>`).join('')}</div>`;
+      }
+      const noteTxt=ex.notes?`<div class="rp-ex-note">🖊️ ${ex.notes}</div>`:'';
+      return `<div class="rp-ex-row">
+        <div style="flex:1">
+          <div class="rp-ex-name">${ex.name}</div>
+          <div class="rp-ex-detail">${ex.sets} serie · ${ex.reps} rep${ex.weight!=null?' · '+ex.weight+'kg':''}</div>
+          ${seriesHTML}${noteTxt}
+        </div>
+        <div class="rp-ex-check">${ex.sets>0?'✓':'—'}</div>
+      </div>`;
+    }).join('');
+  }
+  if(sess.sessionNote) html+=`<div class="rp-note-box"><div style="font-size:9px;color:var(--textm);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Note sessione</div>${sess.sessionNote}</div>`;
+  document.getElementById('recapBody').innerHTML=html;
 }
 
 /* ══ SERVICE WORKER — rischedulazione notifiche streak ══ */
