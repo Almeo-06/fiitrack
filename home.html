@@ -264,14 +264,12 @@ body::before{
 .rp-val{ font-size:16px; font-weight:700; color:var(--a2); margin-bottom:2px; }
 .rp-lbl{ font-size:9px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; }
 .rp-section-title{ font-size:9px; font-weight:500; color:var(--textm); letter-spacing:2px; text-transform:uppercase; margin:0 0 10px; }
-.rp-ex-row{ display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.rp-ex-row{ display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); }
 .rp-ex-row:last-child{ border-bottom:none; }
-.rp-ex-name{ font-size:13px; font-weight:500; color:var(--text); margin-bottom:2px; }
-.rp-ex-detail{ font-size:10px; color:var(--textm); }
-.rp-ex-check{ font-size:13px; color:var(--green); flex-shrink:0; margin-top:2px; }
-.rp-ex-note{ font-size:10px; color:var(--textm); margin-top:3px; font-style:italic; }
-.rp-pills{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
-.rp-pill{ background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:2px 7px; font-size:10px; color:var(--text); font-family:var(--mono); }
+.rp-ex-check{ font-size:11px; color:var(--green); flex-shrink:0; }
+.rp-ex-name{ font-size:12px; font-weight:500; color:var(--text); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rp-ex-meta{ font-size:10px; color:var(--textm); white-space:nowrap; flex-shrink:0; }
+.rp-ex-note{ font-size:10px; color:var(--textm); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rp-note-box{ background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--text); line-height:1.5; }
 /* hint ← riepilogo sui giorni completati */
 .fatto-hint{ font-size:9px; color:var(--a1); font-family:var(--mono); letter-spacing:.5px; margin-top:3px; display:flex; align-items:center; gap:3px; }
@@ -974,6 +972,7 @@ function attachSwipe(idx, full){
     if(!axis){ if(Math.abs(dx)<5&&Math.abs(dy)<5)return; axis=Math.abs(dx)>Math.abs(dy)?'x':'y'; }
     if(axis==='y') return;
     if(!drag) leftMode=isFatto&&dx<0;
+    if(isFatto&&!leftMode) return; // sui giorni FATTO ignora swipe destra
     drag=true;
     if(leftMode){
       const w=W(), pw=w*0.88;
@@ -998,7 +997,7 @@ function attachSwipe(idx, full){
         setTimeout(()=>row.style.transition='', DUR+10);
         renderRecap(idx); snapRecap(true);
       } else { snapRecap(false); row.style.transition=`transform ${DUR}ms ${EO}`; row.style.transform='translateX(0)'; setTimeout(()=>row.style.transition='',DUR+10); }
-    } else {
+    } else if(!isFatto) {
       const w=W(), ref=full?w:w*0.85;
       snap(row, (cx-sx)/ref>SNAPTHR||vel>0.3, full);
     }
@@ -1088,23 +1087,12 @@ function renderRecap(idx){
   if(sess.exsCompleted&&sess.exsCompleted.length){
     html+=`<div class="rp-section-title">Esercizi completati</div>`;
     html+=sess.exsCompleted.map(ex=>{
-      let seriesHTML='';
-      if(ex.sets_data&&ex.sets_data.length){
-        const pills=ex.sets_data.map(s=>{
-          const kgOk=s.kg!=null&&!isNaN(s.kg), rOk=s.reps!=null&&!isNaN(s.reps);
-          if(!kgOk&&!rOk) return null;
-          return (kgOk?s.kg+'kg':'')+(kgOk&&rOk?'×':'')+(rOk?s.reps+'r':'');
-        }).filter(Boolean);
-        if(pills.length) seriesHTML=`<div class="rp-pills">${pills.map(p=>`<span class="rp-pill">${p}</span>`).join('')}</div>`;
-      }
-      const noteTxt=ex.notes?`<div class="rp-ex-note">🖊️ ${ex.notes}</div>`:'';
+      const meta=[ex.sets+' ser.', ex.reps+' rep', ex.weight!=null?ex.weight+'kg':null].filter(Boolean).join(' · ');
+      const noteTxt=ex.notes?`<span class="rp-ex-note"> · 🖊️ ${ex.notes}</span>`:'';
       return `<div class="rp-ex-row">
-        <div style="flex:1">
-          <div class="rp-ex-name">${ex.name}</div>
-          <div class="rp-ex-detail">${ex.sets} serie · ${ex.reps} rep${ex.weight!=null?' · '+ex.weight+'kg':''}</div>
-          ${seriesHTML}${noteTxt}
-        </div>
-        <div class="rp-ex-check">${ex.sets>0?'✓':'—'}</div>
+        <span class="rp-ex-check">✓</span>
+        <span class="rp-ex-name">${ex.name}</span>
+        <span class="rp-ex-meta">${meta}${noteTxt}</span>
       </div>`;
     }).join('');
   }
