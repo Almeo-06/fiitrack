@@ -322,6 +322,9 @@ body::before{
   background:var(--bg3); border:1px solid var(--border);
   border-radius:12px; padding:12px 10px; text-align:center;
 }
+.ms-card.clickable{ cursor:pointer; }
+.ms-card.clickable:active{ opacity:.75; }
+.ms-mode-hint{ font-size:8px; color:var(--a1); letter-spacing:.5px; margin-top:4px; }
 .ms-val{
   font-family:var(--mono); font-size:22px; font-weight:600;
   line-height:1; margin-bottom:4px;
@@ -759,6 +762,13 @@ function nextMonth(){
   renderMonthStats();
 }
 
+let _kcalMode = 'total'; /* 'total' | 'avg' */
+
+function toggleKcalMode(){
+  _kcalMode = _kcalMode === 'total' ? 'avg' : 'total';
+  renderMonthStats();
+}
+
 function renderMonthStats(){
   const pad = n => String(n).padStart(2,'0');
 
@@ -790,17 +800,26 @@ function renderMonthStats(){
     return `<span class="ms-delta neutral">=</span>`;
   }
 
+  const kcalAvg = curCount > 0 ? Math.round(curKcal / curCount) : 0;
+  const kcalVal = _kcalMode === 'total'
+    ? (curKcal || '—')
+    : (kcalAvg  || '—');
+  const kcalLbl   = _kcalMode === 'total' ? 'Kcal bruciate' : 'Media kcal/sess.';
+  const kcalHint  = _kcalMode === 'total' ? '⇄ media' : '⇄ totale';
+  const kcalDelta = _kcalMode === 'total' ? deltaHtml(curKcal, prevKcal) : '';
+
   const cards = [
-    { val: curCount,               lbl: 'Sessioni',   color: 'var(--a1)',   delta: deltaHtml(curCount, prevCount) },
-    { val: curKcal || '—', lbl: 'Kcal bruciate', color: 'var(--green)', delta: deltaHtml(curKcal, prevKcal) },
-    { val: curDays,                lbl: 'Giorni att.', color: 'var(--a2)',  delta: deltaHtml(curDays, prevDays) },
+    { val: curCount,  lbl: 'Sessioni',   color: 'var(--a1)',   delta: deltaHtml(curCount, prevCount), click: '' },
+    { val: kcalVal,   lbl: kcalLbl,      color: 'var(--green)', delta: kcalDelta, click: 'toggleKcalMode()', hint: kcalHint },
+    { val: curDays,   lbl: 'Giorni att.', color: 'var(--a2)',  delta: deltaHtml(curDays, prevDays), click: '' },
   ];
 
   document.getElementById('monthStatsGrid').innerHTML = cards.map(c => `
-    <div class="ms-card">
+    <div class="ms-card${c.click?' clickable':''}"${c.click?` onclick="${c.click}"`:''}>
       <div class="ms-val" style="color:${c.color}">${c.val}</div>
       <div class="ms-lbl">${c.lbl}</div>
       ${c.delta}
+      ${c.hint ? `<div class="ms-mode-hint">${c.hint}</div>` : ''}
     </div>`).join('');
 }
 
