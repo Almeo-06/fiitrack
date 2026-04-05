@@ -672,7 +672,7 @@ if(!WORKOUT || !WORKOUT.exs || !WORKOUT.exs.length){
         type:      _fwo.type,
         typeLabel: _fTLabel[_fwo.type]||'Altro',
         typeIcon:  _fTIcon[_fwo.type]||'💪',
-        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',circuitGroup:ex.circuitGroup??null,weight:ex.weight??null,timed:ex.timed||false}))
+        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',circuitGroup:ex.circuitGroup??null,weight:ex.weight??null,km:ex.km??null,timed:ex.timed||false}))
       };
     } else {
       location.replace('scegli.html');
@@ -727,10 +727,14 @@ function saveAppData(d){
   try{ localStorage.setItem(KEY, JSON.stringify(d)); } catch(e){ console.warn('localStorage pieno',e); }
 }
 
-/* ── Calcolo kcal personalizzato (MET × peso × ore) ──
+/* ── Calcolo kcal personalizzato (Mifflin-St Jeor + MET) ──
+   Formula: kcal = MET × (BMR/24) × ore
+   BMR uomo:  10×peso + 6.25×altezza − 5×età + 5
+   BMR donna: 10×peso + 6.25×altezza − 5×età − 161
    MET: gym=5.0, run=9.0, bike=7.0, other=5.0
-   Se il peso non è disponibile, fallback a 5.5 kcal/min
-─────────────────────────────────────────────────────── */
+   Fallback (dati profilo mancanti): MET × peso × ore
+   Fallback totale (no peso): 5.5 kcal/min
+──────────────────────────────────────────────────────────── */
 function calcKcal(sessSec, workoutType){
   const MET = { gym:5.0, run:9.0, bike:7.0, other:5.0 };
   const met = MET[workoutType] || 5.0;
@@ -743,10 +747,21 @@ function calcKcal(sessSec, workoutType){
       weight = latest.weight;
     }
     if(weight && weight > 0){
+      /* prova calcolo BMR con Mifflin-St Jeor */
+      const p = d.profile || {};
+      const age    = p.age    ? parseFloat(p.age)    : null;
+      const height = p.height ? parseFloat(p.height) : null;
+      const gender = p.gender || null;
+      if(age && height && gender && gender !== 'altro'){
+        const offset = gender === 'donna' ? -161 : 5;
+        const bmr    = (10 * weight) + (6.25 * height) - (5 * age) + offset;
+        return Math.round(met * (bmr / 24) * (sessSec / 3600));
+      }
+      /* fallback: dati profilo incompleti → MET × peso × ore */
       return Math.round(met * weight * (sessSec / 3600));
     }
   } catch(e){}
-  /* fallback */
+  /* fallback totale: nessun peso disponibile */
   return Math.round(sessSec / 60 * 5.5);
 }
 
@@ -1020,9 +1035,11 @@ function renderEx(){
   document.getElementById('exProgLbl').textContent = `Serie ${d+1} / ${ex.sets}`;
   document.getElementById('exCircle').textContent  = ex.icon;
   document.getElementById('exName').textContent    = ex.name;
-  const _wLabel = (ex.weight !== null && ex.weight !== undefined)
-    ? `${ex.weight} kg`
-    : (getPRs()[ex.name]?.maxWeight ? `${getPRs()[ex.name].maxWeight} kg` : 'N/A');
+  const _wLabel = (ex.km !== null && ex.km !== undefined)
+    ? `${ex.km} km`
+    : (ex.weight !== null && ex.weight !== undefined)
+      ? `${ex.weight} kg`
+      : (getPRs()[ex.name]?.maxWeight ? `${getPRs()[ex.name].maxWeight} kg` : 'N/A');
   document.getElementById('exSub').textContent     = ex.timed
     ? `${ex.sets} serie · ${ex.reps}s · ${_wLabel}`
     : `${ex.sets} serie · ${ex.reps} ripetizioni · ${_wLabel}`;
@@ -1065,8 +1082,10 @@ function renderEx(){
       /* Serie 2+: mostra il peso della serie precedente */
       _hintEl.innerHTML = `↑ Serie precedente: <span class="weight-hint-val">${lastW} kg</span>`;
     } else if(exData[curEx].weights.length === 0){
-      /* Prima serie: usa peso configurato, poi fallback su PR */
-      if(ex.weight !== null && ex.weight !== undefined){
+      /* Prima serie: usa km obiettivo, poi peso configurato, poi fallback su PR */
+      if(ex.km !== null && ex.km !== undefined){
+        _hintEl.innerHTML = `🎯 Obiettivo: <span class="weight-hint-val">${ex.km} km</span>`;
+      } else if(ex.weight !== null && ex.weight !== undefined){
         if(wEl.value === '') wEl.value = ex.weight;
         _hintEl.innerHTML = `🎯 Carico target: <span class="weight-hint-val">${ex.weight} kg</span>`;
       } else {

@@ -793,7 +793,10 @@ const PIANO = _DAY_LABELS.map((label, i) => {
       exs:  wo.exs.map((ex,j) => ({
         name: ex.name, sets: ex.sets, reps: ex.reps,
         rec: ex.rec||90, icon: tIcon, tc: ['et1','et2','et3'][j%3],
-        circuitGroup: ex.circuitGroup ?? null
+        circuitGroup: ex.circuitGroup ?? null,
+        weight: ex.weight ?? null,
+        km: ex.km ?? null,
+        timed: ex.timed || false
       }))
     }
   };

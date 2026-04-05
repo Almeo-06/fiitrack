@@ -904,7 +904,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 
 </div>
 
-<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.6</p>
+<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.7</p>
 <div class="tab-bar">
   <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
   <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
@@ -1223,7 +1223,7 @@ function openEditor(i){
     document.getElementById('editorTitle').textContent = 'Modifica allenamento';
     document.getElementById('edName').value = w.name;
     selType  = w.type;
-    editExs  = w.exs.map(e=>({...e, circuitGroup: e.circuitGroup ?? null}));
+    editExs  = w.exs.map(e=>({...e, circuitGroup: e.circuitGroup ?? null, metric: e.km != null ? 'km' : (e.metric || 'weight')}));
   }
   openExIdx = -1;
   renderTypeRow();
@@ -1320,8 +1320,9 @@ function renderExRows(){
           <div class="ex-field">
             <label class="ex-field-lbl">${ex.timed?'Durata (min:sec)':'Ripetizioni'}</label>
             ${ex.timed
-              ? `<input class="ex-field-inp" type="text" inputmode="text"
+              ? `<input class="ex-field-inp" type="text" inputmode="numeric"
                    value="${secsToMMSS(ex.reps)}" placeholder="es. 1:30"
+                   maxlength="5"
                    style="font-family:var(--mono);letter-spacing:1px;"
                    oninput="setTimedDuration(${i},this.value)"
                    onblur="this.value=secsToMMSS(editExs[${i}].reps)">`
@@ -1335,9 +1336,19 @@ function renderExRows(){
               oninput="editExs[${i}].rec=+this.value">
           </div>
           <div class="ex-field">
-            <label class="ex-field-lbl">Peso (kg)</label>
-            <input class="ex-field-inp" type="number" min="0" max="999" step="0.5" value="${ex.weight??''}" placeholder="es. 80"
-              oninput="editExs[${i}].weight=this.value===''?null:+this.value">
+            <label class="ex-field-lbl" style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+              <span>${ex.metric==='km' ? 'Km obiettivo' : 'Peso (kg)'}</span>
+              <span style="display:flex;gap:3px;flex-shrink:0;">
+                <button onclick="setExMetric(${i},'weight',event)" style="padding:2px 7px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:${ex.metric!=='km'?'var(--a1)':'var(--bg3)'};color:${ex.metric!=='km'?'#fff':'var(--textm)'};cursor:pointer;font-family:var(--font);">⚖️</button>
+                <button onclick="setExMetric(${i},'km',event)" style="padding:2px 7px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:${ex.metric==='km'?'var(--a1)':'var(--bg3)'};color:${ex.metric==='km'?'#fff':'var(--textm)'};cursor:pointer;font-family:var(--font);">📏</button>
+              </span>
+            </label>
+            ${ex.metric==='km'
+              ? `<input class="ex-field-inp" type="number" min="0" max="999" step="0.1" value="${ex.km??''}" placeholder="es. 5.0"
+                   oninput="editExs[${i}].km=this.value===''?null:+this.value">`
+              : `<input class="ex-field-inp" type="number" min="0" max="999" step="0.5" value="${ex.weight??''}" placeholder="es. 80"
+                   oninput="editExs[${i}].weight=this.value===''?null:+this.value">`
+            }
           </div>
         </div>
       </div>
@@ -1461,7 +1472,7 @@ function toggleEx(i){
 }
 
 function addEx(){
-  editExs.push({id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, weight:null, timed:false, circuitGroup:null});
+  editExs.push({id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, weight:null, km:null, metric:'weight', timed:false, circuitGroup:null});
   openExIdx = editExs.length-1;
   renderExRows();
   setTimeout(()=>{
@@ -1476,6 +1487,15 @@ function setExTimed(i, val, e){
   renderExRows();
 }
 
+function setExMetric(i, mode, e){
+  if(e) e.stopPropagation();
+  editExs[i].metric = mode;
+  if(mode === 'km') editExs[i].weight = null;
+  else              editExs[i].km = null;
+  openExIdx = i;
+  renderExRows();
+}
+
 /* ── Conversione MM:SS ↔ secondi per esercizi a tempo ── */
 function secsToMMSS(s){
   s = Math.max(0, Math.round(s||0));
@@ -1483,11 +1503,13 @@ function secsToMMSS(s){
 }
 function mmssToSecs(str){
   str = (str||'').trim();
-  if(/^\d+$/.test(str)) return Math.min(+str, 599); /* solo secondi */
+  /* formato mm:ss — max 2 cifre per parte */
+  if(/^\d+$/.test(str)) return Math.min(+str, 599);
   const parts = str.split(':');
   if(parts.length !== 2) return null;
+  if(parts[0].length > 2 || parts[1].length > 2) return null;
   const m = parseInt(parts[0],10), s = parseInt(parts[1],10);
-  if(isNaN(m)||isNaN(s)||s>59) return null;
+  if(isNaN(m)||isNaN(s)||s>59||m>99) return null;
   return m*60+s;
 }
 function setTimedDuration(i, val){
