@@ -262,7 +262,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   color:var(--textm); font-family:var(--font); font-size:12px;
   font-weight:500; cursor:pointer; text-align:center; transition:all .15s;
 }
-.ch-opt-btn.sel{ border-color:var(--a1); color:var(--a2); background:rgba(0,136,255,.08); }
+.ch-opt-btn.sel{ border-color:var(--a1); color:var(--a2); background:rgba(var(--a1-rgb),.08); }
 
 /* ── SFIDE — CARD ── */
 .challenge-card{
@@ -277,7 +277,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   font-size:9px; font-family:var(--mono); padding:2px 8px;
   border-radius:6px; flex-shrink:0; margin-top:1px;
 }
-.ch-pill.active{ background:rgba(0,136,255,.1); color:var(--a2); }
+.ch-pill.active{ background:rgba(var(--a1-rgb),.1); color:var(--a2); }
 .ch-pill.pend{ background:rgba(255,170,0,.1); color:var(--warn); }
 .ch-pill.done{ background:rgba(0,230,118,.1); color:var(--green); }
 .ch-meta{ font-size:11px; color:var(--textm); margin-bottom:12px; line-height:1.6; }
@@ -303,6 +303,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   background:rgba(6,13,26,.97); border-top:1px solid var(--border);
   display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px)); z-index:20;
 }
+.tab-bar::before{ content:''; position:absolute; bottom:100%; left:0; right:0; height:56px; pointer-events:none; background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%); }
 .tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; position:relative; }
 .tab-item.on{ color:var(--a2); }
 .tab-item.on::after{ content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:18px; height:2px; border-radius:0 0 3px 3px; background:var(--a2); box-shadow:0 0 8px var(--a2); }
@@ -321,8 +322,8 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 body::before{
   content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(ellipse 90% 40% at 50% -5%,rgba(0,136,255,.09),transparent),
-    radial-gradient(ellipse 50% 30% at 90% 95%,rgba(0,60,180,.06),transparent);
+    radial-gradient(ellipse 90% 40% at 50% -5%,rgba(var(--a1-rgb),.09),transparent),
+    radial-gradient(ellipse 50% 30% at 90% 95%,rgba(var(--a1-rgb),.04),transparent);
 }
 /* ══ LIGHT THEME ══ */
 html.theme-light{
@@ -333,7 +334,8 @@ html.theme-light{
 }
 html.theme-light body{ background:var(--bg); }
 html.theme-light body::before{ display:none; }
-html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
+html.theme-light .tab-bar{ background:rgba(255,255,255,.98) !important; border-top:1.5px solid rgba(0,102,221,.15) !important; }
+html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
 html.theme-light .tab-item.on{ color:var(--a1); }
 
 /* ── PWA standalone: padding extra per il safe-area ── */
@@ -346,12 +348,12 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 <script>
 (function(){
   try{
-    var d=JSON.parse(localStorage.getItem('fittrack_v4'));
-    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};
+    var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}
+    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};
     var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
-    if(tn==='light')document.documentElement.classList.add('theme-light');
+    if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';
   }catch(e){}
 })();
 </script>

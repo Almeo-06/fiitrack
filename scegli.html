@@ -14,12 +14,12 @@
 <script>
 (function(){
   try{
-    var d=JSON.parse(localStorage.getItem('fittrack_v4'));
-    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],orange:['#f97316','#fbbf24'],light:['#0066dd','#0099ff']};
+    var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}
+    var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};
     var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
-    if(tn==='light')document.documentElement.classList.add('theme-light');
+    if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';
   }catch(e){}
 })();
 </script>
@@ -80,21 +80,21 @@ body{
 .wo-card:active{ transform:scale(.98); }
 .wo-card.selected{
   border-color:var(--a1);
-  box-shadow:0 0 0 1px var(--a1), 0 4px 24px rgba(0,136,255,.18);
+  box-shadow:0 0 0 1px var(--a1), 0 4px 24px rgba(var(--a1-rgb),.18);
 }
 .wo-card.oggi-card{
-  border-color:rgba(0,136,255,.35);
+  border-color:rgba(var(--a1-rgb),.35);
   background:linear-gradient(135deg,#060d1a,#051020);
 }
 .wo-card.oggi-card.selected{
   border-color:var(--a1);
-  box-shadow:0 0 0 1px var(--a1), 0 4px 28px rgba(0,136,255,.25);
+  box-shadow:0 0 0 1px var(--a1), 0 4px 28px rgba(var(--a1-rgb),.25);
 }
 
 /* badge oggi */
 .oggi-badge{
   position:absolute; top:12px; right:12px;
-  background:rgba(0,136,255,.15); border:1px solid rgba(0,136,255,.3);
+  background:rgba(var(--a1-rgb),.15); border:1px solid rgba(var(--a1-rgb),.3);
   border-radius:99px; padding:3px 10px;
   font-size:9px; font-weight:500; color:var(--a2); letter-spacing:.5px;
   font-family:var(--mono); text-transform:uppercase;
@@ -115,7 +115,7 @@ body{
 .wo-top{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
 .wo-icon{
   width:44px; height:44px; border-radius:12px; flex-shrink:0;
-  background:var(--bg3); border:1px solid rgba(0,136,255,.15);
+  background:var(--bg3); border:1px solid rgba(var(--a1-rgb),.15);
   display:flex; align-items:center; justify-content:center; font-size:20px;
 }
 .wo-name{ font-size:15px; font-weight:600; color:var(--text); }
@@ -166,7 +166,7 @@ body{
   font-size:15px; font-weight:600; color:#fff; cursor:pointer;
   font-family:var(--font); letter-spacing:.3px;
   background:linear-gradient(135deg,var(--a1),var(--a2));
-  box-shadow:0 4px 24px rgba(0,136,255,.3);
+  box-shadow:0 4px 24px rgba(var(--a1-rgb),.3);
   transition:opacity .2s, transform .1s;
   pointer-events:all; position:relative; overflow:hidden;
 }
@@ -190,7 +190,7 @@ body{
 body::before{
   content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
   background:
-    radial-gradient(ellipse 80% 35% at 50% -5%, rgba(0,136,255,.08), transparent),
+    radial-gradient(ellipse 80% 35% at 50% -5%, rgba(var(--a1-rgb),.08), transparent),
     radial-gradient(ellipse 40% 25% at 85% 90%, rgba(0,60,180,.05), transparent);
 }
 .scroll-area, .hdr{ position:relative; z-index:1; }
@@ -250,7 +250,7 @@ body::before{
   color:var(--textm); font-family:var(--font); font-size:12px;
   font-weight:500; cursor:pointer; text-align:center; transition:all .15s;
 }
-.tipo-btn.sel{ border-color:var(--a1); color:var(--a2); background:rgba(0,136,255,.08); }
+.tipo-btn.sel{ border-color:var(--a1); color:var(--a2); background:rgba(var(--a1-rgb),.08); }
 
 /* ── esercizi personalizzati ── */
 .cex-row{
@@ -271,7 +271,7 @@ body::before{
 .add-ex-row .field-inp.sm{ width:64px; flex-shrink:0; text-align:center; }
 .add-ex-btn{
   padding:11px 14px; border-radius:10px;
-  background:rgba(0,136,255,.1); border:1px solid rgba(0,136,255,.2);
+  background:rgba(var(--a1-rgb),.1); border:1px solid rgba(var(--a1-rgb),.2);
   color:var(--a2); font-size:18px; cursor:pointer; flex-shrink:0;
 }
 
