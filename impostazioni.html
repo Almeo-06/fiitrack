@@ -904,7 +904,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 
 </div>
 
-<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.7</p>
+<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.8</p>
 <div class="tab-bar">
   <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
   <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
@@ -1002,7 +1002,7 @@ function getDefault() {
     height: null, goalWeight: null, currentWeight: null,
     profile: { name:'', age:null, gender:'', height:null, goalWeight:null, goalType:'', avatar:'😎', photoDataUrl:null },
     challenges: [], personalRecords: {},
-    theme: 'blue', onboardingDone: false, customWorkouts: []
+    theme: 'light', onboardingDone: false, customWorkouts: []
   };
 }
 
@@ -1096,7 +1096,7 @@ function setTheme(name){
 
 /* inizializza chip selezionato */
 (function(){
-  const t = data.theme || 'blue';
+  const t = data.theme || 'light';
   applyTheme(t);
   document.querySelectorAll('.theme-chip').forEach(c=>{
     c.classList.toggle('sel', c.dataset.theme === t);

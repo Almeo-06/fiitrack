@@ -122,7 +122,7 @@
   const TUT_KEY  = 'fittrack_tutorial';
   const DATA_KEY = 'fittrack_v4';
 
-  /* ── Definizione dei 9 step ── */
+  /* ── Definizione degli 11 step ── */
   const STEPS = [
     {
       page: 'home.html',
@@ -174,10 +174,24 @@
       scroll: true
     },
     {
+      page: 'impostazioni.html',
+      sel:  '#sec5',
+      title: 'Feedback 💬',
+      text:  'Hai un suggerimento o hai trovato un bug? Tocca "Scrivi un feedback" — leggiamo tutto e usiamo i tuoi messaggi per migliorare l\'app.',
+      scroll: true
+    },
+    {
       page: 'amici.html',
       sel:  '.scroll-area',
       title: 'Sezione Amici 👥',
       text:  'Connettiti con gli amici, tieni traccia dei loro streak e sfidate a chi si allena di più!',
+      scroll: false
+    },
+    {
+      page: 'home.html',
+      sel:  '.logo-wrap',
+      title: 'Personalizza la Home 🔧',
+      text:  'Tocca il logo <strong>FitTrack</strong> in alto: apparirà il tasto ✏️. Premilo per attivare la modalità modifica e riordinare i blocchi della pagina con le frecce ↑ ↓. Il layout viene salvato automaticamente.',
       scroll: false
     },
     {
@@ -198,6 +212,15 @@
   }
   function _clearState() {
     localStorage.removeItem(TUT_KEY);
+  }
+
+  /* ── Segna il tour come già visto (non si riattiva automaticamente) ── */
+  function _markTourSeen() {
+    try {
+      const data = JSON.parse(localStorage.getItem(DATA_KEY)) || {};
+      data.hasSeenUpdateTour = true;
+      localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    } catch (e) {}
   }
 
   /* ── Rimuovi UI ── */
@@ -286,6 +309,7 @@
 
     // Ultimo step completato
     if (nextIdx >= STEPS.length) {
+      _markTourSeen();
       _cleanupData();
       _clearState();
       _removeUI();
@@ -313,6 +337,7 @@
    * Salta il tutorial.
    */
   window.tutSkip = function () {
+    _markTourSeen();
     _cleanupData();
     _clearState();
     _removeUI();
@@ -387,7 +412,7 @@
     document.body.appendChild(box);
   }
 
-  /* ── Auto-init: si attiva quando il DOM + rendering sono pronti ── */
+  /* ── Auto-init: riprende un tutorial già in corso ── */
   function _autoInit() {
     const state = _getState();
     if (!state || !state.active) return;
@@ -400,9 +425,37 @@
     setTimeout(() => _renderStep(state.step), 420);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _autoInit);
-  } else {
+  /**
+   * Auto-trigger per utenti esistenti: mostra il tutorial una sola volta
+   * se l'utente ha già completato l'onboarding ma non ha ancora visto
+   * il tour aggiornato. Si avvia solo sulla home e solo se non c'è già
+   * un tutorial in corso.
+   */
+  function _checkAutoTrigger() {
+    if (_getState()) return; // tutorial già attivo, nulla da fare
+    try {
+      const data = JSON.parse(localStorage.getItem(DATA_KEY));
+      if (
+        data &&
+        data.onboardingDone &&
+        !data.hasSeenUpdateTour &&
+        _currentPage() === 'home.html'
+      ) {
+        startTutorial();
+        // Piccolo ritardo extra per il rendering della home
+        setTimeout(() => _renderStep(0), 600);
+      }
+    } catch (e) {}
+  }
+
+  function _boot() {
     _autoInit();
+    _checkAutoTrigger();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _boot);
+  } else {
+    _boot();
   }
 })();
