@@ -10,24 +10,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <script>(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})()</script>
 <style>
-:root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
-  --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --red:#ff4455;
-  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
-}
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body{ height:100%; overflow:hidden; }
 body{
   background:var(--bg); color:var(--text); font-family:var(--font);
   max-width:480px; margin:0 auto;
   height:100dvh;
   display:flex; flex-direction:column;
-  overflow:hidden;
+  overflow:hidden; overscroll-behavior:none;
   opacity:0; animation:fadeIn .35s ease .05s forwards;
 }
 @keyframes fadeIn{ to{ opacity:1; } }
@@ -613,6 +607,11 @@ html.theme-light .goal-card.sel{
   animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
 }
 .time-chip.sel span{ color:rgba(255,255,255,.8); }
+@media (prefers-reduced-motion: reduce) {
+  .ob-icon { animation: none; }
+  .next-btn::after { animation: none; }
+  .time-chip.sel { animation: none; }
+}
 </style>
 </head>
 <body>

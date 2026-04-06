@@ -1,0 +1,65 @@
+/* ══════════════════════════════════════════════════════
+   FitTrack — Stili condivisi tra tutte le pagine
+   Caricato come primo foglio di stile in ogni HTML.
+   Contiene: variabili, reset, base html/body, tab bar, tema light.
+══════════════════════════════════════════════════════ */
+
+/* ── Variabili ── */
+:root{
+  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
+  --a1:#0088ff; --a2:#00ccff;
+  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
+  --green:#00e676; --a1-rgb:0,136,255; --a2-rgb:0,204,255;
+  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+}
+
+/* ── Reset ── */
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; overflow:hidden; }
+html{ height:-webkit-fill-available; }
+
+/* ── Tab bar ── */
+.tab-bar{
+  position:fixed; bottom:0; left:0; right:0;
+  max-width:480px; margin:0 auto;
+  background:rgba(6,13,26,.97);
+  border-top:1px solid var(--border);
+  display:flex;
+  padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index:20;
+}
+.tab-bar::before{
+  content:''; position:absolute; bottom:100%; left:0; right:0; height:56px;
+  pointer-events:none;
+  background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+}
+.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; position:relative; }
+.tab-item.on{ color:var(--a2); }
+.tab-item.on::after{
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:18px; height:2px; border-radius:0 0 3px 3px;
+  background:var(--a2); box-shadow:0 0 8px var(--a2);
+}
+.tab-icon{ font-size:18px; }
+
+/* ── Tema light — variabili base ── */
+html.theme-light{
+  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
+  --a1:#0066dd; --a2:#0099ff;
+  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
+  --green:#059669; --red:#dc2626; --warn:#d97706;
+  --a1-rgb:0,102,221; --a2-rgb:0,153,255;
+}
+html.theme-light body{ background:var(--bg); }
+html.theme-light .tab-bar{
+  background:rgba(255,255,255,.98) !important;
+  border-top:1.5px solid rgba(0,102,221,.15) !important;
+  box-shadow:0 -4px 16px rgba(0,102,221,.08) !important;
+}
+html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
+html.theme-light .tab-item.on{ color:var(--a1); }
+
+/* ── prefers-reduced-motion — base ── */
+@media (prefers-reduced-motion: reduce) {
+  .tab-item.on::after{ transition: none; }
+}

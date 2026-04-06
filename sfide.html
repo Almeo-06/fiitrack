@@ -10,23 +10,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <style>
-:root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
-  --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --red:#ff4455; --warn:#ffaa00;
-  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
-}
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body{ height:100%; overflow:hidden; }
-html{ height:-webkit-fill-available; }
 body{
   background:var(--bg); color:var(--text); font-family:var(--font);
   max-width:480px; margin:0 auto;
   height:100vh; height:100dvh; min-height:-webkit-fill-available;
-  position:relative; overflow:hidden;
+  position:relative; overflow:hidden; overscroll-behavior:none;
   display:flex; flex-direction:column;
 }
 
@@ -92,6 +85,8 @@ body::before{
   background:var(--bg2); border:1px solid var(--border);
   border-radius:14px; padding:14px; margin-bottom:10px;
   transition:border-color .2s;
+  content-visibility:auto;
+  contain-intrinsic-size:0 120px;
 }
 .challenge-card.completed-card{
   background:rgba(0,230,118,.03); border-color:rgba(0,230,118,.15);
@@ -156,25 +151,7 @@ body::before{
 .collapse-arrow.open{ transform:rotate(180deg); }
 #completedList{ display:none; }
 
-/* ── TAB BAR ── */
-.tab-bar{
-  position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
-  background:rgba(6,13,26,.97); border-top:1px solid var(--border);
-  display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:20;
-}
-.tab-bar::before{ content:''; position:absolute; bottom:100%; left:0; right:0; height:56px; pointer-events:none; background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%); }
-.tab-item{
-  flex:1; display:flex; flex-direction:column; align-items:center;
-  gap:3px; font-size:9px; color:var(--textm); cursor:pointer;
-  position:relative;
-}
-.tab-item.on{ color:var(--a2); }
-.tab-item.on::after{
-  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:18px; height:2px; border-radius:0 0 3px 3px;
-  background:var(--a2); box-shadow:0 0 8px var(--a2);
-}
-.tab-icon{ font-size:18px; }
+/* ── TAB BAR — in shared.css ── */
 
 /* ── MODAL SHEET ── */
 .sheet-overlay{
@@ -190,7 +167,6 @@ body::before{
   border-top:1px solid var(--border);
   padding:0 0 env(safe-area-inset-bottom,0);
   transition:transform .35s cubic-bezier(.25,1,.3,1);
-  will-change:transform;
 }
 .sheet.open{ transform:translateX(-50%) translateY(0); }
 .sheet-handle{
@@ -237,18 +213,8 @@ body::before{
 /* ── SLIDE IN ── */
 @keyframes slideInUp{ from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
 .challenge-card{ animation:slideInUp .3s ease both; }
-/* ══ LIGHT THEME ══ */
-html.theme-light{
-  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
-  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
-  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
-  --green:#059669; --red:#dc2626; --warn:#d97706;
-}
-html.theme-light body{ background:var(--bg); }
+/* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
-html.theme-light .tab-bar{ background:rgba(255,255,255,.98) !important; border-top:1.5px solid rgba(0,102,221,.15) !important; }
-html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
-html.theme-light .tab-item.on{ color:var(--a1); }
 
 /* ── PWA standalone: padding extra per il safe-area ── */
 @media all and (display-mode: standalone) {
@@ -595,13 +561,19 @@ function openSheet(resetForm = true){
     const lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0);
     document.getElementById('inputEndDate').value = lastDay.toISOString().split('T')[0];
   }
-  document.getElementById('sheet').classList.add('open');
+  const sh = document.getElementById('sheet');
+  sh.style.willChange = 'transform';
+  sh.classList.add('open');
   document.getElementById('sheetOverlay').classList.add('visible');
+  sh.addEventListener('transitionend', () => { sh.style.willChange = 'auto'; }, { once: true });
 }
 
 function closeSheet(){
-  document.getElementById('sheet').classList.remove('open');
+  const sh = document.getElementById('sheet');
+  sh.style.willChange = 'transform';
+  sh.classList.remove('open');
   document.getElementById('sheetOverlay').classList.remove('visible');
+  sh.addEventListener('transitionend', () => { sh.style.willChange = 'auto'; }, { once: true });
 }
 
 document.getElementById('addBtn').addEventListener('click', () => openSheet(true));

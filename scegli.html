@@ -10,7 +10,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="prefetch" href="sessione.html">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <script>
 (function(){
   try{
@@ -24,19 +28,11 @@
 })();
 </script>
 <style>
-:root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
-  --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
-}
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html{ height:-webkit-fill-available; }
 body{
   background:var(--bg); color:var(--text); font-family:var(--font);
   max-width:480px; margin:0 auto;
   min-height:100vh; min-height:100dvh; min-height:-webkit-fill-available;
-  display:flex; flex-direction:column;
+  display:flex; flex-direction:column; overscroll-behavior:none;
 }
 
 /* header */
@@ -280,17 +276,8 @@ body::before{
   background:rgba(255,170,0,.08); border-color:rgba(255,170,0,.2);
 }
 .wo-card.manuale .wo-name{ color:var(--warn, #ffaa00); }
-/* ══ LIGHT THEME ══ */
-html.theme-light{
-  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
-  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
-  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
-  --green:#059669; --red:#dc2626; --warn:#d97706;
-}
-html.theme-light body{ background:var(--bg); }
+/* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
-html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
-html.theme-light .tab-item.on{ color:var(--a1); }
 
 /* ── PWA standalone: tab-bar sempre visibile ── */
 @media all and (display-mode: standalone) {
@@ -306,6 +293,10 @@ html.theme-light .tab-item.on{ color:var(--a1); }
   .footer {
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arr { animation: none; }
+  .start-btn::after { animation: none; }
 }
 </style>
 </head>

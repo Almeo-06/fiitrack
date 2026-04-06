@@ -10,17 +10,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="prefetch" href="sessione.html">
+<link rel="prefetch" href="registra.html">
+<link rel="prefetch" href="peso.html">
+<link rel="prefetch" href="profilo.html">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <style>
-:root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
-  --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
-}
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body{ height:100%; overflow:hidden; }
-html{ height:-webkit-fill-available; }
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; overflow:hidden; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); }
 
 /* ── PAGINA A ── */
@@ -211,17 +209,7 @@ body::before{
 @keyframes arrowSlide{ 0%,100%{transform:translateX(0);} 60%{transform:translateX(4px);} }
 .oggi-swipe-hint::after{ content:'›'; font-size:13px; animation:arrowSlide 1.4s ease-in-out infinite; }
 
-/* active indicator tab */
-.tab-item{ position:relative; }
-.tab-item.on::after{
-  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:18px; height:2px; border-radius:0 0 3px 3px;
-  background:var(--a2); box-shadow:0 0 8px var(--a2);
-}
-
-/* tab bar */
-.tab-bar{ position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; background:rgba(6,13,26,.97); border-top:1px solid var(--border); display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:20; }
-.tab-bar::before{ content:''; position:absolute; bottom:100%; left:0; right:0; height:56px; pointer-events:none; background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%); }
+/* tab bar — stili base in shared.css */
 
 /* ══ CONFETTI ══ */
 .confetti-particle {
@@ -237,9 +225,6 @@ body::before{
   80%  { opacity: 1; }
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
-.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; }
-.tab-item.on{ color:var(--a2); }
-.tab-icon{ font-size:18px; }
 
 /* dimmer */
 #dimmer{ position:fixed; inset:0; z-index:21; background:rgba(0,0,0,0); pointer-events:none; }
@@ -251,7 +236,7 @@ body::before{
   width:88%; max-width:420px;
   background:var(--bg); border-right:1px solid var(--border);
   border-radius:0 16px 16px 0; z-index:25;
-  transform:translateX(-100%); will-change:transform;
+  transform:translateX(-100%);
   display:flex; flex-direction:column; overflow:hidden;
 }
 .rp-hdr{ padding:calc(14px + env(safe-area-inset-top,0px)) 14px 12px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:flex-start; gap:10px; }
@@ -287,7 +272,6 @@ body::before{
   border-radius:0 16px 16px 0;
   z-index:22;
   transform:translateX(-100%);
-  will-change:transform;
   display:flex; flex-direction:column; overflow:hidden;
 }
 .d-hdr{ padding:14px 14px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -307,7 +291,6 @@ body::before{
   position:fixed; inset:0; z-index:23;
   background:#060d1a;
   transform:translateX(-100%);
-  will-change:transform;
   display:flex; flex-direction:column; overflow:hidden;
 }
 .pb-hdr{ padding:14px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -338,14 +321,7 @@ body::before{
 .ex-dots{ display:flex; gap:5px; }
 .edot{ width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:500; border:1.5px solid var(--border); background:#030e1a; color:var(--textm); }
 .edot.done{ background:rgba(0,204,255,.1); border-color:rgba(0,204,255,.3); color:var(--a2); }
-/* ══ LIGHT THEME ══ */
-html.theme-light{
-  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
-  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
-  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
-  --green:#059669; --red:#dc2626; --warn:#d97706;
-}
-html.theme-light body{ background:var(--bg); }
+/* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{
   display:block !important;
   background:
@@ -439,15 +415,7 @@ html.theme-light .day-row:not(.rest) .b-riposo{
   color:rgba(255,255,255,.7) !important; border-color:rgba(255,255,255,.2) !important;
 }
 
-/* ── tab bar ── */
-html.theme-light .tab-bar{
-  background:rgba(255,255,255,.98) !important;
-  border-top:1.5px solid rgba(0,102,221,.15) !important;
-  box-shadow:0 -4px 16px rgba(0,102,221,.08) !important;
-}
-html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
-html.theme-light .tab-item.on{ color:var(--a1); }
-
+/* tab bar light — in shared.css */
 html.theme-light .drawer-menu{ background:var(--bg2) !important; }
 html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
 html.theme-light .edot{ background:#dbeeff !important; }
@@ -511,6 +479,17 @@ html.theme-light .edot{ background:#dbeeff !important; }
 html.theme-light #installBanner{
   box-shadow:0 4px 24px rgba(0,102,221,.15);
   border-color:var(--border);
+}
+@media (prefers-reduced-motion: reduce) {
+  .streak-num { animation: none; }
+  .streak-hero { animation: none; }
+  .start-btn::after { animation: none; }
+  .day-row.today { animation: none; box-shadow: none; }
+  .oggi-swipe-hint::after { animation: none; }
+  .fatto-hint::after { animation: none; }
+  .hint-dot { animation: none; opacity: 1; }
+  .wbar-wrap { animation: none; opacity: 1; }
+  .hero-track { transition: none; }
 }
 </style>
 <script>
@@ -927,7 +906,10 @@ function setP(row, p, full){
 function snap(row, open, full){
   const w=W(), ref=full?w:w*0.85;
   const ease=open?EI:EO;
-  [row, dimmer, full?pageB:drawer].forEach(el=>el.style.transition=`all ${DUR}ms ${ease}`);
+  const panel=full?pageB:drawer;
+  /* Attiva will-change solo durante l'animazione */
+  [row, panel].forEach(el=>el.style.willChange='transform');
+  [row, dimmer, panel].forEach(el=>el.style.transition=`all ${DUR}ms ${ease}`);
   if(open){
     row.style.transform=`translateX(${ref}px)`;
     if(full) pageB.style.transform='translateX(0)';
@@ -942,7 +924,9 @@ function snap(row, open, full){
     dimmer.style.pointerEvents='none';
   }
   setTimeout(()=>{
-    [row, dimmer, full?pageB:drawer].forEach(el=>el.style.transition='');
+    [row, dimmer, panel].forEach(el=>el.style.transition='');
+    /* Rilascia layer GPU appena l'animazione finisce */
+    [row, panel].forEach(el=>el.style.willChange='auto');
     isOpen=open; if(!open){activeRow=null;activeFullPage=false;}
     if(open) open&&full ? renderPageB(row.dataset.idx) : renderDrawer(row.dataset.idx);
   }, DUR+10);
@@ -1067,11 +1051,16 @@ function snapRecap(open){
   const panel=document.getElementById('recapPanel');
   const rd=document.getElementById('recapDimmer');
   const ease=open?EI:EO;
+  panel.style.willChange='transform';
   [panel,rd].forEach(el=>el.style.transition=`all ${DUR}ms ${ease}`);
   panel.style.transform=open?'translateX(0)':'translateX(-100%)';
   rd.style.background=open?'rgba(0,0,0,.55)':'rgba(0,0,0,0)';
   rd.style.pointerEvents=open?'all':'none';
-  setTimeout(()=>{ [panel,rd].forEach(el=>el.style.transition=''); recapOpen=open; }, DUR+10);
+  setTimeout(()=>{
+    [panel,rd].forEach(el=>el.style.transition='');
+    panel.style.willChange='auto';
+    recapOpen=open;
+  }, DUR+10);
 }
 function closeRecap(){ if(recapOpen) snapRecap(false); }
 

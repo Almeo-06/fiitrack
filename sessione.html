@@ -10,18 +10,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <style>
-:root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
-  --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
-}
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body{ height:100%; overflow:hidden; }
-html{ height:-webkit-fill-available; }
-body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; }
+body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; overscroll-behavior:none; }
 
 .screen{
   position:absolute; inset:0; display:flex; flex-direction:column; overflow:hidden; z-index:1;
@@ -390,17 +384,8 @@ body::before{
 .fa-icon{ font-size:28px; margin-bottom:8px; }
 .fa-title{ font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
 .fa-text{ font-size:12px; color:var(--textm); line-height:1.6; }
-/* ══ LIGHT THEME ══ */
-html.theme-light{
-  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
-  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
-  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
-  --green:#059669; --red:#dc2626; --warn:#d97706;
-}
-html.theme-light body{ background:var(--bg); }
+/* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
-html.theme-light .tab-bar{ background:rgba(240,253,251,.97) !important; }
-html.theme-light .tab-item.on{ color:var(--a1); }
 html.theme-light #screenEx,
 html.theme-light #screenRec,
 html.theme-light #screenEnd{ background:var(--bg); }
@@ -669,6 +654,13 @@ html.theme-light .close-btn{
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,.55);
   color: var(--textm);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-big-circle { animation: none; }
+  .sdot.next { animation: none; }
+  .ring-fill { animation: none; }
+  .start-btn::after { animation: none; }
+  .screen { transition: none; }
 }
 </style>
 <script>

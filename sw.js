@@ -4,42 +4,80 @@
    ↑ Cambia questa stringa per forzare l'aggiornamento
      su tutti i dispositivi che hanno la PWA installata.
 
-   Strategia fetch: network-first per file HTML.
-   I file HTML vengono sempre scaricati freschi dal server;
-   se la rete non è disponibile si usa la risposta del browser.
+   Strategia fetch:
+   - File HTML: network-first, fallback cache offline
+   - Risorse statiche (icone, manifest): cache-first
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-04-05-6'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-06-1'; /* bump per forzare aggiornamento */
+
+const CACHE_NAME   = 'fittrack-static-' + SW_VERSION;
+const STATIC_FILES = [
+  'home.html', 'registra.html', 'sessione.html', 'peso.html',
+  'profilo.html', 'impostazioni.html', 'sfide.html', 'amici.html',
+  'scegli.html', 'onboarding.html',
+  'premium/exercises.html', 'premium/sessione-animata.html',
+  'premium/css/exercises.css', 'premium/css/sessione-animata.css',
+  'premium/js/config.js', 'premium/js/exercises.js', 'premium/js/sessione-animata.js',
+  'tutorial.js', 'widgetLayout.js',
+  'icons/icon-192.png', 'icons/icon-512.png',
+  'manifest.json'
+];
 
 let _cfg   = null;   /* configurazione attiva */
 let _timer = null;   /* handle del setTimeout */
 
 /* ── Lifecycle ── */
-self.addEventListener('install', () => {
-  self.skipWaiting(); /* prende controllo subito, senza aspettare reload */
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(STATIC_FILES))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
-  /* Cancella TUTTE le cache residue di versioni precedenti */
+  /* Cancella solo le cache di versioni precedenti, mantieni quella attuale */
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
-      .then(() => self.clients.claim()) /* prende controllo di tutte le tab aperte */
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-/* ── Fetch: network-first per i file HTML ── */
+/* ── Fetch ── */
 self.addEventListener('fetch', e => {
   const url = e.request.url;
-  /* Intercetta solo richieste same-origin a file .html */
-  if(e.request.method !== 'GET') return;
-  if(!url.includes(self.location.origin)) return;
-  if(!url.endsWith('.html') && !url.endsWith('/')) return;
+  if (e.request.method !== 'GET') return;
+  if (!url.includes(self.location.origin)) return;
 
-  e.respondWith(
-    fetch(e.request, { cache: 'no-cache' })
-      .catch(() => fetch(e.request)) /* fallback senza no-cache se offline */
-  );
+  const isHTML = url.endsWith('.html') || url.endsWith('/');
+
+  if (isHTML) {
+    /* Network-first per HTML: sempre aggiornato, fallback cache se offline */
+    e.respondWith(
+      fetch(e.request, { cache: 'no-cache' })
+        .then(res => {
+          /* Salva copia fresca in cache */
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    /* Cache-first per risorse statiche: icone, js, css */
+    e.respondWith(
+      caches.match(e.request)
+        .then(cached => cached || fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+          return res;
+        }))
+    );
+  }
 });
 
 /* ── Messaggi dalla pagina ── */

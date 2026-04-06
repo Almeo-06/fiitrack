@@ -10,22 +10,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <style>
-:root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
-  --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
-  --green:#00e676; --red:#ff4455; --warn:#ffaa00;
-  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
-}
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body{ height:100%; overflow:hidden; }
-html{ height:-webkit-fill-available; }
-body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; display:flex; flex-direction:column; overflow:hidden; padding-top:env(safe-area-inset-top,0px); }
+body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; display:flex; flex-direction:column; overflow:hidden; overscroll-behavior:none; padding-top:env(safe-area-inset-top,0px); }
 
 .scroll-area{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px 16px calc(80px + env(safe-area-inset-bottom, 0px)); }
 .scroll-area::-webkit-scrollbar{ width:0; }
@@ -326,7 +319,6 @@ body::before{
 .scroll-area.slide-out-right{ animation:slideOutToRight  .22s cubic-bezier(.4,0,.6,1) both; }
 .sec-header{ transition:background .15s; }
 .sec-header:hover{ background:rgba(var(--a1-rgb),.04); }
-.tab-item{ position:relative; }
 .tab-item.on::after{
   content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
   width:18px; height:2px; border-radius:0 0 3px 3px;
@@ -342,11 +334,6 @@ body::before{
 @keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
 
 /* tab bar */
-.tab-bar{ position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto; background:rgba(6,13,26,.97); border-top:1px solid var(--border); display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:20; }
-.tab-bar::before{ content:''; position:absolute; bottom:100%; left:0; right:0; height:56px; pointer-events:none; background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%); }
-.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; }
-.tab-item.on{ color:var(--a2); }
-.tab-icon{ font-size:18px; }
 
 /* toast */
 .toast{ position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,230,118,.15); border:1px solid rgba(0,230,118,.3); border-radius:10px; padding:10px 18px; font-size:13px; color:var(--green); white-space:nowrap; z-index:30; display:none; }
@@ -492,18 +479,8 @@ body::before{
   transition:background .15s, border-color .15s;
 }
 .fb-open-btn:active{ background:rgba(var(--a1-rgb),.12); }
-/* ══ LIGHT THEME ══ */
-html.theme-light{
-  --bg:#f0f7ff; --bg2:#ffffff; --bg3:#e8f1ff;
-  --a1:#0066dd; --a2:#0099ff; --t1:#0066dd; --t2:#0099ff;
-  --text:#0d2137; --textm:#4a7099; --border:#c0d8f5;
-  --green:#059669; --red:#dc2626; --warn:#d97706;
-}
-html.theme-light body{ background:var(--bg); }
+/* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
-html.theme-light .tab-bar{ background:rgba(255,255,255,.98) !important; border-top:1.5px solid rgba(0,102,221,.15) !important; }
-html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
-html.theme-light .tab-item.on{ color:var(--a1); }
 
 /* ── PWA standalone: padding extra per il safe-area ── */
 @media all and (display-mode: standalone) {
@@ -512,6 +489,10 @@ html.theme-light .tab-item.on{ color:var(--a1); }
   }
 }
 @keyframes pulse{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
+@media (prefers-reduced-motion: reduce) {
+  [style*="animation:pulse"] { animation: none !important; opacity: 1 !important; }
+  .save-btn::after { animation: none; }
+}
 </style>
 </head>
 <body>
@@ -902,7 +883,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
 
 </div>
 
-<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.9</p>
+<p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.10</p>
 <div class="tab-bar">
   <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
   <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
