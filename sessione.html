@@ -33,7 +33,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .close-btn{ width:28px; height:28px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .prog-row{ display:flex; align-items:center; gap:10px; }
 .prog-bg{ flex:1; height:3px; background:var(--bg3); border-radius:99px; overflow:hidden; }
-.prog-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--a1),var(--a2)); transition:width .3s; }
+.prog-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--a1),var(--a2)); transform-origin:left; transform:scaleX(0); transition:transform .3s; }
 .prog-lbl{ font-family:var(--mono); font-size:10px; color:var(--textm); white-space:nowrap; }
 
 /* ══ ESERCIZIO ATTIVO ══ */
@@ -244,12 +244,12 @@ body::before{
 /* shine sui bottoni */
 .fine-btn, .home-btn{ position:relative; overflow:hidden; }
 .fine-btn::after, .home-btn::after{
-  content:''; position:absolute; top:0; left:-60%;
+  content:''; position:absolute; top:0; left:0;
   width:35%; height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
-  transform:skewX(-15deg); animation:btnShine 3s ease infinite;
+  transform:skewX(-15deg) translateX(-200%); animation:btnShine 3s ease infinite;
 }
-@keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
+@keyframes btnShine{ 0%,55%{transform:skewX(-15deg) translateX(-200%);} 80%,100%{transform:skewX(-15deg) translateX(420%);} }
 
 /* serie completata: bounce */
 @keyframes dotDone{
@@ -662,6 +662,59 @@ html.theme-light .close-btn{
   .start-btn::after { animation: none; }
   .screen { transition: none; }
 }
+
+/* ══ EFFETTI VISIVI AGGIUNTIVI ══ */
+
+/* 1. Skeleton loading lista esercizi */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.skel-row {
+  height: 60px; margin-bottom: 7px; border-radius: 11px;
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease infinite;
+}
+
+/* 2. Streak badge pulse */
+@keyframes streakPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.14); }
+  65%  { transform: scale(.97); }
+  100% { transform: scale(1); }
+}
+.streak-badge.pulse { animation: streakPulse .65s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* 3. Ripple su bottone Fine serie */
+@keyframes rippleOut { to { transform: scale(4.5); opacity: 0; } }
+.ripple-el {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: rgba(255,255,255,.28);
+  transform: scale(0); animation: rippleOut .55s linear forwards;
+}
+
+/* 4. Progress bar milestone glow */
+@keyframes progMilestone {
+  0%,100% { opacity: 1; }
+  40%     { box-shadow: 0 0 10px rgba(var(--a1-rgb),.7), 0 0 20px rgba(var(--a1-rgb),.4); }
+}
+.prog-fill.milestone { animation: progMilestone .55s ease; }
+
+/* 5. Slide-in esercizio */
+@keyframes exSlideIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.ex-slide-in { animation: exSlideIn .28s cubic-bezier(.4,0,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skel-row { animation: none; background: var(--bg3); }
+  .streak-badge.pulse { animation: none; }
+  .ripple-el { animation: none; }
+  .prog-fill.milestone { animation: none; }
+  .ex-slide-in { animation: none; }
+}
 </style>
 <script>
 (function(){try{
@@ -843,9 +896,10 @@ html.theme-light .close-btn{
     </div>
 
     <div class="end-stats">
-      <div class="end-stat">
+      <div class="end-stat" style="position:relative">
         <div class="end-stat-val" id="endTime" style="color:var(--a2)">0:00</div>
         <div class="end-stat-lbl">Durata</div>
+        <button class="stat-pencil" onclick="editDuration()" title="Modifica durata">✏️</button>
       </div>
       <div class="end-stat" style="position:relative">
         <div class="end-stat-val" id="endKcal" style="color:var(--green)">0</div>
@@ -1106,12 +1160,41 @@ let sessSec = 0, sessInt = null;
 let recSec = 0, recMax = 90, recInt = null;
 const CIRC = 2*Math.PI*88;
 
+/* ── Cache elementi DOM — evita 15+ getElementById per render ── */
+const EL = {};
+document.addEventListener('DOMContentLoaded', ()=>{}, {once:true});
+(function cacheDOM(){
+  const ids = [
+    'exTitle','exFill','exProgLbl','exCircle','exName','exSub',
+    'circuitBadge','circuitPos','seriesDots',
+    'inputWeight','inputReps','noteField','noteBtn','weightHint',
+    'exBodyWrap','screenTimedBody','nextCard','nextIcon','nextName','nextSets',
+    'recTitle','recFill','recProgLbl','rncCard',
+    'timedSeriesDots','ringNum','ringFill'
+  ];
+  ids.forEach(id=>{ EL[id] = document.getElementById(id); });
+})();
+
+/* ── CSS vars cachate una volta (evita 3 getComputedStyle ripetuti) ── */
+const _cssVars = getComputedStyle(document.documentElement);
+const CSS_A1 = _cssVars.getPropertyValue('--a1').trim() || '#0088ff';
+const CSS_A2 = _cssVars.getPropertyValue('--a2').trim() || '#00ccff';
+const CSS_T1 = _cssVars.getPropertyValue('--t1').trim() || '#7c3aed';
+const CSS_T2 = _cssVars.getPropertyValue('--t2').trim() || '#a855f7';
+
 /* ── Dati peso/reps/note per esercizio ─────────
    exData[i] = { weights:[], reps:[], note:'' }
    weights e reps raccolgono un valore per ogni serie completata
 ──────────────────────────────────────────────── */
 let exData = WORKOUT.exs.map(()=>({ weights:[], reps:[], note:'', fatigues:[] }));
 let lastCompletedEx   = 0;
+
+/* ── Pre-calcolo gruppi circuito — evita map+filter ripetuto in ogni render ── */
+const CIRCUIT_GROUPS = {};
+WORKOUT.exs.forEach((ex,i)=>{
+  const cg = ex.circuitGroup ?? null;
+  if(cg !== null){ if(!CIRCUIT_GROUPS[cg]) CIRCUIT_GROUPS[cg]=[]; CIRCUIT_GROUPS[cg].push(i); }
+});
 let timedExInt = null;
 let timedExSec = 0;   /* quale esercizio ha appena finito la serie */
 let fatigueForThisRest= 0;   /* 0=non impostato, 1=😴, 2=😐, 3=💪 */
@@ -1155,9 +1238,9 @@ function checkAndUpdatePR(exIdx){
 }
 
 /* ══ CONFETTI ══ */
-function launchConfetti(){
+function launchConfetti(count){
   const COLORS = ['#00ccff','#0088ff','#00e676','#ffaa00','#a855f7','#ff4455'];
-  const COUNT  = 50;
+  const COUNT  = count || 50;
   const particles = [];
   for(let i = 0; i < COUNT; i++){
     const el = document.createElement('div');
@@ -1177,6 +1260,51 @@ function launchConfetti(){
   }
   /* rimuovi tutte le particelle dopo 3s */
   setTimeout(()=>{ particles.forEach(p=>p.remove()); }, 3000);
+}
+
+/* ── Haptic feedback ── */
+function haptic(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+
+/* ── Animated counter (da 0 a `to` in `dur` ms) ── */
+function animateCount(el, to, dur, fmt){
+  if(!el || to === 0){ if(el) el.textContent = fmt ? fmt(to) : to; return; }
+  const start = performance.now();
+  (function step(now){
+    const p   = Math.min((now - start) / dur, 1);
+    const ease = p < .5 ? 2*p*p : -1+(4-2*p)*p;
+    const val  = Math.round(to * ease);
+    el.textContent = fmt ? fmt(val) : val;
+    if(p < 1) requestAnimationFrame(step);
+    else el.textContent = fmt ? fmt(to) : to;
+  })(performance.now());
+}
+
+/* ── Ripple effect su bottone ── */
+function triggerRipple(btn, e){
+  const rect = btn.getBoundingClientRect();
+  const x  = (e.clientX ?? rect.left + rect.width / 2) - rect.left;
+  const y  = (e.clientY ?? rect.top  + rect.height / 2) - rect.top;
+  const sz = Math.max(rect.width, rect.height);
+  const el = document.createElement('span');
+  el.className = 'ripple-el';
+  el.style.cssText = `width:${sz}px;height:${sz}px;left:${x-sz/2}px;top:${y-sz/2}px;`;
+  btn.appendChild(el);
+  el.addEventListener('animationend', ()=>el.remove(), {once:true});
+}
+
+/* ── Milestone progress bar ── */
+let _lastMilestonePct = 0;
+function checkProgMilestone(){
+  const p = pct();
+  for(const m of [25, 50, 75, 100]){
+    if(_lastMilestonePct < m && p >= m){
+      const fill = document.getElementById('exFill');
+      if(fill){ fill.classList.remove('milestone'); void fill.offsetWidth; fill.classList.add('milestone'); fill.addEventListener('animationend',()=>fill.classList.remove('milestone'),{once:true}); }
+      haptic([20]);
+      break;
+    }
+  }
+  _lastMilestonePct = p;
 }
 
 /* ── Banner PR ── */
@@ -1210,8 +1338,8 @@ function startTimedEx(){
   timedExSec = ex.reps;
 
   /* imposta colori contrastanti sul gradiente del ring */
-  const _t1 = getComputedStyle(document.documentElement).getPropertyValue('--t1').trim() || '#7c3aed';
-  const _t2 = getComputedStyle(document.documentElement).getPropertyValue('--t2').trim() || '#a855f7';
+  const _t1 = CSS_T1;
+  const _t2 = CSS_T2;
   const _s1 = document.getElementById('timedStop1');
   const _s2 = document.getElementById('timedStop2');
   if(_s1) _s1.setAttribute('stop-color', _t1);
@@ -1251,7 +1379,7 @@ function updateTimedDisplay(){
 function setFatigue(val){
   const prev = fatigueForThisRest;
   fatigueForThisRest = val;
-  [1,2,3].forEach(v=>document.getElementById('fat'+v)?.classList.toggle('sel', v===val));
+  FAT_BTNS.forEach((b,i)=>b?.classList.toggle('sel', i+1===val));
   if(exData[lastCompletedEx]){
     const arr = exData[lastCompletedEx].fatigues;
     if(prev>0 && arr.length>0) arr[arr.length-1] = val; /* sostituzione se già impostato */
@@ -1268,9 +1396,9 @@ function show(id){
 }
 
 /* ── Helpers ── */
-function totSets(){ return WORKOUT.exs.reduce((a,e)=>a+e.sets,0); }
+const TOTAL_SETS = WORKOUT.exs.reduce((a,e)=>a+e.sets,0); /* costante — calcolata una volta */
 function doneSets(){ return sd.reduce((a,b)=>a+b,0); }
-function pct(){ return Math.round(doneSets()/totSets()*100); }
+function pct(){ return TOTAL_SETS > 0 ? Math.round(doneSets()/TOTAL_SETS*100) : 0; }
 function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 
 /* ── Timer sessione ── */
@@ -1287,115 +1415,109 @@ function startSessTimer(){
 function renderEx(){
   const ex = WORKOUT.exs[curEx];
   const d  = sd[curEx];
-  document.getElementById('exTitle').textContent   = ex.name;
-  document.getElementById('exFill').style.width    = pct()+'%';
-  document.getElementById('exProgLbl').textContent = `Serie ${d+1} / ${ex.sets}`;
-  document.getElementById('exCircle').textContent  = ex.icon;
-  document.getElementById('exName').textContent    = ex.name;
+  const _p = pct();
+  EL.exTitle.textContent   = ex.name;
+  EL.exFill.style.transform = `scaleX(${_p/100})`;
+  EL.exProgLbl.textContent = `Serie ${d+1} / ${ex.sets}`;
+  EL.exCircle.textContent  = ex.icon;
+  EL.exName.textContent    = ex.name;
+
+  /* label peso/km — legge i PR una volta sola */
+  const _prs = getPRs();
   const _wLabel = (ex.km !== null && ex.km !== undefined)
     ? `${ex.km} km`
     : (ex.weight !== null && ex.weight !== undefined)
       ? `${ex.weight} kg`
-      : (getPRs()[ex.name]?.maxWeight ? `${getPRs()[ex.name].maxWeight} kg` : 'N/A');
-  document.getElementById('exSub').textContent     = ex.timed
+      : (_prs[ex.name]?.maxWeight ? `${_prs[ex.name].maxWeight} kg` : 'N/A');
+  EL.exSub.textContent = ex.timed
     ? `${ex.sets} serie · ${ex.reps}s · ${_wLabel}`
     : `${ex.sets} serie · ${ex.reps} ripetizioni · ${_wLabel}`;
 
   /* Circuit badge */
   const _cg = ex.circuitGroup ?? null;
-  const _badge = document.getElementById('circuitBadge');
-  if(_cg !== null && _badge){
-    const _cidxs = WORKOUT.exs.map((e,i)=>e.circuitGroup===_cg?i:-1).filter(i=>i>=0);
-    document.getElementById('circuitPos').textContent = `${_cidxs.indexOf(curEx)+1} di ${_cidxs.length}`;
-    _badge.style.display = 'inline-flex';
-  } else if(_badge){
-    _badge.style.display = 'none';
+  if(_cg !== null){
+    const _cidxs = CIRCUIT_GROUPS[_cg] || [];
+    EL.circuitPos.textContent = `${_cidxs.indexOf(curEx)+1} di ${_cidxs.length}`;
+    EL.circuitBadge.style.display = 'inline-flex';
+  } else {
+    EL.circuitBadge.style.display = 'none';
   }
-  document.getElementById('seriesDots').innerHTML  =
-    Array.from({length:ex.sets},(_,j)=>{
-      const cls = j<d?'sdot done':j===d?'sdot next':'sdot';
-      return `<div class="${cls}">${j<d?'✓':j+1}</div>`;
-    }).join('');
+  EL.seriesDots.innerHTML = Array.from({length:ex.sets},(_,j)=>{
+    const cls = j<d?'sdot done':j===d?'sdot next':'sdot';
+    return `<div class="${cls}">${j<d?'✓':j+1}</div>`;
+  }).join('');
 
-  /* Ripristina input peso/reps e note per l'esercizio corrente */
-  const wEl    = document.getElementById('inputWeight');
-  const rEl    = document.getElementById('inputReps');
-  const noteEl = document.getElementById('noteField');
-  const noteBtn= document.getElementById('noteBtn');
-
-  /* Mostra ultimo peso inserito (se esiste) come placeholder */
+  /* Input peso/reps */
   const lastW = exData[curEx].weights.length
     ? exData[curEx].weights[exData[curEx].weights.length-1]
     : '';
-  wEl.value = lastW !== '' && lastW !== null ? lastW : '';
-  wEl.placeholder = lastW !== '' && lastW !== null ? String(lastW) : '—';
-  rEl.value = '';
-  rEl.placeholder = ex.reps;
+  EL.inputWeight.value       = (lastW !== '' && lastW !== null) ? lastW : '';
+  EL.inputWeight.placeholder = (lastW !== '' && lastW !== null) ? String(lastW) : '—';
+  EL.inputReps.value         = '';
+  EL.inputReps.placeholder   = ex.reps;
 
   /* Suggerimento peso */
-  const _hintEl = document.getElementById('weightHint');
-  if(_hintEl){
-    if(exData[curEx].weights.length > 0 && lastW !== '' && lastW !== null){
-      /* Serie 2+: mostra il peso della serie precedente */
-      _hintEl.innerHTML = `↑ Serie precedente: <span class="weight-hint-val">${lastW} kg</span>`;
-    } else if(exData[curEx].weights.length === 0){
-      /* Prima serie: usa km obiettivo, poi peso configurato, poi fallback su PR */
-      if(ex.km !== null && ex.km !== undefined){
-        _hintEl.innerHTML = `🎯 Obiettivo: <span class="weight-hint-val">${ex.km} km</span>`;
-      } else if(ex.weight !== null && ex.weight !== undefined){
-        if(wEl.value === '') wEl.value = ex.weight;
-        _hintEl.innerHTML = `🎯 Carico target: <span class="weight-hint-val">${ex.weight} kg</span>`;
-      } else {
-        const _pr = getPRs()[ex.name];
-        if(_pr && _pr.maxWeight){
-          _hintEl.innerHTML = `💾 Ultimo carico: <span class="weight-hint-pr">${_pr.maxWeight} kg</span>`;
-          if(wEl.value === '') wEl.value = _pr.maxWeight;
-        } else {
-          _hintEl.innerHTML = `<span style="opacity:.6">N/A — inserisci il tuo peso</span>`;
-        }
-      }
+  if(exData[curEx].weights.length > 0 && lastW !== '' && lastW !== null){
+    EL.weightHint.innerHTML = `↑ Serie precedente: <span class="weight-hint-val">${lastW} kg</span>`;
+  } else if(exData[curEx].weights.length === 0){
+    if(ex.km !== null && ex.km !== undefined){
+      EL.weightHint.innerHTML = `🎯 Obiettivo: <span class="weight-hint-val">${ex.km} km</span>`;
+    } else if(ex.weight !== null && ex.weight !== undefined){
+      if(EL.inputWeight.value === '') EL.inputWeight.value = ex.weight;
+      EL.weightHint.innerHTML = `🎯 Carico target: <span class="weight-hint-val">${ex.weight} kg</span>`;
     } else {
-      _hintEl.innerHTML = '';
+      const _pr = _prs[ex.name];
+      if(_pr && _pr.maxWeight){
+        EL.weightHint.innerHTML = `💾 Ultimo carico: <span class="weight-hint-pr">${_pr.maxWeight} kg</span>`;
+        if(EL.inputWeight.value === '') EL.inputWeight.value = _pr.maxWeight;
+      } else {
+        EL.weightHint.innerHTML = `<span style="opacity:.6">N/A — inserisci il tuo peso</span>`;
+      }
     }
+  } else {
+    EL.weightHint.innerHTML = '';
   }
 
-  /* Note: mantieni testo e visibilità */
-  noteEl.value = exData[curEx].note || '';
-  const noteVisible = !!exData[curEx].note;
-  noteEl.classList.toggle('visible', noteVisible);
-  noteBtn.classList.toggle('active', noteVisible);
-  noteEl.onblur = ()=>{ exData[curEx].note = noteEl.value.trim(); };
+  /* Note */
+  EL.noteField.value = exData[curEx].note || '';
+  const noteVisible  = !!exData[curEx].note;
+  EL.noteField.classList.toggle('visible', noteVisible);
+  EL.noteBtn.classList.toggle('active', noteVisible);
+  EL.noteField.onblur = ()=>{ exData[curEx].note = EL.noteField.value.trim(); };
 
-  /* Modalità a tempo: schermata stile recupero */
-  const _bodyWrap  = document.getElementById('exBodyWrap');
-  const _timedBody = document.getElementById('screenTimedBody');
-  const _nextCard2 = document.getElementById('nextCard');
+  /* Modalità a tempo */
   if(ex.timed){
-    if(_bodyWrap)  _bodyWrap.style.display  = 'none';
-    if(_timedBody) _timedBody.style.display = 'flex';
-    if(_nextCard2) _nextCard2.style.display = 'none';
+    EL.exBodyWrap.style.display      = 'none';
+    EL.screenTimedBody.style.display = 'flex';
+    EL.nextCard.style.display        = 'none';
     startTimedEx();
   } else {
-    if(_bodyWrap)  _bodyWrap.style.display  = '';
-    if(_timedBody) _timedBody.style.display = 'none';
-    if(_nextCard2) _nextCard2.style.display = '';
+    EL.exBodyWrap.style.display      = '';
+    EL.screenTimedBody.style.display = 'none';
+    EL.nextCard.style.display        = '';
     clearInterval(timedExInt);
   }
 
   const nx = WORKOUT.exs[curEx+1];
-  const nc = document.getElementById('nextCard');
   if(nx){
-    nc.style.display='flex';
-    document.getElementById('nextIcon').textContent = nx.icon;
-    document.getElementById('nextName').textContent = nx.name;
-    document.getElementById('nextSets').textContent = `${nx.sets} serie · ${nx.reps} rep`;
+    EL.nextCard.style.display = 'flex';
+    EL.nextIcon.textContent   = nx.icon;
+    EL.nextName.textContent   = nx.name;
+    EL.nextSets.textContent   = `${nx.sets} serie · ${nx.reps} rep`;
   } else {
-    nc.style.display='none';
+    EL.nextCard.style.display = 'none';
   }
+
+  /* 5. Slide-in contenuto esercizio (ogni cambio esercizio/serie) */
+  const _bw = document.getElementById('exBodyWrap');
+  if(_bw){ _bw.classList.remove('ex-slide-in'); void _bw.offsetWidth; _bw.classList.add('ex-slide-in'); }
+  /* 4. Controlla milestone progress bar */
+  checkProgMilestone();
 }
 
 /* ── Fine serie ── */
 function onFineSerie(){
+  haptic([30]);               /* 8. vibrazione breve — serie completata */
   clearInterval(timedExInt);  /* ferma timer a tempo se attivo */
   lastCompletedEx = curEx;    /* salva PRIMA di qualsiasi routing */
   const ex = WORKOUT.exs[curEx];
@@ -1425,7 +1547,7 @@ function onFineSerie(){
   /* ── LOGICA CIRCUITI ── */
   const cg = ex.circuitGroup ?? null;
   if(cg !== null){
-    const circIdxs = WORKOUT.exs.map((e,i)=>e.circuitGroup===cg?i:-1).filter(i=>i>=0);
+    const circIdxs = CIRCUIT_GROUPS[cg] || [];
     const posInCirc = circIdxs.indexOf(curEx);
     const isLast    = posInCirc === circIdxs.length-1;
 
@@ -1456,39 +1578,35 @@ function onFineSerie(){
   openRec(ex.rec);
 }
 
+/* ── Bottoni stanchezza cachati ── */
+const FAT_BTNS = [1,2,3].map(v=>document.getElementById('fat'+v));
+
 /* ── Recupero ── */
 function openRec(sec){
-  /* reset fatigue UI */
   fatigueForThisRest = 0;
-  [1,2,3].forEach(v=>document.getElementById('fat'+v)?.classList.remove('sel'));
+  FAT_BTNS.forEach(b=>b?.classList.remove('sel'));
 
   recSec = sec; recMax = sec;
   const ex = WORKOUT.exs[curEx];
   const d  = sd[curEx];
-  document.getElementById('recTitle').textContent   = 'Recupero · '+ex.name;
-  document.getElementById('recFill').style.width    = pct()+'%';
+  EL.recTitle.textContent          = 'Recupero · '+ex.name;
+  EL.recFill.style.transform       = `scaleX(${pct()/100})`;
 
-  /* Etichetta progresso con contesto circuito */
   const _lastEx = WORKOUT.exs[lastCompletedEx];
   const _lastCG = _lastEx?.circuitGroup ?? null;
   const _curCG  = ex.circuitGroup ?? null;
   const _goingBackToCircuit = _lastCG !== null && _curCG === _lastCG && !afterExDone;
-  let progLbl;
-  if(_goingBackToCircuit){
-    const _round = sd[lastCompletedEx];
-    progLbl = `Circuito · Round ${_round} / ${_lastEx.sets}`;
-  } else {
-    progLbl = afterExDone ? `Esercizio ${lastCompletedEx+1} completato` : `Serie ${sd[lastCompletedEx]} / ${_lastEx?.sets||ex.sets} completata`;
-  }
-  document.getElementById('recProgLbl').textContent = progLbl;
-  let rncHTML = '';
-  if(afterExDone && WORKOUT.exs[curEx+1]){
-    const nx=WORKOUT.exs[curEx+1];
-    rncHTML=`<div class="rnc-icon">${nx.icon}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${nx.sets} serie · ${nx.reps} rep</div></div>`;
-  } else {
-    rncHTML=`<div class="rnc-icon">${ex.icon}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1} · ${ex.reps} rep</div></div>`;
-  }
-  document.getElementById('rncCard').innerHTML = rncHTML;
+  EL.recProgLbl.textContent = _goingBackToCircuit
+    ? `Circuito · Round ${sd[lastCompletedEx]} / ${_lastEx.sets}`
+    : afterExDone
+      ? `Esercizio ${lastCompletedEx+1} completato`
+      : `Serie ${sd[lastCompletedEx]} / ${_lastEx?.sets||ex.sets} completata`;
+
+  const nx = afterExDone && WORKOUT.exs[curEx+1];
+  EL.rncCard.innerHTML = nx
+    ? `<div class="rnc-icon">${nx.icon}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${nx.sets} serie · ${nx.reps} rep</div></div>`
+    : `<div class="rnc-icon">${ex.icon}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1} · ${ex.reps} rep</div></div>`;
+
   updateRing();
   show('screenRec');
   clearInterval(recInt);
@@ -1499,12 +1617,12 @@ function openRec(sec){
 }
 
 function updateRing(){
-  document.getElementById('ringNum').textContent = fmt(recSec);
-  document.getElementById('ringFill').style.strokeDashoffset =
-    Math.max(0, CIRC*(1-recSec/recMax));
+  EL.ringNum.textContent = fmt(recSec);
+  EL.ringFill.style.strokeDashoffset = Math.max(0, CIRC*(1-recSec/recMax));
 }
 function addSec(n){ recSec=Math.min(recSec+n,599); recMax=Math.max(recMax,recSec); updateRing(); }
 function skipRec(){
+  haptic([15]);
   clearInterval(recInt);
   if(afterExDone) curEx++;
   show('screenEx'); renderEx();
@@ -1513,6 +1631,7 @@ function skipRec(){
 /* ══ FINE SESSIONE → SALVA E MOSTRA RIEPILOGO ══ */
 function endSession(){
   clearInterval(sessInt); clearInterval(recInt);
+  haptic([40, 20, 40, 20, 80]); /* 8. vibrazione celebrazione fine allenamento */
 
   /* 1. Salva in localStorage e aggiorna streak (salta se è il workout tutorial) */
   const result = WORKOUT._tutorial ? { newStreak: 0, prevStreak: 0, isRecord: false, isTutorial: true } : saveSession(sessSec);
@@ -1522,11 +1641,13 @@ function endSession(){
   const sec = sessSec%60;
   const kcal = calcKcal(sessSec, WORKOUT.type);
 
-  document.getElementById('endSub').textContent   = `${WORKOUT.name} · ${WORKOUT.day}`;
-  document.getElementById('endTime').textContent  = min>0 ? `${min}m ${sec}s` : `${sec}s`;
-  document.getElementById('endKcal').textContent  = kcal;
-  document.getElementById('endSeries').textContent= doneSets();
-  document.getElementById('endExs').textContent   = WORKOUT.exs.length;
+  document.getElementById('endSub').textContent = `${WORKOUT.name} · ${WORKOUT.day}`;
+  /* 2. Contatori animati — partono da 0 */
+  const _timeFmt = s=>{ const m=Math.floor(s/60),r=s%60; return m>0?`${m}m ${r}s`:`${r}s`; };
+  animateCount(document.getElementById('endTime'),    sessSec,             900, _timeFmt);
+  animateCount(document.getElementById('endKcal'),    kcal,                900);
+  animateCount(document.getElementById('endSeries'),  doneSets(),          700);
+  animateCount(document.getElementById('endExs'),     WORKOUT.exs.length,  600);
 
   /* badge streak */
   const isRecord = result.isRecord && result.newStreak > result.prevStreak;
@@ -1536,15 +1657,23 @@ function endSession(){
         🔥 ${result.newStreak} giorni di streak${isRecord?' · Nuovo record! 🏆':''}
       </div>`;
 
-  /* confetti se nuovo record streak */
+  /* 1. Confetti — sempre al completamento, più abbondante su nuovo record */
+  setTimeout(()=>launchConfetti(isRecord ? 72 : 36), 300);
+  /* 3. Streak badge pulse */
+  setTimeout(()=>{
+    const _sb = document.querySelector('#streakBadge .streak-badge');
+    if(_sb){ _sb.classList.add('pulse'); _sb.addEventListener('animationend',()=>_sb.classList.remove('pulse'),{once:true}); }
+  }, 520);
   if(isRecord){
-    setTimeout(launchConfetti, 300);
     try{ sessionStorage.setItem('ft_new_streak_record','1'); }catch(e){}
   }
 
-  /* lista esercizi con peso, note e badge PR */
+  /* 7. Skeleton → lista esercizi dopo 300ms (effetto "calcolando") */
   const prs = getPRs();
-  document.getElementById('endExList').innerHTML = WORKOUT.exs.map((ex,i)=>{
+  const _exListEl = document.getElementById('endExList');
+  _exListEl.innerHTML = Array.from({length:Math.min(WORKOUT.exs.length,4)},()=>'<div class="skel-row"></div>').join('');
+  setTimeout(()=>{
+  _exListEl.innerHTML = WORKOUT.exs.map((ex,i)=>{
     const delay   = (i+1)*0.05;
     const data    = exData[i];
     const weights = data.weights.filter(w=>w!==null && !isNaN(w));
@@ -1578,6 +1707,7 @@ function endSession(){
       <div class="end-ex-check">${sd[i]>=ex.sets?'✓':'—'}</div>
     </div>`;
   }).join('');
+  }, 300); /* fine setTimeout skeleton */
 
   /* Consiglio basato sulla stanchezza */
   let _totalF=0, _countF=0;
@@ -1647,6 +1777,43 @@ function editKcal(){
   inp.onkeydown = e=>{ if(e.key==='Enter'||e.key==='Escape') inp.blur(); };
 }
 
+/* ── Modifica durata manuale ── */
+function editDuration(){
+  const el = document.getElementById('endTime');
+  if(!el || el.tagName === 'INPUT') return;
+  // Ricava i minuti totali dal testo attuale (es. "12m 34s" → 12, "45s" → 0)
+  const txt = el.textContent.trim();
+  const mMatch = txt.match(/(\d+)m/);
+  const sMatch = txt.match(/(\d+)s/);
+  const curMin = mMatch ? parseInt(mMatch[1]) : 0;
+  const curSec = sMatch ? parseInt(sMatch[1]) : (parseInt(txt) || 0);
+  const curTotalMin = curMin + Math.round(curSec / 60);
+  const inp = document.createElement('input');
+  inp.type='number'; inp.min=1; inp.max=600; inp.value=curTotalMin || 1;
+  inp.className='end-stat-inp'; inp.style.color='var(--a2)';
+  inp.title='Minuti';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const mins = Math.max(1, Math.round(+inp.value || 1));
+    const totalSec = mins * 60;
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    const label = m > 0 ? `${m}m ${s}s` : `${s}s`;
+    const div = document.createElement('div');
+    div.className='end-stat-val'; div.id='endTime'; div.style.color='var(--a2)';
+    div.textContent = label;
+    inp.replaceWith(div);
+    try{
+      const _d = JSON.parse(localStorage.getItem(KEY))||{};
+      if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].duration = totalSec;
+      localStorage.setItem(KEY, JSON.stringify(_d));
+    }catch(e){}
+  }
+  inp.onblur = commit;
+  inp.onkeydown = e=>{ if(e.key==='Enter'||e.key==='Escape') inp.blur(); };
+}
+
 /* ── Importa foto Strava ── */
 function importStravaPhoto(){
   document.getElementById('stravaFileInp').click();
@@ -1665,22 +1832,30 @@ function onStravaPhoto(input){
   reader.readAsDataURL(file);
 }
 
+let _noteDebounce = null;
 function saveSessionNote(val){
-  try{
-    const _d = JSON.parse(localStorage.getItem(KEY)) || {};
-    if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].sessionNote = val.trim();
-    localStorage.setItem(KEY, JSON.stringify(_d));
-  } catch(e){ console.warn('saveSessionNote error', e); }
+  clearTimeout(_noteDebounce);
+  _noteDebounce = setTimeout(()=>{
+    try{
+      const _d = JSON.parse(localStorage.getItem(KEY)) || {};
+      if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].sessionNote = val.trim();
+      localStorage.setItem(KEY, JSON.stringify(_d));
+    } catch(e){ console.warn('saveSessionNote error', e); }
+  }, 400);
 }
 
+let _kmDebounce = null;
 function saveKmNow(val){
   const km = parseFloat(val);
   if(isNaN(km) || km <= 0) return;
+  clearTimeout(_kmDebounce);
+  _kmDebounce = setTimeout(()=>{
   try{
     const _d = JSON.parse(localStorage.getItem(KEY)) || {};
     if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].km = km;
     localStorage.setItem(KEY, JSON.stringify(_d));
   } catch(e){ console.warn('saveKmNow error', e); }
+  }, 400);
 }
 
 function goHome() {
@@ -1724,9 +1899,8 @@ async function shareSession(){
     reps: ex.reps,
   }));
 
-  const cs = getComputedStyle(document.documentElement);
-  const A1 = cs.getPropertyValue('--a1').trim() || '#0088ff';
-  const A2 = cs.getPropertyValue('--a2').trim() || '#00ccff';
+  const A1 = CSS_A1;
+  const A2 = CSS_A2;
 
   const CW = 400, CH = 600;
   const cv  = document.createElement('canvas');
@@ -1913,16 +2087,28 @@ function _downloadCanvas(cv){
 
 /* ── Applica colori tema al gradiente SVG del ring ── */
 (function(){
-  const s = getComputedStyle(document.documentElement);
-  const a1 = s.getPropertyValue('--a1').trim() || '#0088ff';
-  const a2 = s.getPropertyValue('--a2').trim() || '#00ccff';
-  document.getElementById('ringStop1').setAttribute('stop-color', a1);
-  document.getElementById('ringStop2').setAttribute('stop-color', a2);
+  document.getElementById('ringStop1').setAttribute('stop-color', CSS_A1);
+  document.getElementById('ringStop2').setAttribute('stop-color', CSS_A2);
 })();
+
+/* ── Cleanup intervalli su uscita (bfcache / tasto indietro) ── */
+window.addEventListener('pagehide', ()=>{
+  clearInterval(sessInt);
+  clearInterval(recInt);
+  clearInterval(timedExInt);
+  clearTimeout(prBannerTimer);
+  clearTimeout(_noteDebounce);
+  clearTimeout(_kmDebounce);
+});
 
 /* ── START ── */
 startSessTimer();
 renderEx();
+
+/* 3. Ripple su tutti i bottoni .fine-btn */
+document.querySelectorAll('.fine-btn').forEach(btn=>{
+  btn.addEventListener('pointerdown', e=>triggerRipple(btn, e));
+});
 </script>
 </body>
 </html>
