@@ -14,6 +14,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; overscroll-behavior:none; }
 
@@ -715,6 +718,47 @@ html.theme-light .close-btn{
   .prog-fill.milestone { animation: none; }
   .ex-slide-in { animation: none; }
 }
+
+/* ── Modale permesso notifiche ── */
+#notifPermOverlay{
+  position:fixed; inset:0; z-index:999;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+#notifPermOverlay.open{ opacity:1; pointer-events:auto; }
+.notif-perm-sheet{
+  width:100%; max-width:480px;
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border);
+  padding:20px 24px calc(32px + env(safe-area-inset-bottom,0px));
+  transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#notifPermOverlay.open .notif-perm-sheet{ transform:translateY(0); }
+.np-icon{ font-size:40px; text-align:center; margin-bottom:12px; }
+.np-title{ font-size:18px; font-weight:600; color:var(--text); text-align:center; margin-bottom:8px; }
+.np-body{ font-size:13px; color:var(--textm); text-align:center; line-height:1.6; margin-bottom:22px; }
+.np-btns{ display:flex; flex-direction:column; gap:10px; }
+.np-allow{ width:100%; padding:14px; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; border-radius:13px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:var(--font); }
+.np-skip{ width:100%; padding:12px; background:transparent; border:none; color:var(--textm); font-size:13px; cursor:pointer; font-family:var(--font); }
+
+/* ── Toast amico ── */
+.friend-toast{
+  position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); left:50%;
+  transform:translateX(-50%) translateY(-80px);
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:14px; padding:12px 16px;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  z-index:998; max-width:340px; width:calc(100% - 32px);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.friend-toast.show{ transform:translateX(-50%) translateY(0); }
+.ft-toast-av{ width:36px; height:36px; border-radius:50%; background:rgba(var(--a1-rgb),.15); border:1.5px solid rgba(var(--a1-rgb),.3); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.ft-toast-body{ flex:1; }
+.ft-toast-name{ font-size:12px; font-weight:500; color:var(--text); }
+.ft-toast-msg{ font-size:11px; color:var(--textm); margin-top:2px; }
 </style>
 <script>
 (function(){try{
@@ -1157,6 +1201,7 @@ let sd = WORKOUT.exs.map(()=>0);
 let curEx = 0;
 let afterExDone = false;
 let sessSec = 0, sessInt = null;
+let _sessionNewPRs = []; /* {exName, weight} — raccolti durante la sessione */
 let recSec = 0, recMax = 90, recInt = null;
 
 /* ── Wake Lock — schermo sempre acceso durante la sessione ── */
@@ -1558,6 +1603,7 @@ function onFineSerie(){
       const weights = exData[curEx].weights.filter(w=>w!==null && !isNaN(w));
       const maxW    = weights.length ? Math.max(...weights) : 0;
       showPRBanner(ex.name, maxW);
+      _sessionNewPRs.push({ exName: ex.name, weight: maxW });
     }
   }
 
@@ -1653,6 +1699,7 @@ function endSession(){
 
   /* 1. Salva in localStorage e aggiorna streak (salta se è il workout tutorial) */
   const result = WORKOUT._tutorial ? { newStreak: 0, prevStreak: 0, isRecord: false, isTutorial: true } : saveSession(sessSec);
+  if(!WORKOUT._tutorial) _afterSessionSaved(WORKOUT.name || 'Allenamento');
 
   /* 2. Render riepilogo */
   const min = Math.floor(sessSec/60);
@@ -1895,103 +1942,85 @@ function goHome() {
 }
 
 /* ══════════════════════════════════════════════
-   CONDIVIDI ALLENAMENTO — Canvas 400×600
+   CONDIVIDI ALLENAMENTO — Card 400×600
+   Design: dark card, glow radiale, stat grid
 ══════════════════════════════════════════════ */
 async function shareSession(){
-  const wo      = WORKOUT || {};
-  const woName  = wo.name || 'Allenamento';
-  const woType  = wo.type || 'gym';
-  const woIcon  = woType === 'run' ? '🏃' : '🏋️';
-  const kcalEl  = document.getElementById('endKcal');
-  const timeEl  = document.getElementById('endTime');
-  const kcalTxt = kcalEl ? kcalEl.textContent : '—';
-  const durTxt  = timeEl ? timeEl.textContent : '—';
+  const wo     = WORKOUT || {};
+  const woName = wo.name || 'Allenamento';
+  const woType = wo.type || 'gym';
+  const isRun  = (woType === 'run');
 
-  let streak = 0;
+  /* ── Dati sessione ── */
+  const timeEl  = document.getElementById('endTime');
+  const kcalEl  = document.getElementById('endKcal');
+  const durTxt  = timeEl ? timeEl.textContent : '—';
+  const kcalVal = kcalEl ? (parseInt(kcalEl.textContent) || 0) : 0;
+  const totalSerie = doneSets();
+  const numExs     = WORKOUT.exs.length;
+
+  /* Volume totale sollevato (kg)
+     - usa reps inserite dall'utente; se assenti, fallback alle reps target del workout
+     - ignora serie senza peso (bodyweight/cardio) */
+  let totalVol = 0;
+  exData.forEach((d, i) => {
+    const ex = WORKOUT.exs[i];
+    for(let j = 0; j < (sd[i] || 0); j++){
+      const w = parseFloat(d.weights[j]);
+      if(isNaN(w) || w <= 0) continue; /* nessun peso → salta */
+      const r = parseFloat(d.reps[j]);
+      const effectiveR = !isNaN(r) && r > 0 ? r : (parseInt(ex.reps) || 0);
+      totalVol += w * effectiveR;
+    }
+  });
+  totalVol = Math.round(totalVol);
+
+  /* Dati utente */
+  let streak = 0, userName = '', userHandle = '', userAvatar = '😎';
   try{
-    const _d = JSON.parse(localStorage.getItem(KEY));
-    streak = (_d && _d.streak) ? _d.streak : 0;
+    const _d   = JSON.parse(localStorage.getItem(KEY)) || {};
+    streak     = _d.streak || 0;
+    const p    = _d.profile || {};
+    userName   = p.name || '';
+    userAvatar = p.avatar || '😎';
+    userHandle = _d.username ? '@' + _d.username : '';
   } catch(e){}
 
-  const now2  = new Date();
-  const MESI  = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-  const DSET  = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  const dateStr = `${DSET[now2.getDay()]} ${now2.getDate()} ${MESI[now2.getMonth()]} ${now2.getFullYear()}`;
+  /* Data e ora */
+  const now2 = new Date();
+  const MESI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const DSET = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  const dateStr  = `${DSET[now2.getDay()]} ${now2.getDate()} ${MESI[now2.getMonth()]}`;
+  const timeStr  = `${String(now2.getHours()).padStart(2,'0')}:${String(now2.getMinutes()).padStart(2,'0')}`;
+  const dateBadge= `${String(now2.getDate()).padStart(2,'0')}/${String(now2.getMonth()+1).padStart(2,'0')}/${now2.getFullYear()}`;
 
-  const exsList = WORKOUT.exs.map((ex, i) => ({
-    icon: ex.icon || '•',
-    name: ex.name,
-    sets: sd[i],
-    totalSets: ex.sets,
-    reps: ex.reps,
-  }));
+  /* ── Precarica font per Canvas (FontFace API) ── */
+  try{
+    const _ff1 = new FontFace('DM Sans',  'url(https://fonts.gstatic.com/s/dmsans/v15/rP2Hp2ywxg089UriCZOIHQ.woff2)', { weight:'400' });
+    const _ff2 = new FontFace('DM Sans',  'url(https://fonts.gstatic.com/s/dmsans/v15/rP2Cp2ywxg089UriCZOIHQ.woff2)', { weight:'500' });
+    const _ff3 = new FontFace('DM Sans',  'url(https://fonts.gstatic.com/s/dmsans/v15/rP2Fp2ywxg089UriCZOIHQ.woff2)', { weight:'600' });
+    const _ff4 = new FontFace('DM Mono',  'url(https://fonts.gstatic.com/s/dmmono/v14/aFTR7PB1QTsUX8KYthqQBK.woff2)',  { weight:'400' });
+    await Promise.all([_ff1,_ff2,_ff3,_ff4].map(f => f.load().then(loaded => document.fonts.add(loaded))));
+  } catch(e){ /* fallback silenzioso su system fonts */ }
 
-  const A1 = CSS_A1;
-  const A2 = CSS_A2;
-
+  /* ── Canvas 400×600 ── */
   const CW = 400, CH = 600;
   const cv  = document.createElement('canvas');
-  cv.width  = CW; cv.height = CH;
+  cv.width  = CW * 2; cv.height = CH * 2; // @2x per retina
   const ctx = cv.getContext('2d');
+  ctx.scale(2, 2);
 
-  /* Sfondo */
-  ctx.fillStyle = '#020810';
-  ctx.fillRect(0, 0, CW, CH);
-
-  /* Luce blu in alto */
-  const bg1 = ctx.createRadialGradient(200, 0, 0, 200, 0, 360);
-  bg1.addColorStop(0, 'rgba(0,80,200,0.22)');
-  bg1.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = bg1;
-  ctx.fillRect(0, 0, CW, CH);
-
-  /* Luce in basso */
-  const bg2 = ctx.createRadialGradient(CW, CH, 0, CW, CH, 250);
-  bg2.addColorStop(0, 'rgba(0,50,150,0.14)');
-  bg2.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = bg2;
-  ctx.fillRect(0, 0, CW, CH);
-
-  /* Linea accent in alto */
-  const lineG = ctx.createLinearGradient(0,0,CW,0);
-  lineG.addColorStop(0,'transparent');
-  lineG.addColorStop(0.3,A1);
-  lineG.addColorStop(0.7,A2);
-  lineG.addColorStop(1,'transparent');
-  ctx.strokeStyle = lineG;
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(CW,0); ctx.stroke();
-
-  /* Logo */
-  ctx.font = '700 28px sans-serif';
-  ctx.fillStyle = '#e0f4ff';
-  ctx.textAlign = 'left';
-  ctx.fillText('Fit', 28, 52);
-  const fitW = ctx.measureText('Fit').width;
-  ctx.fillStyle = A2;
-  ctx.fillText('Track', 28 + fitW, 52);
-  ctx.fillStyle = '#00e676';
-  ctx.beginPath(); ctx.arc(CW-28, 40, 5, 0, Math.PI*2); ctx.fill();
-  ctx.font = '400 10px monospace';
-  ctx.fillStyle = '#304870';
-  ctx.textAlign = 'right';
-  ctx.fillText('COMPLETED', CW-40, 44);
-
-  /* Separatore */
-  ctx.strokeStyle = '#0d1e38'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(28,66); ctx.lineTo(CW-28,66); ctx.stroke();
-
-  /* Nome allenamento */
-  ctx.textAlign = 'left';
-  ctx.font = '500 11px monospace';
-  ctx.fillStyle = '#304870';
-  ctx.fillText('ALLENAMENTO', 28, 96);
-  ctx.font = '700 24px sans-serif';
-  ctx.fillStyle = '#e0f4ff';
-  ctx.fillText(woIcon + ' ' + woName, 28, 124);
-  ctx.font = '400 11px monospace';
-  ctx.fillStyle = '#304870';
-  ctx.fillText(dateStr.toUpperCase(), 28, 143);
+  /* Colori tema */
+  const BG      = isRun ? '#0a1a12' : '#0f0f14';
+  const ACCENT  = isRun ? '#34d399' : '#a78bfa';
+  const ATYPE   = isRun ? '#059669' : '#7c3aed';
+  const PILL_BG = isRun ? 'rgba(52,211,153,0.15)' : 'rgba(167,139,250,0.15)';
+  const PILL_C  = isRun ? '#6ee7b7'  : '#c4b5fd';
+  const LBL_C   = isRun ? 'rgba(52,211,153,0.6)' : 'rgba(167,139,250,0.6)';
+  const AV_BG   = isRun ? '#064e3b' : '#4c1d95';
+  const AV_C    = isRun ? '#6ee7b7' : '#c4b5fd';
+  const FADE_BG = isRun ? 'rgba(10,26,18,1)' : 'rgba(15,15,20,1)';
+  const GLOW_X  = isRun ? CW + 40 : -40;
 
   /* Helper roundRect */
   function rr(x,y,w,h,r){
@@ -2004,88 +2033,164 @@ async function shareSession(){
     ctx.closePath();
   }
 
-  /* Stat cards */
-  const sY  = 166;
-  const sW  = (CW - 56 - 16) / 3;
-  const stats = [
-    { icon:'🔥', val: kcalTxt, lbl:'KCAL',   gold:false },
-    { icon:'⏱', val: durTxt,  lbl:'DURATA',  gold:false },
-    { icon:'🔥', val: streak,  lbl:'STREAK',  gold:true  },
-  ];
-  stats.forEach((s, i) => {
-    const sx2 = 28 + i * (sW + 8);
-    rr(sx2, sY, sW, 78, 10);
-    ctx.fillStyle = '#060d1a'; ctx.fill();
-    rr(sx2, sY, sW, 78, 10);
-    ctx.strokeStyle = s.gold ? 'rgba(255,170,0,0.3)' : '#0d1e38';
-    ctx.lineWidth = 1; ctx.stroke();
-    ctx.font = '18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(s.icon, sx2 + sW/2, sY + 26);
-    ctx.font = '700 17px sans-serif';
-    ctx.fillStyle = s.gold ? '#ffaa00' : A2;
-    ctx.fillText(String(s.val), sx2 + sW/2, sY + 47);
-    ctx.font = '400 9px monospace';
-    ctx.fillStyle = '#304870';
-    ctx.fillText(s.lbl, sx2 + sW/2, sY + 62);
-  });
+  /* ── 1. Sfondo ── */
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, CW, CH);
 
-  /* Sezione esercizi */
-  const exTY = sY + 78 + 20;
+  /* ── 2. Glow radiale ── */
+  const glowR = ctx.createRadialGradient(GLOW_X, -60, 0, GLOW_X, -60, 240);
+  glowR.addColorStop(0, isRun ? 'rgba(16,185,129,0.22)' : 'rgba(109,40,217,0.28)');
+  glowR.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glowR;
+  ctx.fillRect(0, 0, CW, CH);
+
+  /* ── 3. Top bar (y=20..42) ── */
+  // Brand
+  ctx.font = '600 13px sans-serif';
+  ctx.fillStyle = ACCENT;
   ctx.textAlign = 'left';
+  ctx.fillText('FITTRACK', 20, 38);
+
+  // Streak pill
+  const streakLabel = `${streak} giorni`;
+  ctx.font = '500 12px sans-serif';
+  const pillTextW = ctx.measureText(streakLabel).width;
+  const pillW = pillTextW + 42; // 10 emoji + 8 gap + text + 10 right
+  const pillX = CW - 20 - pillW;
+  rr(pillX, 24, pillW, 22, 11);
+  ctx.fillStyle = PILL_BG; ctx.fill();
+  ctx.font = '14px sans-serif';
+  ctx.fillText('🔥', pillX + 8, 39);
+  ctx.font = '500 12px sans-serif';
+  ctx.fillStyle = PILL_C;
+  ctx.fillText(streakLabel, pillX + 29, 39);
+
+  /* ── 4. Hero (y=68..145) ── */
+  const typeLabel = isRun ? 'CARDIO · RUN' : 'STRENGTH';
   ctx.font = '500 10px monospace';
-  ctx.fillStyle = '#304870';
-  ctx.fillText('ESERCIZI COMPLETATI', 28, exTY);
-  ctx.fillStyle = '#00e676';
-  ctx.beginPath(); ctx.arc(CW-32, exTY-4, 4, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = ATYPE;
+  ctx.textAlign = 'left';
+  ctx.fillText(typeLabel, 20, 82);
 
-  const exLY  = exTY + 14;
-  const rowH  = 40;
-  const maxEx = Math.min(exsList.length, 5);
+  // Titolo workout — max 22 chars
+  let titleTxt = woName;
+  ctx.font = '500 22px sans-serif';
+  if(ctx.measureText(titleTxt).width > CW - 40) titleTxt = titleTxt.slice(0, 20) + '…';
+  ctx.fillStyle = '#f1f0fe';
+  ctx.fillText(titleTxt, 20, 112);
 
-  exsList.slice(0, maxEx).forEach((ex, i) => {
-    const ry = exLY + i*(rowH+6);
-    rr(28, ry, CW-56, rowH, 8);
-    ctx.fillStyle = '#060d1a'; ctx.fill();
-    rr(28, ry, CW-56, rowH, 8);
-    ctx.strokeStyle = 'rgba(0,230,118,0.12)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.font = '400 12px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.fillText(`${dateStr}  ·  ${timeStr}`, 20, 132);
 
-    ctx.font = '15px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(ex.icon, 28+20, ry+rowH/2+6);
+  /* ── 5. Divider (y=152) ── */
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(20, 152); ctx.lineTo(CW-20, 152); ctx.stroke();
 
-    ctx.font = '500 13px sans-serif';
-    ctx.fillStyle = '#e0f4ff';
+  /* ── 6. Stat grid (y=168) ── */
+  const MX = 20, MW = CW - 40, GAP = 10;
+  const COL = (MW - GAP) / 2;
+  const ROW_H = 76;
+
+  function statCard(x, y, w, h, label, value, unit){
+    rr(x, y, w, h, 14);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill();
+    rr(x, y, w, h, 14);
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.5; ctx.stroke();
+    ctx.font = '500 10px monospace';
+    ctx.fillStyle = LBL_C;
     ctx.textAlign = 'left';
-    let nm = ex.name;
-    if(nm.length > 22) nm = nm.slice(0,21)+'…';
-    ctx.fillText(nm, 28+42, ry+16);
-
-    ctx.font = '400 10px monospace';
-    ctx.fillStyle = '#304870';
-    ctx.fillText(`${ex.sets}/${ex.totalSets} serie · ${ex.reps} rep`, 28+42, ry+29);
-
-    ctx.font = '500 13px sans-serif';
-    ctx.fillStyle = ex.sets >= ex.totalSets ? '#00e676' : '#304870';
-    ctx.textAlign = 'right';
-    ctx.fillText(ex.sets >= ex.totalSets ? '✓' : '—', CW-38, ry+rowH/2+5);
-  });
-
-  if(exsList.length > 5){
-    const mY = exLY + 5*(rowH+6)+10;
-    ctx.font = '400 10px monospace';
-    ctx.fillStyle = '#304870';
-    ctx.textAlign = 'center';
-    ctx.fillText(`+ altri ${exsList.length-5} esercizi`, CW/2, mY);
+    ctx.fillText(label.toUpperCase(), x+14, y+22);
+    ctx.font = '500 22px sans-serif';
+    ctx.fillStyle = '#f1f0fe';
+    ctx.fillText(String(value), x+14, y+52);
+    ctx.font = '400 11px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillText(unit, x+14, y+67);
   }
 
-  /* Footer */
-  ctx.font = '400 10px monospace';
-  ctx.fillStyle = '#1a2e50';
-  ctx.textAlign = 'center';
-  ctx.fillText('fittrack.app', CW/2, CH-16);
+  function wideCard(x, y, w, h, label, value, unit){
+    rr(x, y, w, h, 14);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fill();
+    rr(x, y, w, h, 14);
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.5; ctx.stroke();
+    ctx.font = '500 10px monospace';
+    ctx.fillStyle = LBL_C;
+    ctx.textAlign = 'left';
+    ctx.fillText(label.toUpperCase(), x+16, y+22);
+    ctx.font = '500 28px sans-serif';
+    ctx.fillStyle = '#f1f0fe';
+    ctx.fillText(String(value), x+16, y+52);
+    ctx.font = '400 12px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.textAlign = 'right';
+    ctx.fillText(unit, x+w-16, y+52);
+    ctx.textAlign = 'left';
+  }
 
-  /* Condividi o scarica */
+  const gY = 168;
+
+  if(isRun){
+    statCard(MX,         gY,           COL, ROW_H, 'Durata',      durTxt,   'min');
+    statCard(MX+COL+GAP, gY,           COL, ROW_H, 'Kcal',        kcalVal || '—', 'stimate');
+    statCard(MX,         gY+ROW_H+GAP, COL, ROW_H, 'Streak',      streak,   'giorni 🔥');
+    statCard(MX+COL+GAP, gY+ROW_H+GAP, COL, ROW_H, 'Esercizi',    numExs,   'completati');
+    wideCard(MX, gY+(ROW_H+GAP)*2, MW, 62, 'Tipo allenamento', isRun ? 'Corsa / Cardio' : woName, '');
+  } else {
+    statCard(MX,         gY,           COL, ROW_H, 'Durata',      durTxt,   'min');
+    statCard(MX+COL+GAP, gY,           COL, ROW_H, 'Esercizi',    numExs,   'completati');
+    statCard(MX,         gY+ROW_H+GAP, COL, ROW_H, 'Serie tot.',  totalSerie, 'set');
+    statCard(MX+COL+GAP, gY+ROW_H+GAP, COL, ROW_H, 'Streak',      streak,   'giorni 🔥');
+    const volLabel = totalVol > 0 ? totalVol.toLocaleString('it-IT') : '—';
+    wideCard(MX, gY+(ROW_H+GAP)*2, MW, 62, 'Volume totale sollevato', volLabel, totalVol > 0 ? 'kg' : '');
+  }
+
+  /* ── 7. Bottom fade + utente ── */
+  const fadeY = CH - 110;
+  const fadeG = ctx.createLinearGradient(0, fadeY, 0, CH);
+  fadeG.addColorStop(0, 'rgba(0,0,0,0)');
+  fadeG.addColorStop(0.5, FADE_BG);
+  fadeG.addColorStop(1,   FADE_BG);
+  ctx.fillStyle = fadeG;
+  ctx.fillRect(0, fadeY, CW, 110);
+
+  /* Avatar */
+  const avCX = 20 + 17, avCY = CH - 28;
+  ctx.beginPath(); ctx.arc(avCX, avCY, 17, 0, Math.PI*2);
+  ctx.fillStyle = AV_BG; ctx.fill();
+  const initials = userName ? userName.slice(0,2).toUpperCase() : '?';
+  ctx.font      = '500 13px sans-serif';
+  ctx.fillStyle = AV_C;
+  ctx.textAlign = 'center';
+  ctx.fillText(initials, avCX, avCY + 5);
+  ctx.textAlign = 'left';
+
+  /* Nome */
+  const displayName = userName || 'FitTracker';
+  ctx.font = '500 13px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillText(displayName, avCX + 22, avCY - 4);
+  if(userHandle){
+    ctx.font = '400 11px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillText(userHandle, avCX + 22, avCY + 9);
+  }
+
+  /* Badge data */
+  ctx.font = '400 11px monospace';
+  const dbW = ctx.measureText(dateBadge).width + 20;
+  const dbX = CW - 20 - dbW, dbY2 = avCY - 14;
+  rr(dbX, dbY2, dbW, 22, 8);
+  ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fill();
+  rr(dbX, dbY2, dbW, 22, 8);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.5; ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.textAlign = 'center';
+  ctx.fillText(dateBadge, dbX + dbW/2, dbY2 + 15);
+  ctx.textAlign = 'left';
+
+  /* ── Condividi o scarica ── */
   cv.toBlob(async (blob) => {
     if(!blob){ alert('Errore nella generazione dell\'immagine.'); return; }
     const file = new File([blob], 'fittrack-allenamento.png', { type:'image/png' });
@@ -2093,7 +2198,7 @@ async function shareSession(){
       try{
         await navigator.share({
           title: 'FitTrack · ' + woName,
-          text: `Ho completato "${woName}" su FitTrack! 💪  ${kcalTxt} kcal · ${durTxt} · Streak ${streak}🔥`,
+          text: `Ho completato "${woName}" su FitTrack! 💪  Streak ${streak}🔥`,
           files: [file],
         });
       } catch(err){
@@ -2137,6 +2242,130 @@ renderEx();
 document.querySelectorAll('.fine-btn').forEach(btn=>{
   btn.addEventListener('pointerdown', e=>triggerRipple(btn, e));
 });
+</script>
+
+<!-- ── Modale permesso notifiche ── -->
+<div id="notifPermOverlay" onclick="_npOverlayClick(event)">
+  <div class="notif-perm-sheet">
+    <div class="np-icon">🔔</div>
+    <div class="np-title">Resta aggiornato sugli amici</div>
+    <div class="np-body">Attiva le notifiche per sapere quando i tuoi amici completano un allenamento — e per ricevere i promemoria streak.</div>
+    <div class="np-btns">
+      <button class="np-allow" onclick="_npAllow()">Attiva notifiche</button>
+      <button class="np-skip"  onclick="_npClose()">Non adesso</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   FIREBASE — notifiche amici
+══════════════════════════════════════════════ */
+(function(){
+  const _fbCfg = {
+    apiKey:            "AIzaSyD3kvEKJw3vBVZGT3VJqolnsDwQeCFvZSM",
+    authDomain:        "fittrack-c95c6.firebaseapp.com",
+    projectId:         "fittrack-c95c6",
+    storageBucket:     "fittrack-c95c6.firebasestorage.app",
+    messagingSenderId: "502254449477",
+    appId:             "1:502254449477:web:0e38cddc20a8eb28ba442c"
+  };
+  try{
+    window._fbApp = firebase.apps.length ? firebase.app() : firebase.initializeApp(_fbCfg);
+    window._auth  = firebase.auth();
+    window._db    = firebase.firestore();
+  } catch(e){ console.warn('[FT] Firebase non disponibile:', e); }
+})();
+
+/* ── Notifica amici dopo sessione ── */
+async function _notifyFriendsOnSession(woName, newPRs){
+  try{
+    if(!window._auth || !window._db) return;
+    const user = _auth.currentUser;
+    if(!user) return;
+
+    /* Leggi lista amici accettati */
+    const snap = await _db.collection('users').doc(user.uid).collection('friends')
+      .where('status','==','accepted').get();
+    if(snap.empty) return;
+
+    /* Nome da mostrare: displayName auth > profile.name localStorage */
+    let senderName = user.displayName || '';
+    try{
+      const ld = JSON.parse(localStorage.getItem(KEY)) || {};
+      senderName = senderName || (ld.profile && ld.profile.name) || ld.username || 'Un tuo amico';
+    } catch(e){}
+
+    const batch = _db.batch();
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+
+    snap.docs.forEach(d => {
+      const friendUid = d.id;
+      const base = { from: user.uid, fromName: senderName, ts, read: false };
+
+      /* notifica sessione completata */
+      batch.set(
+        _db.collection('users').doc(friendUid).collection('notifications').doc(),
+        { ...base, type: 'workout_done', woName: woName || 'Allenamento' }
+      );
+
+      /* una notifica PR per ogni nuovo record */
+      (newPRs || []).forEach(pr => {
+        batch.set(
+          _db.collection('users').doc(friendUid).collection('notifications').doc(),
+          { ...base, type: 'personal_record', exName: pr.exName, weight: pr.weight }
+        );
+      });
+    });
+
+    await batch.commit();
+  } catch(e){ console.warn('[FT] notifyFriends error:', e); }
+}
+
+/* ── Modal permesso notifiche ── */
+function _showNotifPermModal(){
+  const ov = document.getElementById('notifPermOverlay');
+  if(!ov) return;
+  ov.classList.add('open');
+}
+function _npClose(){
+  const ov = document.getElementById('notifPermOverlay');
+  if(ov) ov.classList.remove('open');
+}
+function _npOverlayClick(e){
+  if(e.target === document.getElementById('notifPermOverlay')) _npClose();
+}
+async function _npAllow(){
+  _npClose();
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm === 'granted'){
+      /* Riattiva i promemoria streak se erano configurati */
+      try{
+        const _d = JSON.parse(localStorage.getItem(KEY)) || {};
+        if(_d.notifEnabled && navigator.serviceWorker && navigator.serviceWorker.controller){
+          navigator.serviceWorker.controller.postMessage({
+            type:'SCHEDULE', enabled:true,
+            time: _d.notifTime || '20:00',
+            body: _d.notifBody || '',
+            icon: 'icons/icon-192.png',
+          });
+        }
+      } catch(e){}
+    }
+  } catch(e){ console.warn('[FT] requestPermission error:', e); }
+}
+
+/* ── Hook in endSession: chiamato dopo il salvataggio ── */
+function _afterSessionSaved(woName){
+  /* 1. Notifica amici su Firestore (sessione + PR raccolti) */
+  _notifyFriendsOnSession(woName, _sessionNewPRs);
+
+  /* 2. Chiedi permesso notifiche se non ancora concesso (dopo 1.5s per non rompere l'animazione) */
+  if(typeof Notification !== 'undefined' && Notification.permission === 'default'){
+    setTimeout(_showNotifPermModal, 1500);
+  }
+}
 </script>
 </body>
 </html>

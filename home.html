@@ -518,6 +518,50 @@ html.theme-light #installBanner{
 </head>
 <body>
 
+<!-- ══ SPLASH SCREEN ══ -->
+<div id="ftSplash" style="
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  background:#020810;
+  transition:opacity .35s ease, visibility .35s ease;
+">
+  <style>
+    html.theme-light #ftSplash{ background:#dce8ff; }
+    @keyframes ftPulse{
+      0%,100%{ transform:scale(1);   opacity:.5; }
+      50%{     transform:scale(1.06);opacity:1;  }
+    }
+    @keyframes ftDotBounce{
+      0%,80%,100%{ transform:translateY(0); }
+      40%{         transform:translateY(-8px); }
+    }
+    #ftSplashLogo{
+      font-family:system-ui,-apple-system,sans-serif;
+      font-size:32px;font-weight:700;letter-spacing:-.5px;
+      color:#e0f4ff;
+      animation:ftPulse 2s ease-in-out infinite;
+    }
+    html.theme-light #ftSplashLogo{ color:#0066dd; }
+    #ftSplashLogo span{ color:#00ccff; }
+    html.theme-light #ftSplashLogo span{ color:#0099ff; }
+    .ft-dot{
+      width:7px;height:7px;border-radius:50%;
+      background:#00ccff;opacity:.4;
+      display:inline-block;margin:0 4px;
+      animation:ftDotBounce 1.2s ease-in-out infinite;
+    }
+    html.theme-light .ft-dot{ background:#0066dd; }
+    .ft-dot:nth-child(2){ animation-delay:.15s; }
+    .ft-dot:nth-child(3){ animation-delay:.3s;  }
+  </style>
+  <div id="ftSplashLogo">Fit<span>Track</span></div>
+  <div>
+    <span class="ft-dot"></span>
+    <span class="ft-dot"></span>
+    <span class="ft-dot"></span>
+  </div>
+</div>
+
 <!-- ══ INSTALL BANNER ══ -->
 <div id="installBanner">
   <!-- Android / Chrome -->
@@ -1417,6 +1461,15 @@ function startTodayWorkout(){
     location.href = 'scegli.html';
   }
 }
+
+/* ── Nascondi splash screen ── */
+(function(){
+  const sp = document.getElementById('ftSplash');
+  if(!sp) return;
+  sp.style.opacity    = '0';
+  sp.style.visibility = 'hidden';
+  setTimeout(()=>{ if(sp.parentNode) sp.parentNode.removeChild(sp); }, 380);
+})();
 </script>
 <script src="tutorial.js"></script>
 <script src="widgetLayout.js"></script>
