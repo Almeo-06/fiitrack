@@ -322,6 +322,68 @@ html.theme-light body::before{ display:none; }
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+/* ══ PROFILE COMPARISON SHEET ══ */
+.profile-sheet-overlay{
+  position:fixed; inset:0; z-index:70;
+  background:rgba(0,0,0,.75);
+  display:none; align-items:flex-end; justify-content:center;
+}
+.profile-sheet-overlay.open{ display:flex; }
+.profile-sheet{
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border-top:1px solid rgba(var(--a1-rgb),.3);
+  width:100%; max-width:480px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  max-height:88vh; display:flex; flex-direction:column;
+  animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+.ps-handle{ width:36px; height:4px; border-radius:2px; background:var(--border); margin:12px auto 0; flex-shrink:0; }
+.ps-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.ps-title{ font-size:11px; font-family:var(--mono); color:var(--textm); letter-spacing:2px; text-transform:uppercase; }
+.ps-close{ width:28px; height:28px; border-radius:50%; background:var(--bg3); border:1px solid var(--border); color:var(--textm); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.ps-body{ overflow-y:auto; padding:20px 16px 8px; flex:1; }
+.ps-body::-webkit-scrollbar{ width:0; }
+
+/* riga avatar VS */
+.ps-vs-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.ps-player{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; min-width:0; }
+.ps-av{
+  width:58px; height:58px; border-radius:50%;
+  background:var(--bg3); border:2px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; overflow:hidden; flex-shrink:0;
+}
+.ps-av img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.ps-av.winner{ border-color:var(--a2); box-shadow:0 0 14px rgba(var(--a1-rgb),.35); }
+.ps-uname{ font-size:12px; font-weight:600; color:var(--text); max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; }
+.ps-vs-badge{ font-size:15px; font-weight:700; color:var(--textm); font-family:var(--mono); flex-shrink:0; padding:0 8px; }
+
+/* righe statistiche */
+.ps-stat-row{ margin-bottom:18px; }
+.ps-stat-lbl{ font-size:9px; font-family:var(--mono); color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; text-align:center; margin-bottom:8px; }
+.ps-vs-bar{ height:10px; display:flex; border-radius:5px; overflow:hidden; background:var(--bg3); margin-bottom:7px; }
+.ps-vb-me{ background:linear-gradient(90deg,var(--a1),var(--a2)); transition:width .5s cubic-bezier(.25,1,.3,1); min-width:4px; }
+.ps-vb-friend{ background:linear-gradient(90deg,#00c853,#00e676); transition:width .5s cubic-bezier(.25,1,.3,1); min-width:4px; }
+.ps-vs-vals{ display:flex; justify-content:space-between; align-items:baseline; }
+.ps-vb-val{ font-family:var(--mono); font-size:22px; font-weight:600; color:var(--textm); line-height:1; }
+.ps-vb-val.winner{ color:var(--a2); }
+.ps-vb-val.winner.friend{ color:#00c853; }
+.ps-private{ font-size:10px; color:var(--textm); text-align:center; font-style:italic; padding:4px 0; }
+
+/* footer pulsante sfida */
+.ps-footer{ padding:0 16px 4px; flex-shrink:0; }
+.ps-challenge-btn{
+  width:100%; padding:14px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:13px; color:#fff;
+  font-size:14px; font-weight:500; cursor:pointer;
+  font-family:var(--font); transition:transform .1s;
+}
+.ps-challenge-btn:active{ transform:scale(.98); }
 </style>
 <script>
 (function(){
@@ -486,6 +548,21 @@ html.theme-light body::before{ display:none; }
 
     <button class="primary-btn" id="createChallengeBtn" onclick="createChallenge()">Crea sfida</button>
     <button style="width:100%;padding:12px;background:none;border:none;color:var(--textm);font-family:var(--font);font-size:13px;cursor:pointer;margin-top:8px;" onclick="closeChallengeSheet()">Annulla</button>
+  </div>
+</div>
+
+<!-- PROFILE COMPARISON SHEET -->
+<div class="profile-sheet-overlay" id="profileSheetOverlay" onclick="closeProfileSheet(event)">
+  <div class="profile-sheet">
+    <div class="ps-handle"></div>
+    <div class="ps-header">
+      <div class="ps-title">⚡ Confronto</div>
+      <button class="ps-close" onclick="closeProfileSheet()">✕</button>
+    </div>
+    <div class="ps-body" id="psBody"></div>
+    <div class="ps-footer">
+      <button class="ps-challenge-btn" id="psChallengeBtn">⚔️ Sfida questo amico</button>
+    </div>
   </div>
 </div>
 
@@ -1009,7 +1086,7 @@ async function loadFriends(){
           : `<span>${t}</span>`
       ).join('');
 
-      return `<div class="friend-row" id="friend_${uid}">
+      return `<div class="friend-row" id="friend_${uid}" onclick="openFriendProfile('${uid}')" style="cursor:pointer;">
         <div class="friend-av-wrap">
           <div class="user-av" style="width:46px;height:46px;font-size:22px;">${getAvatarHtml(u)}</div>
           ${onlineDot}
@@ -1022,7 +1099,7 @@ async function loadFriends(){
           <div class="friend-streak ${streakCls}">${streakVal}🔥</div>
           <div class="friend-streak-lbl">streak</div>
         </div>
-        <div class="action-btns">
+        <div class="action-btns" onclick="event.stopPropagation()">
           <button class="challenge-btn" title="Crea sfida" onclick="openChallengeSheet('${uid}')">⚔️</button>
           <button class="remove-btn" title="Rimuovi amico" onclick="removeFriend('${uid}','${u.username}')">🗑</button>
         </div>
@@ -1399,6 +1476,106 @@ function formatDate(str){
 /* ══════════════════════════════════════════════
    RIMUOVI AMICO
 ══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   PROFILO AMICO — CONFRONTO STATS
+══════════════════════════════════════════════ */
+function openFriendProfile(uid){
+  const u = _friendsData[uid];
+  if(!u) return;
+
+  /* ── dati miei (localStorage) ── */
+  const ld = (() => { try{ return JSON.parse(localStorage.getItem('fittrack_v4')) || {}; } catch(e){ return {}; } })();
+  const myProfile = ld.profile || {};
+
+  const myStreak     = ld.streak     || 0;
+  const myBest       = ld.bestStreak || 0;
+  const mySessions   = getSessionsThisWeek(ld.sessions || []);
+
+  /* il mio avatar */
+  let myAvInner;
+  if(myProfile.photoDataUrl)
+    myAvInner = `<img src="${myProfile.photoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+  else
+    myAvInner = getAvatarHtml({ avatarEmoji: myProfile.avatar || _me?.avatarEmoji || '😎', photoURL: myProfile.photoDataUrl || null });
+
+  /* ── dati amico (Firestore) ── */
+  const priv       = u.privacy || {};
+  const fStreak    = priv.streak           !== false ? (u.streak           || 0) : null;
+  const fSessions  = priv.sessionsThisWeek !== false ? (u.sessionsThisWeek || 0) : null;
+  const fBest      = priv.bestStreak       !== false ? (u.bestStreak       || u.streak || 0) : null;
+
+  /* ── determina vincitori ── */
+  function winnerCls(myVal, fVal, isNull){
+    if(isNull) return ['', ''];
+    if(myVal > fVal) return ['winner', ''];
+    if(fVal > myVal) return ['', 'winner'];
+    return ['tie', 'tie'];
+  }
+  const [wStrM, wStrF]  = winnerCls(myStreak,   fStreak,   fStreak === null);
+  const [wSessM, wSessF]= winnerCls(mySessions, fSessions, fSessions === null);
+  const [wBestM, wBestF]= winnerCls(myBest,     fBest,     fBest === null);
+
+  /* ── conta punti per "chi vince" globale (avatar border) ── */
+  const myPts = [wStrM, wSessM, wBestM].filter(c => c === 'winner').length;
+  const fPts  = [wStrF, wSessF, wBestF].filter(c => c === 'winner').length;
+
+  /* ── render riga statistica ── */
+  function statRow(label, myVal, fVal, isNull){
+    if(isNull) return `<div class="ps-stat-row">
+      <div class="ps-stat-lbl">${label}</div>
+      <div class="ps-private">Dati privati 🔒</div>
+    </div>`;
+    const total  = (myVal + fVal) || 1;
+    const myPct  = Math.max(4, Math.round(myVal / total * 100));
+    const fPct   = Math.max(4, 100 - myPct);
+    const [mCls, fCls] = winnerCls(myVal, fVal, false);
+    return `<div class="ps-stat-row">
+      <div class="ps-stat-lbl">${label}</div>
+      <div class="ps-vs-bar">
+        <div class="ps-vb-me" style="width:${myPct}%"></div>
+        <div class="ps-vb-friend" style="width:${fPct}%"></div>
+      </div>
+      <div class="ps-vs-vals">
+        <span class="ps-vb-val ${mCls}">${myVal}</span>
+        <span class="ps-vb-val ${fCls} friend">${fVal}</span>
+      </div>
+    </div>`;
+  }
+
+  /* ── costruisce HTML ── */
+  const myName = _me?.username ? '@' + _me.username : 'Tu';
+  const fName  = '@' + u.username;
+
+  document.getElementById('psBody').innerHTML = `
+    <div class="ps-vs-row">
+      <div class="ps-player">
+        <div class="ps-av ${myPts > fPts ? 'winner' : ''}">${myAvInner}</div>
+        <div class="ps-uname">${myName}</div>
+      </div>
+      <div class="ps-vs-badge">VS</div>
+      <div class="ps-player">
+        <div class="ps-av ${fPts > myPts ? 'winner' : ''}">${getAvatarHtml(u)}</div>
+        <div class="ps-uname">${fName}</div>
+      </div>
+    </div>
+    ${statRow('🔥 Streak attuale', myStreak, fStreak ?? 0, fStreak === null)}
+    ${statRow('📊 Sessioni questa settimana', mySessions, fSessions ?? 0, fSessions === null)}
+    ${statRow('🏅 Streak record', myBest, fBest ?? 0, fBest === null)}
+  `;
+
+  document.getElementById('psChallengeBtn').onclick = () => {
+    closeProfileSheet();
+    openChallengeSheet(uid);
+  };
+
+  document.getElementById('profileSheetOverlay').classList.add('open');
+}
+
+function closeProfileSheet(e){
+  if(e && e.target !== document.getElementById('profileSheetOverlay') && !e.target.classList.contains('ps-close')) return;
+  document.getElementById('profileSheetOverlay').classList.remove('open');
+}
+
 async function removeFriend(friendUid, friendUsername){
   if(!confirm(`Rimuovere @${friendUsername} dagli amici?`)) return;
   if(!_me) return;
