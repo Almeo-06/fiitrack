@@ -9,7 +9,7 @@
    - Risorse statiche (icone, manifest): cache-first
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-04-07-1'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-07-2'; /* bump per forzare aggiornamento */
 
 const CACHE_NAME   = 'fittrack-static-' + SW_VERSION;
 const STATIC_FILES = [

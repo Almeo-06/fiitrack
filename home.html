@@ -364,27 +364,43 @@ html.theme-light .rstat{
   border-color:rgba(0,102,221,.12) !important;
 }
 
-/* ── righe piano settimanale — blu vero ── */
-html.theme-light .day-row{
+/* ── righe piano settimanale — light theme ── */
+
+/* Default: sfondo bianco, testo scuro (giorni non completati) */
+html.theme-light .day-row:not(.rest){
+  background:#ffffff !important;
+  border-color:rgba(0,102,221,.15) !important;
+  box-shadow:0 1px 8px rgba(0,102,221,.07) !important;
+}
+html.theme-light .day-row:not(.rest) .day-name{ color:var(--text) !important; }
+html.theme-light .day-row:not(.rest) .day-name-oggi{ color:var(--text) !important; }
+html.theme-light .day-row:not(.rest) .day-sub{ color:var(--textm) !important; }
+html.theme-light .day-row:not(.rest) .day-work{ color:var(--textm) !important; }
+html.theme-light .day-row:not(.rest) .oggi-tag{ color:var(--a1) !important; }
+html.theme-light .day-row:not(.rest) .oggi-swipe-hint{ color:var(--textm) !important; }
+html.theme-light .day-row:not(.rest) .fatto-hint{ color:var(--textm) !important; }
+
+/* Oggi non ancora fatto: tinta azzurra leggera */
+html.theme-light .day-row.today:not(.rest):not(.status-fatto){
+  background:#e8f2ff !important;
+  border-color:rgba(0,102,221,.3) !important;
+  box-shadow:0 2px 12px rgba(0,102,221,.12) !important;
+}
+html.theme-light .day-row.today:not(.rest):not(.status-fatto) .oggi-swipe-hint{
+  color:var(--a1) !important;
+}
+
+/* FATTO: sfondo blu, testo bianco */
+html.theme-light .day-row.status-fatto:not(.rest){
   background:#0066dd !important;
   border-color:#0055cc !important;
   box-shadow:0 3px 12px rgba(0,80,200,.22) !important;
 }
-html.theme-light .day-row .day-name{ color:#ffffff !important; }
-html.theme-light .day-row .day-name-oggi{ color:#ffffff !important; }
-html.theme-light .day-row .day-sub{ color:rgba(255,255,255,.75) !important; }
-html.theme-light .day-row .day-work{ color:rgba(255,255,255,.75) !important; }
-html.theme-light .day-row .oggi-tag{ color:rgba(255,255,255,.85) !important; }
-html.theme-light .day-row .oggi-swipe-hint{ color:rgba(255,255,255,.7) !important; }
+html.theme-light .day-row.status-fatto:not(.rest) .day-name{ color:#ffffff !important; }
+html.theme-light .day-row.status-fatto:not(.rest) .day-sub{ color:rgba(255,255,255,.75) !important; }
+html.theme-light .day-row.status-fatto:not(.rest) .fatto-hint{ color:rgba(255,255,255,.8) !important; }
 
-/* giorno OGGI — blu più scuro + pulse invariata */
-html.theme-light .day-row.today{
-  background:#004fc4 !important;
-  border-color:#003fa0 !important;
-  box-shadow:0 4px 18px rgba(0,60,180,.35) !important;
-}
-
-/* giorno RIPOSO — rimane chiaro */
+/* RIPOSO: rimane chiaro invariato */
 html.theme-light .day-row.rest{
   background:#e8f1ff !important;
   border-color:rgba(0,102,221,.18) !important;
@@ -393,30 +409,34 @@ html.theme-light .day-row.rest{
 html.theme-light .day-row.rest .day-name{ color:var(--text) !important; }
 html.theme-light .day-row.rest .day-sub{ color:var(--textm) !important; }
 
-/* badge su sfondo blu */
-html.theme-light .day-row:not(.rest) .b-oggi{
-  background:rgba(255,255,255,.18) !important;
-  color:#ffffff !important; border-color:rgba(255,255,255,.3) !important;
+/* Badge su sfondo bianco (stati non-fatto) */
+html.theme-light .day-row:not(.rest):not(.status-fatto) .b-oggi{
+  background:rgba(0,102,221,.1) !important;
+  color:var(--a1) !important; border-color:rgba(0,102,221,.2) !important;
 }
-html.theme-light .day-row:not(.rest) .b-fatto{
-  background:rgba(0,230,118,.18) !important;
-  color:#00e676 !important; border-color:rgba(0,230,118,.35) !important;
+html.theme-light .day-row:not(.rest):not(.status-fatto) .b-saltato{
+  background:rgba(255,68,85,.1) !important;
+  color:#ff4455 !important; border-color:rgba(255,68,85,.2) !important;
 }
-html.theme-light .day-row:not(.rest) .b-saltato{
-  background:rgba(255,100,100,.18) !important;
-  color:#ff8888 !important; border-color:rgba(255,100,100,.35) !important;
+html.theme-light .day-row:not(.rest):not(.status-fatto) .b-arr{
+  background:rgba(0,102,221,.06) !important;
+  color:var(--textm) !important; border-color:rgba(0,102,221,.1) !important;
 }
-html.theme-light .day-row:not(.rest) .b-arr{
-  background:rgba(255,255,255,.12) !important;
-  color:rgba(255,255,255,.8) !important; border-color:rgba(255,255,255,.2) !important;
+html.theme-light .day-row:not(.rest):not(.status-fatto) .b-riposo{
+  background:rgba(0,102,221,.06) !important;
+  color:var(--textm) !important; border-color:rgba(0,102,221,.1) !important;
 }
-html.theme-light .day-row:not(.rest) .b-riposo{
-  background:rgba(255,255,255,.12) !important;
-  color:rgba(255,255,255,.7) !important; border-color:rgba(255,255,255,.2) !important;
+
+/* Badge su sfondo blu (fatto) */
+html.theme-light .day-row.status-fatto:not(.rest) .b-fatto{
+  background:rgba(0,230,118,.2) !important;
+  color:#00e676 !important; border-color:rgba(0,230,118,.4) !important;
 }
 
 /* tab bar light — in shared.css */
 html.theme-light .drawer-menu{ background:var(--bg2) !important; }
+html.theme-light #drawer{ background:var(--bg2) !important; }
+html.theme-light #pageB{ background:var(--bg2) !important; }
 html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
 html.theme-light .edot{ background:#dbeeff !important; }
 
@@ -831,7 +851,7 @@ document.getElementById('weekPlan').innerHTML=PIANO.map((d,i)=>{
     : `<div class="day-name">${d.label}${isOggi ? ` <span class="oggi-tag">● oggi</span>` : ''}</div>
        <div class="day-sub">${sub}</div>${bar}`;
 
-  return `<div class="day-row ${d.type}${isOggi?' today':''}" id="row_${i}" data-idx="${i}" style="${grab}">
+  return `<div class="day-row ${d.type}${isOggi?' today':''} status-${st}" id="row_${i}" data-idx="${i}" style="${grab}">
     <div class="day-icon" style="${isOggi?'font-size:22px;':''}">${d.icon}</div>
     <div class="day-info">${infoHtml}</div>
     <span class="day-badge ${bc}">${bt}</span>
