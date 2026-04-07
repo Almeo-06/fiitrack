@@ -516,6 +516,70 @@ html.theme-light .streak-hero::before{ display:none; }
   .start-btn::after { animation: none; }
   .cal-day.today { animation: none; box-shadow: none; }
 }
+
+/* ── TOGGLE VISTA CALENDARIO ── */
+.cal-view-toggle{
+  display:flex; background:var(--bg3); border-radius:10px;
+  padding:3px; margin-bottom:14px; gap:2px;
+}
+.cal-vtoggle{
+  flex:1; padding:7px 10px; border-radius:8px;
+  background:transparent; border:none; color:var(--textm);
+  font-family:var(--font); font-size:12px; font-weight:500;
+  cursor:pointer; transition:all .2s; white-space:nowrap;
+}
+.cal-vtoggle.active{
+  background:var(--bg2); color:var(--text);
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+
+/* ── CALENDARIO ANNUALE ── */
+.annual-year-lbl{
+  font-family:var(--mono); font-size:13px; font-weight:600;
+  color:var(--a2); letter-spacing:1px;
+  margin:4px 0 10px;
+}
+.annual-year-lbl:not(:first-child){ margin-top:20px; }
+.annual-months-grid{
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:14px 8px; margin-bottom:4px;
+}
+.annual-month-block{
+  display:flex; flex-direction:column; gap:4px;
+  border-radius:8px; padding:4px 3px;
+  transition:background .15s; cursor:pointer;
+}
+.annual-month-block:active{ background:rgba(var(--a1-rgb),.08); }
+.annual-month-name{
+  font-size:9px; color:var(--textm);
+  font-family:var(--mono); letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.annual-mini-grid{
+  display:grid; grid-template-columns:repeat(7, 1fr);
+  gap:2px;
+}
+.annual-dot{
+  aspect-ratio:1; border-radius:2px; min-width:0;
+  background:var(--bg3); border:1px solid transparent;
+}
+.annual-dot.slot{ background:transparent; border-color:transparent; }
+.annual-dot.done{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;
+}
+.annual-dot.done.run{
+  background:linear-gradient(135deg,#00aa66,#00dd88);
+}
+.annual-dot.today{
+  background:transparent; border-color:var(--a1);
+}
+.annual-dot.today-done{
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:rgba(255,255,255,.6);
+  box-shadow:0 0 4px rgba(var(--a1-rgb),.5);
+}
+.annual-dot.future{ opacity:.18; }
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
@@ -547,22 +611,34 @@ html.theme-light .streak-hero::before{ display:none; }
 
   <!-- calendario -->
   <div class="cal-card" id="wgt-cal">
-    <div class="cal-nav">
-      <button class="cal-arrow" onclick="prevMonth()">‹</button>
-      <div class="cal-month-lbl" id="calMonth"></div>
-      <button class="cal-arrow" onclick="nextMonth()">›</button>
+    <!-- toggle mensile / annuale -->
+    <div class="cal-view-toggle">
+      <button id="toggleMonthly" class="cal-vtoggle active" onclick="setCalView('monthly')">📅 Mensile</button>
+      <button id="toggleAnnual"  class="cal-vtoggle"        onclick="setCalView('annual')">📊 Annuale</button>
     </div>
-    <div class="cal-weekdays">
-      <div class="cal-wd">Lu</div><div class="cal-wd">Ma</div><div class="cal-wd">Me</div>
-      <div class="cal-wd">Gi</div><div class="cal-wd">Ve</div><div class="cal-wd">Sa</div>
-      <div class="cal-wd">Do</div>
+
+    <!-- vista mensile -->
+    <div id="calMonthlyView">
+      <div class="cal-nav">
+        <button class="cal-arrow" onclick="prevMonth()">‹</button>
+        <div class="cal-month-lbl" id="calMonth"></div>
+        <button class="cal-arrow" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-wd">Lu</div><div class="cal-wd">Ma</div><div class="cal-wd">Me</div>
+        <div class="cal-wd">Gi</div><div class="cal-wd">Ve</div><div class="cal-wd">Sa</div>
+        <div class="cal-wd">Do</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <div class="leg-item"><div class="leg-dot done"></div>Allenato</div>
+        <div class="leg-item"><div class="leg-dot today"></div>Oggi</div>
+        <div class="leg-item"><div class="leg-dot skipped"></div>Saltato</div>
+      </div>
     </div>
-    <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-legend">
-      <div class="leg-item"><div class="leg-dot done"></div>Allenato</div>
-      <div class="leg-item"><div class="leg-dot today"></div>Oggi</div>
-      <div class="leg-item"><div class="leg-dot skipped"></div>Saltato</div>
-    </div>
+
+    <!-- vista annuale -->
+    <div id="annualView" style="display:none;"></div>
   </div>
 
   <!-- statistiche mensili -->
@@ -810,6 +886,97 @@ function renderMonthStats(){
       ${c.delta}
       ${c.hint ? `<div class="ms-mode-hint">${c.hint}</div>` : ''}
     </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   VISTA ANNUALE
+══════════════════════════════════════════ */
+const MONTHS_MINI = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+let _calView = 'monthly';
+
+function setCalView(v){
+  _calView = v;
+  const monthly = document.getElementById('calMonthlyView');
+  const annual  = document.getElementById('annualView');
+  const btnM    = document.getElementById('toggleMonthly');
+  const btnA    = document.getElementById('toggleAnnual');
+  if(v === 'monthly'){
+    monthly.style.display = '';
+    annual.style.display  = 'none';
+    btnM.classList.add('active');
+    btnA.classList.remove('active');
+  } else {
+    monthly.style.display = 'none';
+    annual.style.display  = '';
+    btnM.classList.remove('active');
+    btnA.classList.add('active');
+    renderAnnualView();
+  }
+}
+
+function renderAnnualMonth(y, m){
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const firstDay    = new Date(y, m, 1).getDay();
+  const offset      = (firstDay + 6) % 7;
+  const mm          = String(m + 1).padStart(2, '0');
+
+  let dots = '';
+  for(let i = 0; i < offset; i++)
+    dots += '<div class="annual-dot slot"></div>';
+
+  for(let d = 1; d <= daysInMonth; d++){
+    const dd      = String(d).padStart(2, '0');
+    const dateStr = `${y}-${mm}-${dd}`;
+    const dayDate = new Date(y, m, d);
+    const isToday = dateStr === todayStr;
+    const isDone  = doneDates.has(dateStr);
+    const isFuture= dayDate > today;
+    const isRun   = dateTypeMap[dateStr] === 'run';
+
+    let cls = 'annual-dot';
+    if(isToday && isDone)  cls += ' today-done' + (isRun ? ' run' : '');
+    else if(isToday)       cls += ' today';
+    else if(isDone)        cls += ' done'        + (isRun ? ' run' : '');
+    else if(isFuture)      cls += ' future';
+
+    dots += `<div class="${cls}"></div>`;
+  }
+
+  return `<div class="annual-month-block" onclick="goToMonth(${y},${m})">
+    <div class="annual-month-name">${MONTHS_MINI[m]}</div>
+    <div class="annual-mini-grid">${dots}</div>
+  </div>`;
+}
+
+function renderAnnualView(){
+  const container = document.getElementById('annualView');
+  const sessionYears = data.sessions
+    .map(s => parseInt(s.date?.slice(0, 4)))
+    .filter(n => !isNaN(n));
+  const minYear = sessionYears.length ? Math.min(...sessionYears) : today.getFullYear();
+  const maxYear = today.getFullYear();
+
+  let html = '';
+  for(let y = minYear; y <= maxYear; y++){
+    html += `<div class="annual-year-lbl">${y}</div>`;
+    html += '<div class="annual-months-grid">';
+    for(let m = 0; m < 12; m++){
+      if(y === maxYear && m > today.getMonth()) break;
+      html += renderAnnualMonth(y, m);
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function goToMonth(y, m){
+  curYear  = y;
+  curMonth = m;
+  setCalView('monthly');
+  renderCalendar();
+  renderMonthStats();
+  document.getElementById('wgt-cal').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 renderCalendar();

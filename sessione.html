@@ -1158,6 +1158,22 @@ let curEx = 0;
 let afterExDone = false;
 let sessSec = 0, sessInt = null;
 let recSec = 0, recMax = 90, recInt = null;
+
+/* ── Wake Lock — schermo sempre acceso durante la sessione ── */
+let _wakeLock = null;
+async function _acquireWakeLock(){
+  if(!('wakeLock' in navigator)) return;
+  try{
+    _wakeLock = await navigator.wakeLock.request('screen');
+  } catch(e){ /* browser non supporta o permesso negato */ }
+}
+function _releaseWakeLock(){
+  if(_wakeLock){ _wakeLock.release(); _wakeLock = null; }
+}
+/* Re-acquisisce se la pagina torna in foreground (es. dopo notifica) */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && sessInt !== null) _acquireWakeLock();
+});
 const CIRC = 2*Math.PI*88;
 
 /* ── Cache elementi DOM — evita 15+ getElementById per render ── */
@@ -1404,6 +1420,7 @@ function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60
 /* ── Timer sessione ── */
 function startSessTimer(){
   clearInterval(sessInt);
+  _acquireWakeLock();
   sessInt = setInterval(()=>{
     sessSec++;
     const el = document.getElementById('sessTimer');
@@ -1631,6 +1648,7 @@ function skipRec(){
 /* ══ FINE SESSIONE → SALVA E MOSTRA RIEPILOGO ══ */
 function endSession(){
   clearInterval(sessInt); clearInterval(recInt);
+  _releaseWakeLock();
   haptic([40, 20, 40, 20, 80]); /* 8. vibrazione celebrazione fine allenamento */
 
   /* 1. Salva in localStorage e aggiorna streak (salta se è il workout tutorial) */
@@ -1859,9 +1877,18 @@ function saveKmNow(val){
 }
 
 function goHome() {
-  /* Garantisce che i km siano scritti anche se l'utente non ha tolto il focus dall'input */
+  /* Salva i km in modo sincrono prima di navigare —
+     saveKmNow usa un debounce che verrebbe cancellato da pagehide */
   const _kmEl = document.getElementById('kmInput');
-  if(_kmEl && _kmEl.value) saveKmNow(_kmEl.value);
+  const _kmVal = parseFloat(_kmEl ? _kmEl.value : '');
+  if(!isNaN(_kmVal) && _kmVal > 0){
+    clearTimeout(_kmDebounce);
+    try{
+      const _d = JSON.parse(localStorage.getItem(KEY)) || {};
+      if(_d.sessions && _d.sessions.length > 0) _d.sessions[0].km = _kmVal;
+      localStorage.setItem(KEY, JSON.stringify(_d));
+    } catch(e){ console.warn('goHome km save error', e); }
+  }
   const isRecord = sessionStorage.getItem('ft_new_streak_record') === '1';
   sessionStorage.removeItem('ft_new_streak_record');
   location.href = isRecord ? 'home.html?newRecord=1' : 'home.html';
@@ -2099,6 +2126,7 @@ window.addEventListener('pagehide', ()=>{
   clearTimeout(prBannerTimer);
   clearTimeout(_noteDebounce);
   clearTimeout(_kmDebounce);
+  _releaseWakeLock();
 });
 
 /* ── START ── */
