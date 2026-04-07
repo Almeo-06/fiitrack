@@ -10,12 +10,17 @@
     const h = Math.ceil(tb.getBoundingClientRect().height);
     if(h > 0) document.documentElement.style.setProperty('--tab-bar-h', h + 'px');
   }
-  /* Prima chiamata immediata */
   _syncTabH();
-  /* Aggiorna se la tab bar cambia dimensione (es. rotazione schermo) */
-  try{ new ResizeObserver(_syncTabH).observe(document.documentElement); }catch(e){}
+  /* Osserva direttamente la tab bar per cambiamenti di dimensione */
+  try{
+    const tb = document.querySelector('.tab-bar');
+    if(tb) new ResizeObserver(_syncTabH).observe(tb);
+  }catch(e){}
+  /* Reagisce al cambio tema (aggiunta/rimozione di html.theme-light) */
+  try{
+    new MutationObserver(_syncTabH).observe(document.documentElement, { attributes:true, attributeFilter:['class'] });
+  }catch(e){}
   window.addEventListener('resize', _syncTabH, { passive:true });
-  /* Sicurezza: riesegui dopo rendering completo */
   window.addEventListener('load', _syncTabH, { once:true });
 })();
 
