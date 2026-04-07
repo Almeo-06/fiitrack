@@ -1,4 +1,25 @@
 /* ══════════════════════════════════════════════
+   Tab bar height sync — imposta --tab-bar-h su :root
+   con l'altezza reale della tab bar misurata dal DOM.
+   Funziona su qualsiasi dispositivo / safe area.
+══════════════════════════════════════════════ */
+(function(){
+  function _syncTabH(){
+    const tb = document.querySelector('.tab-bar');
+    if(!tb) return;
+    const h = Math.ceil(tb.getBoundingClientRect().height);
+    if(h > 0) document.documentElement.style.setProperty('--tab-bar-h', h + 'px');
+  }
+  /* Prima chiamata immediata */
+  _syncTabH();
+  /* Aggiorna se la tab bar cambia dimensione (es. rotazione schermo) */
+  try{ new ResizeObserver(_syncTabH).observe(document.documentElement); }catch(e){}
+  window.addEventListener('resize', _syncTabH, { passive:true });
+  /* Sicurezza: riesegui dopo rendering completo */
+  window.addEventListener('load', _syncTabH, { once:true });
+})();
+
+/* ══════════════════════════════════════════════
    widgetLayout.js — Riordino widget per pagina
    Include in: home, registra, peso, profilo, sfide
 ══════════════════════════════════════════════ */

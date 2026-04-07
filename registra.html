@@ -239,6 +239,18 @@ body::before{
   background:var(--bg2); border:1px solid var(--border);
   border-radius:16px; padding:16px; margin-bottom:14px;
 }
+
+/* ── GRAFICO PR ── */
+.pr-section{ background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:14px; }
+.pr-section-title{ font-size:10px; font-weight:500; color:var(--textm); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+.pr-ex-select{ width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:var(--mono); font-size:12px; padding:8px 12px; outline:none; margin-bottom:14px; cursor:pointer; }
+.pr-chart-wrap{ position:relative; height:120px; display:flex; align-items:flex-end; gap:6px; }
+.pr-bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+.pr-bar-outer{ width:100%; border-radius:5px 5px 0 0; background:var(--bg3); position:relative; display:flex; align-items:flex-end; transition:height .4s cubic-bezier(.25,1,.3,1); }
+.pr-bar-fill{ width:100%; border-radius:5px 5px 0 0; background:linear-gradient(180deg,var(--a2),var(--a1)); min-height:4px; transition:height .4s cubic-bezier(.25,1,.3,1); }
+.pr-bar-val{ font-family:var(--mono); font-size:9px; color:var(--a2); font-weight:500; position:absolute; top:-16px; left:50%; transform:translateX(-50%); white-space:nowrap; }
+.pr-bar-date{ font-family:var(--mono); font-size:8px; color:var(--textm); text-align:center; margin-top:4px; white-space:nowrap; overflow:hidden; width:100%; }
+.pr-empty{ font-size:12px; color:var(--textm); text-align:center; padding:16px 0; }
 .sess-row{
   display:flex; align-items:center; gap:12px;
   padding:10px 0; border-bottom:1px solid var(--border);
@@ -587,6 +599,8 @@ html.theme-light .streak-hero::before{ display:none; }
 </head>
 <body>
 
+<div id="ftSplash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:#020810;transition:opacity .35s ease,visibility .35s ease;"><style>html.theme-light #ftSplash{background:#dce8ff;}@keyframes ftPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.06);opacity:1;}}@keyframes ftDotBounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}#ftSplashLogo{font-family:system-ui,-apple-system,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.5px;color:#e0f4ff;animation:ftPulse 2s ease-in-out infinite;}html.theme-light #ftSplashLogo{color:#0066dd;}#ftSplashLogo span{color:#00ccff;}html.theme-light #ftSplashLogo span{color:#0099ff;}.ft-dot{width:7px;height:7px;border-radius:50%;background:#00ccff;opacity:.4;display:inline-block;margin:0 4px;animation:ftDotBounce 1.2s ease-in-out infinite;}html.theme-light .ft-dot{background:#0066dd;}.ft-dot:nth-child(2){animation-delay:.15s;}.ft-dot:nth-child(3){animation-delay:.3s;}</style><div id="ftSplashLogo">Fit<span>Track</span></div><div><span class="ft-dot"></span><span class="ft-dot"></span><span class="ft-dot"></span></div></div>
+
 <div class="scroll-area">
 
   <!-- header -->
@@ -662,6 +676,18 @@ html.theme-light .streak-hero::before{ display:none; }
     <div id="storicoSessWrap" style="overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.4,0,.2,1);">
       <div style="padding-top:12px;" id="storicoSessList"></div>
     </div>
+  </div>
+
+  <!-- grafico PR -->
+  <div class="pr-section" id="prSection">
+    <div class="pr-section-title">
+      <div style="width:5px;height:5px;border-radius:50%;background:#ffaa00;flex-shrink:0;"></div>
+      Progressi record personali
+    </div>
+    <select class="pr-ex-select" id="prExSelect" onchange="renderPRChart()">
+      <option value="">— Scegli esercizio —</option>
+    </select>
+    <div id="prChartArea"><div class="pr-empty">Seleziona un esercizio per vedere il grafico</div></div>
   </div>
 
   </div><!-- /wgt-container -->
@@ -1735,6 +1761,93 @@ function navigateTo(url, toIndex){
   const cls = toIndex > PAGE_INDEX ? 'slide-out-left' : 'slide-out-right';
   if(sa){ sa.classList.add(cls); }
   setTimeout(()=>{ location.href = url; }, 230);
+}
+
+(function(){ const sp=document.getElementById('ftSplash'); if(!sp)return; sp.style.opacity='0'; sp.style.visibility='hidden'; setTimeout(()=>{ if(sp.parentNode)sp.parentNode.removeChild(sp); },380); })();
+
+/* ══════════════════════════════════════════════
+   GRAFICO PROGRESSI PR
+══════════════════════════════════════════════ */
+(function initPRChart(){
+  const data = _appData;
+  const sessions = (data.sessions || []).filter(s => s.exsCompleted && s.exsCompleted.length);
+
+  /* Raccoglie storico peso massimo per esercizio da tutte le sessioni guidate */
+  const history = {}; /* { exName: [{date, weight}] } */
+  sessions.forEach(s => {
+    const dateStr = s.date;
+    (s.exsCompleted || []).forEach(ex => {
+      if(!ex.name) return;
+      /* massimo peso tra tutte le serie di quell'esercizio in quella sessione */
+      let maxKg = 0;
+      (ex.sets_data || []).forEach(set => {
+        const kg = parseFloat(set.kg);
+        if(!isNaN(kg) && kg > maxKg) maxKg = kg;
+      });
+      if(maxKg <= 0 && ex.weight > 0) maxKg = ex.weight; /* fallback al campo weight */
+      if(maxKg <= 0) return;
+      if(!history[ex.name]) history[ex.name] = [];
+      const existing = history[ex.name].find(e => e.date === dateStr);
+      if(existing){ if(maxKg > existing.weight) existing.weight = maxKg; }
+      else history[ex.name].push({ date: dateStr, weight: maxKg });
+    });
+  });
+
+  /* Fallback: usa personalRecords come punto di partenza se non ci sono sessioni dettagliate */
+  const prs = data.personalRecords || {};
+  Object.keys(prs).forEach(name => {
+    if(!history[name] && prs[name].maxWeight && prs[name].date){
+      history[name] = [{ date: prs[name].date, weight: prs[name].maxWeight }];
+    }
+  });
+
+  const exNames = Object.keys(history).sort();
+  const sel = document.getElementById('prExSelect');
+  if(!sel) return;
+
+  exNames.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    sel.appendChild(opt);
+  });
+
+  /* Se c'è un solo esercizio, selezionalo subito */
+  if(exNames.length === 1){ sel.value = exNames[0]; renderPRChart(); }
+
+  window._prHistory = history;
+})();
+
+function renderPRChart(){
+  const sel = document.getElementById('prExSelect');
+  const area = document.getElementById('prChartArea');
+  if(!sel || !area) return;
+
+  const exName = sel.value;
+  if(!exName){ area.innerHTML = '<div class="pr-empty">Seleziona un esercizio per vedere il grafico</div>'; return; }
+
+  const points = (window._prHistory || {})[exName];
+  if(!points || points.length === 0){ area.innerHTML = '<div class="pr-empty">Nessun dato per questo esercizio</div>'; return; }
+
+  /* Ordina per data, prendi max 8 punti */
+  const sorted = [...points].sort((a,b) => a.date.localeCompare(b.date)).slice(-8);
+  const maxW = Math.max(...sorted.map(p => p.weight));
+  const CHART_H = 90; /* px, area disegno barre */
+
+  const cols = sorted.map(p => {
+    const pct   = maxW > 0 ? Math.round(p.weight / maxW * 100) : 100;
+    const barH  = Math.max(4, Math.round(CHART_H * pct / 100));
+    const isMax = p.weight === maxW;
+    const label = p.date.slice(5).replace('-','/'); /* MM/DD */
+    return `<div class="pr-bar-col">
+      <div class="pr-bar-outer" style="height:${CHART_H}px;">
+        <div class="pr-bar-fill" style="height:${barH}px;${isMax ? 'background:linear-gradient(180deg,#ffaa00,#ff6600);' : ''}"></div>
+        <span class="pr-bar-val" style="${isMax ? 'color:#ffaa00;' : ''}">${p.weight}kg</span>
+      </div>
+      <div class="pr-bar-date">${label}</div>
+    </div>`;
+  }).join('');
+
+  area.innerHTML = `<div class="pr-chart-wrap">${cols}</div>`;
 }
 </script>
 <script src="tutorial.js"></script>

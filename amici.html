@@ -19,6 +19,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; overscroll-behavior:none; padding-top:env(safe-area-inset-top,0px); }
+@keyframes slideInFromRight{ from{opacity:0;transform:translateX(48px);} to{opacity:1;transform:translateX(0);} }
+@keyframes slideInFromLeft{  from{opacity:0;transform:translateX(-48px);} to{opacity:1;transform:translateX(0);} }
+@keyframes slideOutToLeft{   from{opacity:1;transform:translateX(0);}  to{opacity:0;transform:translateX(-48px);} }
+@keyframes slideOutToRight{  from{opacity:1;transform:translateX(0);}  to{opacity:0;transform:translateX(48px);} }
+.scroll-area.slide-in-right { animation:slideInFromRight .28s cubic-bezier(.25,1,.3,1) both; }
+.scroll-area.slide-in-left  { animation:slideInFromLeft  .28s cubic-bezier(.25,1,.3,1) both; }
+.scroll-area.slide-out-left { animation:slideOutToLeft   .22s cubic-bezier(.4,0,.6,1) both; }
+.scroll-area.slide-out-right{ animation:slideOutToRight  .22s cubic-bezier(.4,0,.6,1) both; }
 
 .scroll-area{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px 16px calc(80px + env(safe-area-inset-bottom, 0px)); position:relative; z-index:1; }
 .scroll-area::-webkit-scrollbar{ width:0; }
@@ -418,6 +426,8 @@ html.theme-light body::before{ display:none; }
 </head>
 <body>
 
+<div id="ftSplash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:#020810;transition:opacity .35s ease,visibility .35s ease;"><style>html.theme-light #ftSplash{background:#dce8ff;}@keyframes ftPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.06);opacity:1;}}@keyframes ftDotBounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}#ftSplashLogo{font-family:system-ui,-apple-system,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.5px;color:#e0f4ff;animation:ftPulse 2s ease-in-out infinite;}html.theme-light #ftSplashLogo{color:#0066dd;}#ftSplashLogo span{color:#00ccff;}html.theme-light #ftSplashLogo span{color:#0099ff;}.ft-dot{width:7px;height:7px;border-radius:50%;background:#00ccff;opacity:.4;display:inline-block;margin:0 4px;animation:ftDotBounce 1.2s ease-in-out infinite;}html.theme-light .ft-dot{background:#0066dd;}.ft-dot:nth-child(2){animation-delay:.15s;}.ft-dot:nth-child(3){animation-delay:.3s;}</style><div id="ftSplashLogo">Fit<span>Track</span></div><div><span class="ft-dot"></span><span class="ft-dot"></span><span class="ft-dot"></span></div></div>
+
 <div class="scroll-area">
   <!-- HEADER -->
   <div class="header">
@@ -616,7 +626,25 @@ let _cMetric = 'sessions';
 /* ══════════════════════════════════════════════
    NAVIGAZIONE (stessa logica delle altre pagine)
 ══════════════════════════════════════════════ */
-function navigateTo(url){ location.href = url; }
+const PAGE_INDEX = 3; // amici.html = indice 3
+(function(){
+  const sa = document.querySelector('.scroll-area');
+  if(!sa) return;
+  const from = parseInt(sessionStorage.getItem('ft_from_tab') ?? PAGE_INDEX);
+  sessionStorage.removeItem('ft_from_tab');
+  if(from < PAGE_INDEX) sa.classList.add('slide-in-right');
+  else if(from > PAGE_INDEX) sa.classList.add('slide-in-left');
+  else sa.classList.add('slide-in-right');
+})();
+
+function navigateTo(url, toIndex){
+  if(toIndex === PAGE_INDEX) return;
+  const sa = document.querySelector('.scroll-area');
+  sessionStorage.setItem('ft_from_tab', PAGE_INDEX);
+  const cls = toIndex > PAGE_INDEX ? 'slide-out-left' : 'slide-out-right';
+  if(sa){ sa.classList.add(cls); }
+  setTimeout(()=>{ location.href = url; }, 230);
+}
 
 /* ══════════════════════════════════════════════
    TOAST
@@ -631,6 +659,9 @@ function showToast(msg){
    AUTH STATE
 ══════════════════════════════════════════════ */
 _auth.onAuthStateChanged(async function(user){
+  /* nascondi splash al primo stato auth (loggato o no) */
+  (function(){ const sp=document.getElementById('ftSplash'); if(!sp)return; sp.style.opacity='0'; sp.style.visibility='hidden'; setTimeout(()=>{ if(sp.parentNode)sp.parentNode.removeChild(sp); },380); })();
+
   if(!user){
     document.getElementById('stateLogin').style.display = '';
     document.getElementById('stateMain').style.display  = 'none';
@@ -1728,5 +1759,9 @@ async function removeFriend(friendUid, friendUsername){
 }
 </script>
 <script src="tutorial.js"></script>
+<script>
+(function(){function _s(){var tb=document.querySelector('.tab-bar');if(!tb)return;var h=Math.ceil(tb.getBoundingClientRect().height);if(h>0)document.documentElement.style.setProperty('--tab-bar-h',h+'px');}
+_s();try{new ResizeObserver(_s).observe(document.documentElement);}catch(e){}window.addEventListener('resize',_s,{passive:true});window.addEventListener('load',_s,{once:true});})();
+</script>
 </body>
 </html>

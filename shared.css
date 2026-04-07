@@ -59,6 +59,14 @@ html.theme-light .tab-bar{
 html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
 html.theme-light .tab-item.on{ color:var(--a1); }
 
+/* ── Padding scroll-area basato sull'altezza reale della tab bar ──
+   --tab-bar-h viene impostata da JS (ResizeObserver) in widgetLayout.js
+   e nello snippet inline di ogni pagina senza widgetLayout.
+   Il fallback calc(...) copre il primo frame prima che JS giri. ── */
+.scroll-area{
+  padding-bottom: var(--tab-bar-h, calc(70px + env(safe-area-inset-bottom, 0px))) !important;
+}
+
 /* ── prefers-reduced-motion — base ── */
 @media (prefers-reduced-motion: reduce) {
   .tab-item.on::after{ transition: none; }

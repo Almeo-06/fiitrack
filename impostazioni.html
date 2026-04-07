@@ -881,7 +881,7 @@ html.theme-light body::before{ display:none; }
     </div>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.20</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.22</p>
 
 </div>
 
@@ -2136,5 +2136,9 @@ async function sendFeedback(){
 }
 </script>
 <script src="tutorial.js"></script>
+<script>
+(function(){function _s(){var tb=document.querySelector('.tab-bar');if(!tb)return;var h=Math.ceil(tb.getBoundingClientRect().height);if(h>0)document.documentElement.style.setProperty('--tab-bar-h',h+'px');}
+_s();try{new ResizeObserver(_s).observe(document.documentElement);}catch(e){}window.addEventListener('resize',_s,{passive:true});window.addEventListener('load',_s,{once:true});})();
+</script>
 </body>
 </html>

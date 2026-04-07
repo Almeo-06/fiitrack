@@ -15,6 +15,14 @@
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
 <style>
+@keyframes slideInFromRight{ from{opacity:0;transform:translateX(48px);} to{opacity:1;transform:translateX(0);} }
+@keyframes slideInFromLeft{  from{opacity:0;transform:translateX(-48px);} to{opacity:1;transform:translateX(0);} }
+@keyframes slideOutToLeft{   from{opacity:1;transform:translateX(0);}  to{opacity:0;transform:translateX(-48px);} }
+@keyframes slideOutToRight{  from{opacity:1;transform:translateX(0);}  to{opacity:0;transform:translateX(48px);} }
+.scroll-area.slide-in-right { animation:slideInFromRight .28s cubic-bezier(.25,1,.3,1) both; }
+.scroll-area.slide-in-left  { animation:slideInFromLeft  .28s cubic-bezier(.25,1,.3,1) both; }
+.scroll-area.slide-out-left { animation:slideOutToLeft   .22s cubic-bezier(.4,0,.6,1) both; }
+.scroll-area.slide-out-right{ animation:slideOutToRight  .22s cubic-bezier(.4,0,.6,1) both; }
 body{
   background:var(--bg); color:var(--text); font-family:var(--font);
   max-width:480px; margin:0 auto;
@@ -668,7 +676,22 @@ document.getElementById('submitBtn').addEventListener('click', () => {
 /* ══════════════════════════════════════════
    NAVIGAZIONE TAB
 ══════════════════════════════════════════ */
-function sfideNavigateTo(url){ location.href = url; }
+const PAGE_INDEX = 99; /* sfide non è nella tab bar standard */
+(function(){
+  const sa = document.querySelector('.scroll-area');
+  if(!sa) return;
+  const from = parseInt(sessionStorage.getItem('ft_from_tab') ?? 0);
+  sessionStorage.removeItem('ft_from_tab');
+  sa.classList.add(from <= 0 ? 'slide-in-right' : 'slide-in-left');
+})();
+
+function sfideNavigateTo(url, toIndex){
+  const sa = document.querySelector('.scroll-area');
+  sessionStorage.setItem('ft_from_tab', PAGE_INDEX);
+  const cls = (toIndex ?? 0) > 0 ? 'slide-out-left' : 'slide-out-right';
+  if(sa){ sa.classList.add(cls); }
+  setTimeout(()=>{ location.href = url; }, 230);
+}
 
 /* ══════════════════════════════════════════
    INIT
