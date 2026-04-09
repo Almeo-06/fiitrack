@@ -1920,7 +1920,7 @@ async function loadFeed(){
     el.innerHTML = posts.map(_renderFeedCard).join('');
   } catch(e){
     console.warn('[FT] loadFeed error:', e);
-    el.innerHTML = `<div class="feed-empty">Errore nel caricamento del feed.</div>`;
+    el.innerHTML = `<div class="feed-empty">Errore: ${e.message||e.code||'sconosciuto'}</div>`;
   }
 }
 </script>
