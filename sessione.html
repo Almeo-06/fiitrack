@@ -2850,6 +2850,7 @@ async function _publishSessionPost(woName){
     const post = {
       uid:         user.uid,
       displayName: senderName,
+      photoURL:    user.photoURL || null,
       woName:      woName || 'Allenamento',
       type:        WORKOUT.type || 'gym',
       duration:    sessSec,

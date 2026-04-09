@@ -349,10 +349,65 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   text-align:center; padding:40px 20px;
   color:var(--textm); font-size:13px; line-height:1.8;
 }
+.feed-av img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
 .feed-actions{
   display:flex; align-items:center; gap:8px; margin-top:10px;
   padding-top:10px; border-top:1px solid var(--border);
 }
+/* ── LIKE AVATARS ── */
+.like-avatars{
+  display:flex; align-items:center; margin-left:auto;
+  cursor:pointer; padding:4px 2px;
+}
+.like-av{
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid var(--bg2); margin-left:-6px;
+  overflow:hidden; background:rgba(var(--a1-rgb),.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; font-weight:700; color:var(--a2); flex-shrink:0;
+}
+.like-av:first-child{ margin-left:0; }
+.like-av img{ width:100%; height:100%; object-fit:cover; }
+.like-av-more{
+  background:var(--bg3); color:var(--textm);
+  font-size:8px; font-family:var(--mono);
+}
+/* ── LIKES MODAL ── */
+.likes-overlay{
+  position:fixed; inset:0; z-index:80;
+  background:rgba(0,0,0,.75);
+  display:none; align-items:flex-end; justify-content:center;
+}
+.likes-overlay.open{ display:flex; }
+.likes-sheet{
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border:1px solid var(--border); border-bottom:none;
+  width:100%; max-width:480px; padding:20px 20px 40px;
+  animation:slideUp .3s cubic-bezier(.4,0,.2,1);
+  max-height:70vh; display:flex; flex-direction:column;
+}
+.likes-sheet-handle{
+  width:36px; height:4px; border-radius:99px;
+  background:var(--border); margin:0 auto 16px;
+}
+.likes-sheet-title{
+  font-size:15px; font-weight:600; color:var(--text);
+  margin-bottom:14px; text-align:center;
+}
+.likes-list{ overflow-y:auto; flex:1; }
+.liker-row{
+  display:flex; align-items:center; gap:12px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.liker-row:last-child{ border-bottom:none; }
+.liker-av{
+  width:40px; height:40px; border-radius:50%; flex-shrink:0;
+  background:rgba(var(--a1-rgb),.15); border:1.5px solid rgba(var(--a1-rgb),.3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:600; color:var(--a2); overflow:hidden;
+}
+.liker-av img{ width:100%; height:100%; object-fit:cover; }
+.liker-name{ font-size:14px; font-weight:500; color:var(--text); }
 .feed-like-btn{
   display:flex; align-items:center; gap:5px;
   background:none; border:none;
@@ -694,6 +749,15 @@ html.theme-light body::before{ display:none; }
   </div>
 </div>
 
+<!-- LIKES MODAL -->
+<div class="likes-overlay" id="likesOverlay" onclick="closeLikesModal(event)">
+  <div class="likes-sheet">
+    <div class="likes-sheet-handle"></div>
+    <div class="likes-sheet-title">👍 Like</div>
+    <div class="likes-list" id="likesList"></div>
+  </div>
+</div>
+
 <!-- PROFILE COMPARISON SHEET -->
 <div class="profile-sheet-overlay" id="profileSheetOverlay" onclick="closeProfileSheet(event)">
   <div class="profile-sheet">
@@ -731,6 +795,8 @@ const _db    = firebase.firestore();
 const LS_KEY = 'fittrack_v4';
 let _me = null;        /* { uid, username, displayName, avatarEmoji, photoURL } */
 let _searchTimer = null;
+let _userCache = {};      /* uid → Firestore user doc data */
+let _feedPostsCache = {}; /* postId → { ownerUid, likes[] } */
 
 /* sfide */
 const _friendsData = {};     /* uid → dati Firestore amico (per apertura sheet) */
@@ -1887,6 +1953,51 @@ function switchSeg(tab){
   document.getElementById('amiciSection').style.display = !isFeed ? '' : 'none';
 }
 
+/* Batch-fetch utenti in _userCache (max 10 per round) */
+async function _fetchUsers(uids){
+  const toFetch = [...new Set(uids)].filter(u => u && !_userCache[u]);
+  if(!toFetch.length) return;
+  for(let i = 0; i < toFetch.length; i += 10){
+    const chunk = toFetch.slice(i, i + 10);
+    const snaps = await Promise.all(chunk.map(uid => _db.collection('users').doc(uid).get()));
+    snaps.forEach(snap => { if(snap.exists) _userCache[snap.id] = snap.data(); });
+  }
+}
+
+function _avatarHtml(uid, size = 40){
+  const u = _userCache[uid] || {};
+  const photo = u.appPhotoDataUrl || u.photoURL;
+  const ini   = (u.displayName || u.username || '?')[0].toUpperCase();
+  if(photo) return `<img src="${photo}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;">`;
+  return ini;
+}
+
+async function openLikesModal(postId){
+  const cached = _feedPostsCache[postId];
+  if(!cached || !cached.likes.length) return;
+  await _fetchUsers(cached.likes);
+  const list = document.getElementById('likesList');
+  list.innerHTML = cached.likes.map(uid => {
+    const u    = _userCache[uid] || {};
+    const name = u.displayName || u.username || 'Utente';
+    const photo = u.appPhotoDataUrl || u.photoURL;
+    const avContent = photo
+      ? `<img src="${photo}" alt="">`
+      : name[0].toUpperCase();
+    return `<div class="liker-row">
+      <div class="liker-av">${avContent}</div>
+      <span class="liker-name">${name}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('likesOverlay').classList.add('open');
+}
+
+function closeLikesModal(e){
+  if(!e || e.target === document.getElementById('likesOverlay')){
+    document.getElementById('likesOverlay').classList.remove('open');
+  }
+}
+
 function _timeAgo(ts){
   if(!ts) return '';
   const diff = Math.floor((Date.now() - ts.toMillis()) / 1000);
@@ -1919,6 +2030,29 @@ function _renderFeedCard(post){
   const liked     = likes.includes(myUid);
   const likeCount = likes.length;
 
+  /* avatar autore (foto Firestore o Google, fallback iniziali) */
+  const authorCache = _userCache[post._ownerUid] || {};
+  const authorPhoto = authorCache.appPhotoDataUrl || authorCache.photoURL || post.photoURL;
+  const authorAvContent = authorPhoto
+    ? `<img src="${authorPhoto}" alt="">`
+    : initials;
+
+  /* like avatars sovrapposti */
+  let likeAvatarsHtml = '';
+  if(likeCount > 0){
+    const visible = likes.slice(0, 3);
+    const extra   = likeCount - visible.length;
+    const iconsHtml = visible.map(uid => {
+      const u = _userCache[uid] || {};
+      const photo = u.appPhotoDataUrl || u.photoURL;
+      return photo
+        ? `<div class="like-av"><img src="${photo}" alt=""></div>`
+        : `<div class="like-av">${(u.displayName||u.username||'?')[0].toUpperCase()}</div>`;
+    }).join('');
+    const extraHtml = extra > 0 ? `<div class="like-av like-av-more">+${extra}</div>` : '';
+    likeAvatarsHtml = `<div class="like-avatars" onclick="openLikesModal('${post.id}')">${iconsHtml}${extraHtml}</div>`;
+  }
+
   const delBtn = post._isMe
     ? `<button class="feed-del-btn" onclick="deletePost('${post._ownerUid}','${post.id}')" title="Elimina">
         <svg class="del-svg" viewBox="0 0 24 24" width="16" height="16">
@@ -1933,7 +2067,7 @@ function _renderFeedCard(post){
 
   return `<div class="feed-card" id="fc-${post.id}">
     <div class="feed-card-top">
-      <div class="feed-av">${initials}</div>
+      <div class="feed-av">${authorAvContent}</div>
       <div style="flex:1">
         <div class="feed-name">${post.displayName||'Atleta'}${meBadge}</div>
         <div class="feed-time">${_timeAgo(post.ts)}</div>
@@ -1956,6 +2090,7 @@ function _renderFeedCard(post){
         </svg>
         ${likeCount > 0 ? `<span class="like-count">${likeCount}</span>` : ''}
       </button>
+      ${likeAvatarsHtml}
       ${delBtn}
     </div>
   </div>`;
@@ -2065,6 +2200,15 @@ async function loadFeed(){
       el.innerHTML = `<div class="feed-empty">Nessun allenamento ancora.<br>Completa la prima sessione! 💪</div>`;
       return;
     }
+
+    /* 4. Popola cache post e pre-fetch tutti gli utenti coinvolti (autori + likers) */
+    _feedPostsCache = {};
+    posts.forEach(p => { _feedPostsCache[p.id] = { ownerUid: p._ownerUid, likes: p.likes || [] }; });
+    const allUids = [...new Set([
+      ...posts.map(p => p._ownerUid),
+      ...posts.flatMap(p => p.likes || [])
+    ])];
+    await _fetchUsers(allUids);
 
     el.innerHTML = posts.map(_renderFeedCard).join('');
   } catch(e){
