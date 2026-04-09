@@ -811,6 +811,7 @@ _auth.onAuthStateChanged(async function(user){
     /* sync profilo locale → Firestore */
     syncProfile();
     /* carica amici, notifiche, sfide, feed */
+    migrateFriendsStatus();
     loadFriends();
     loadIncoming();
     loadChallengeInvitations();
@@ -1168,10 +1169,10 @@ async function acceptRequest(reqId, fromUid, fromUsername, fromAvatar){
     });
     /* aggiungi amico su entrambi i lati */
     batch.set(_db.collection('users').doc(_me.uid).collection('friends').doc(fromUid), {
-      username: fromUsername, avatarEmoji: fromAvatar, addedAt: firebase.firestore.FieldValue.serverTimestamp()
+      username: fromUsername, avatarEmoji: fromAvatar, status: 'accepted', addedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     batch.set(_db.collection('users').doc(fromUid).collection('friends').doc(_me.uid), {
-      username: _me.username, avatarEmoji: _me.avatarEmoji, addedAt: firebase.firestore.FieldValue.serverTimestamp()
+      username: _me.username, avatarEmoji: _me.avatarEmoji, status: 'accepted', addedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     await batch.commit();
 
@@ -2014,6 +2015,22 @@ async function deletePost(ownerUid, postId){
   } catch(e){
     showToast('Errore eliminazione: ' + (e.message||e.code));
   }
+}
+
+async function migrateFriendsStatus(){
+  if(!_me) return;
+  try{
+    const snap = await _db.collection('users').doc(_me.uid).collection('friends').get();
+    const batch = _db.batch();
+    let count = 0;
+    snap.docs.forEach(d => {
+      if(!d.data().status){
+        batch.update(d.ref, { status: 'accepted' });
+        count++;
+      }
+    });
+    if(count > 0) await batch.commit();
+  } catch(e){ console.warn('[FT] migrateFriendsStatus:', e); }
 }
 
 async function loadFeed(){
