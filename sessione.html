@@ -11,8 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -804,7 +802,7 @@ html.theme-light .close-btn{
 .gps-map{
   flex:1; min-height:0; position:relative;
 }
-#leafletMap{ width:100%; height:100%; }
+#gpsSvgMap{ width:100%; height:100%; display:block; background:var(--bg2); }
 .gps-stats-bar{
   display:grid; grid-template-columns:1fr 1fr;
   gap:1px; background:var(--border); flex-shrink:0;
@@ -891,7 +889,15 @@ html.theme-light .close-btn{
     <button class="close-btn" onclick="confirmEndGps()">✕</button>
   </div>
   <div class="gps-map">
-    <div id="leafletMap"></div>
+    <svg id="gpsSvgMap" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet">
+      <text id="gpsSvgEmpty" x="150" y="105" text-anchor="middle"
+        font-size="12" fill="var(--textm)" font-family="var(--font)">Avvia per vedere il percorso</text>
+      <polyline id="gpsSvgLine" points="" fill="none"
+        stroke="var(--gps-c1,#0088ff)" stroke-width="3"
+        stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="gpsSvgDot" cx="-99" cy="-99" r="6"
+        fill="var(--gps-c1,#0088ff)" stroke="#fff" stroke-width="2"/>
+    </svg>
     <div class="gps-accuracy" id="gpsAccuracy">GPS…</div>
   </div>
   <div class="gps-stats-bar">
@@ -2555,9 +2561,8 @@ let _gpsPaused    = false;
 let _gpsRunning   = false;
 let _gpsLastLat   = null;
 let _gpsLastLon   = null;
-let _leafletMap   = null;
-let _leafletLine  = null;
-let _leafletMarker= null;
+/* SVG live map */
+let _svgMinLat = null, _svgMaxLat = null, _svgMinLon = null, _svgMaxLon = null;
 
 /* ── Inizializza schermata GPS se workout run/bike ── */
 if(_isGpsMode){
@@ -2571,18 +2576,9 @@ if(_isGpsMode){
   document.documentElement.style.setProperty('--gps-c2', c2);
   document.getElementById('gpsTitle').textContent = WORKOUT.name || (WORKOUT.type === 'run' ? 'Corsa' : 'Bici');
 
-  /* init mappa Leaflet */
-  setTimeout(()=>{
-    _leafletMap = L.map('leafletMap', { zoomControl:false, attributionControl:false });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_leafletMap);
-    _leafletLine   = L.polyline([], { color:c1, weight:4, opacity:.85 }).addTo(_leafletMap);
-    _leafletMarker = L.circleMarker([0,0], { radius:7, fillColor:c1, fillOpacity:1, color:'#fff', weight:2 }).addTo(_leafletMap);
-    /* centra su posizione approssimativa subito */
-    navigator.geolocation.getCurrentPosition(p => {
-      _leafletMap.setView([p.coords.latitude, p.coords.longitude], 15);
-      _leafletMarker.setLatLng([p.coords.latitude, p.coords.longitude]);
-    }, ()=>{}, { timeout:5000 });
-  }, 100);
+  /* SVG map: aggiorna colore linea e dot con i colori del tipo */
+  document.getElementById('gpsSvgLine').style.stroke = c1;
+  document.getElementById('gpsSvgDot').style.fill    = c1;
 }
 
 /* ── Haversine ── */
@@ -2637,12 +2633,45 @@ function _onGpsPosition(pos){
   _gpsLastLat = lat; _gpsLastLon = lon;
   _gpsTrack.push({ lat, lon, ts: pos.timestamp });
 
-  /* aggiorna mappa */
-  if(_leafletLine){
-    const latlngs = _gpsTrack.map(p => [p.lat, p.lon]);
-    _leafletLine.setLatLngs(latlngs);
-    _leafletMarker.setLatLng([lat, lon]);
-    _leafletMap.panTo([lat, lon]);
+  /* aggiorna mappa SVG */
+  _updateSvgMap();
+}
+
+/* ── SVG live map ── */
+function _updateSvgMap(){
+  if(_gpsTrack.length < 1) return;
+
+  const SVG_W = 300, SVG_H = 200, PAD = 18;
+
+  /* aggiorna bounds */
+  _gpsTrack.forEach(p => {
+    if(_svgMinLat === null || p.lat < _svgMinLat) _svgMinLat = p.lat;
+    if(_svgMaxLat === null || p.lat > _svgMaxLat) _svgMaxLat = p.lat;
+    if(_svgMinLon === null || p.lon < _svgMinLon) _svgMinLon = p.lon;
+    if(_svgMaxLon === null || p.lon > _svgMaxLon) _svgMaxLon = p.lon;
+  });
+
+  const dLat = _svgMaxLat - _svgMinLat || 0.0001;
+  const dLon = _svgMaxLon - _svgMinLon || 0.0001;
+  const scaleX = (SVG_W - PAD*2) / dLon;
+  const scaleY = (SVG_H - PAD*2) / dLat;
+  const scale  = Math.min(scaleX, scaleY);
+
+  const toX = lon => PAD + (lon - _svgMinLon) * scale + ((SVG_W - PAD*2) - dLon*scale)/2;
+  const toY = lat => PAD + (_svgMaxLat - lat) * scale + ((SVG_H - PAD*2) - dLat*scale)/2;
+
+  const pts = _gpsTrack.map(p => `${toX(p.lon).toFixed(1)},${toY(p.lat).toFixed(1)}`).join(' ');
+  document.getElementById('gpsSvgLine').setAttribute('points', pts);
+
+  /* punto corrente */
+  const last = _gpsTrack[_gpsTrack.length - 1];
+  const dot  = document.getElementById('gpsSvgDot');
+  dot.setAttribute('cx', toX(last.lon).toFixed(1));
+  dot.setAttribute('cy', toY(last.lat).toFixed(1));
+
+  /* nascondi testo placeholder dopo il primo punto */
+  if(_gpsTrack.length === 1){
+    document.getElementById('gpsSvgEmpty').style.display = 'none';
   }
 }
 

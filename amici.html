@@ -1861,12 +1861,15 @@ function _renderFeedCard(post){
   const prsHtml  = (post.prs||[]).map(pr =>
     `<div class="feed-pr-row">🏆 Nuovo PR: ${pr.exName} — ${pr.weight}kg</div>`
   ).join('');
+  const meBadge = post._isMe
+    ? `<span style="font-size:9px;font-family:var(--mono);color:var(--a2);background:rgba(var(--a1-rgb),.12);border:1px solid rgba(var(--a1-rgb),.25);border-radius:99px;padding:2px 8px;margin-left:6px;">Tu</span>`
+    : '';
 
   return `<div class="feed-card">
     <div class="feed-card-top">
       <div class="feed-av">${initials}</div>
-      <div>
-        <div class="feed-name">${post.displayName||'Atleta'}</div>
+      <div style="flex:1">
+        <div class="feed-name">${post.displayName||'Atleta'}${meBadge}</div>
         <div class="feed-time">${_timeAgo(post.ts)}</div>
       </div>
     </div>
@@ -1886,32 +1889,31 @@ async function loadFeed(){
   if(!el || !_auth.currentUser) return;
 
   try{
-    /* 1. Recupera lista amici accettati */
-    const friendsSnap = await _db.collection('users').doc(_auth.currentUser.uid)
+    const myUid = _auth.currentUser.uid;
+
+    /* 1. Post propri (sempre inclusi) */
+    const mySnap = await _db.collection('users').doc(myUid)
+      .collection('posts').orderBy('ts','desc').limit(5).get();
+
+    /* 2. Post amici */
+    const friendsSnap = await _db.collection('users').doc(myUid)
       .collection('friends').where('status','==','accepted').get();
 
-    if(friendsSnap.empty){
-      el.innerHTML = `<div class="feed-empty">Aggiungi amici per vedere il loro feed!</div>`;
-      return;
-    }
-
     const friendUids = friendsSnap.docs.map(d => d.id);
-
-    /* 2. Recupera ultimi 5 post per ogni amico (max 10 amici per evitare troppe query) */
-    const promises = friendUids.slice(0,10).map(uid =>
+    const friendPromises = friendUids.slice(0,10).map(uid =>
       _db.collection('users').doc(uid).collection('posts')
         .orderBy('ts','desc').limit(5).get()
     );
+    const friendSnaps = await Promise.all(friendPromises);
 
-    const snaps = await Promise.all(promises);
-
-    /* 3. Unisci e ordina per timestamp */
+    /* 3. Unisci tutto e ordina per timestamp */
     const posts = [];
-    snaps.forEach(snap => snap.docs.forEach(d => posts.push({id:d.id, ...d.data()})));
+    mySnap.docs.forEach(d => posts.push({ id:d.id, _isMe:true, ...d.data() }));
+    friendSnaps.forEach(snap => snap.docs.forEach(d => posts.push({id:d.id, ...d.data()})));
     posts.sort((a,b) => (b.ts?.toMillis()||0) - (a.ts?.toMillis()||0));
 
     if(!posts.length){
-      el.innerHTML = `<div class="feed-empty">Nessun allenamento recente degli amici.<br>Allenatevi insieme! 💪</div>`;
+      el.innerHTML = `<div class="feed-empty">Nessun allenamento ancora.<br>Completa la prima sessione! 💪</div>`;
       return;
     }
 
