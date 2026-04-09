@@ -298,6 +298,58 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .ch-bar-fill{ height:100%; border-radius:4px; transition:width .4s ease; }
 .ch-val{ font-family:var(--mono); font-size:10px; color:var(--textm); min-width:42px; text-align:right; flex-shrink:0; }
 
+/* ── SEGMENT CONTROL (Feed / Amici) ── */
+.seg-ctrl{
+  display:flex; background:var(--bg3); border-radius:12px;
+  padding:3px; margin-bottom:18px; gap:3px;
+}
+.seg-btn{
+  flex:1; padding:8px; border-radius:9px; border:none;
+  background:transparent; color:var(--textm);
+  font-family:var(--font); font-size:13px; font-weight:500;
+  cursor:pointer; transition:background .18s, color .18s;
+}
+.seg-btn.active{
+  background:var(--bg2); color:var(--text);
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+
+/* ── FEED CARD ── */
+.feed-card{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:16px; padding:14px 16px; margin-bottom:10px;
+}
+.feed-card-top{
+  display:flex; align-items:center; gap:10px; margin-bottom:12px;
+}
+.feed-av{
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(var(--a1-rgb),.15); border:1.5px solid rgba(var(--a1-rgb),.3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:600; color:var(--a2); flex-shrink:0;
+}
+.feed-name{ font-size:13px; font-weight:600; color:var(--text); }
+.feed-time{ font-size:10px; color:var(--textm); font-family:var(--mono); margin-top:1px; }
+.feed-wo-name{
+  font-size:15px; font-weight:600; color:var(--text); margin-bottom:8px;
+}
+.feed-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.feed-chip{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:99px; padding:4px 10px;
+  font-size:11px; color:var(--textm); font-family:var(--mono);
+}
+.feed-pr-row{
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,170,0,.07); border:1px solid rgba(255,170,0,.2);
+  border-radius:8px; padding:7px 10px; margin-top:8px;
+  font-size:11px; color:#ffaa00;
+}
+.feed-empty{
+  text-align:center; padding:40px 20px;
+  color:var(--textm); font-size:13px; line-height:1.8;
+}
+
 /* ── TAB BAR ── */
   position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
   background:rgba(6,13,26,.97); border-top:1px solid var(--border);
@@ -472,6 +524,20 @@ html.theme-light body::before{ display:none; }
   <!-- STATO: LOGGATO, FUNZIONI AMICI -->
   <div id="stateMain" style="display:none">
 
+    <!-- Segment control Feed / Amici -->
+    <div class="seg-ctrl">
+      <button class="seg-btn active" id="segFeed" onclick="switchSeg('feed')">📰 Feed</button>
+      <button class="seg-btn"       id="segAmici" onclick="switchSeg('amici')">👥 Amici</button>
+    </div>
+
+    <!-- ── SEZIONE FEED ── -->
+    <div id="feedSection">
+      <div id="feedList"><div class="feed-empty">Caricamento feed…</div></div>
+    </div>
+
+    <!-- ── SEZIONE AMICI (nascosta di default) ── -->
+    <div id="amiciSection" style="display:none">
+
     <!-- Cerca utente -->
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
@@ -506,6 +572,7 @@ html.theme-light body::before{ display:none; }
       <div id="challengesList"></div>
     </div>
 
+    </div><!-- fine amiciSection -->
   </div>
 </div>
 
@@ -695,11 +762,12 @@ _auth.onAuthStateChanged(async function(user){
 
     /* sync profilo locale → Firestore */
     syncProfile();
-    /* carica amici, notifiche, sfide */
+    /* carica amici, notifiche, sfide, feed */
     loadFriends();
     loadIncoming();
     loadChallengeInvitations();
     loadChallenges();
+    loadFeed();
     loadNotifBadge();
     _startWorkoutNotifListener(user.uid);
 
@@ -1756,6 +1824,102 @@ async function removeFriend(friendUid, friendUsername){
     if(card && !card.children.length) loadFriends();
     showToast('@'+friendUsername+' rimosso dagli amici');
   } catch(e){ showToast('Errore: '+e.message); }
+}
+
+/* ══════════════════════════════════════════════
+   FEED SOCIALE
+══════════════════════════════════════════════ */
+
+function switchSeg(tab){
+  const isFeed = tab === 'feed';
+  document.getElementById('segFeed').classList.toggle('active', isFeed);
+  document.getElementById('segAmici').classList.toggle('active', !isFeed);
+  document.getElementById('feedSection').style.display  = isFeed  ? '' : 'none';
+  document.getElementById('amiciSection').style.display = !isFeed ? '' : 'none';
+}
+
+function _timeAgo(ts){
+  if(!ts) return '';
+  const diff = Math.floor((Date.now() - ts.toMillis()) / 1000);
+  if(diff < 60)  return 'ora';
+  if(diff < 3600) return Math.floor(diff/60)+'m fa';
+  if(diff < 86400) return Math.floor(diff/3600)+'h fa';
+  return Math.floor(diff/86400)+'g fa';
+}
+
+function _typeIcon(type){
+  return {gym:'🏋️', run:'🏃', bike:'🚴', other:'💪'}[type] || '💪';
+}
+
+function _fmtDur(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return m > 0 ? `${m}m` : `${s}s`;
+}
+
+function _renderFeedCard(post){
+  const initials = (post.displayName||'?')[0].toUpperCase();
+  const prsHtml  = (post.prs||[]).map(pr =>
+    `<div class="feed-pr-row">🏆 Nuovo PR: ${pr.exName} — ${pr.weight}kg</div>`
+  ).join('');
+
+  return `<div class="feed-card">
+    <div class="feed-card-top">
+      <div class="feed-av">${initials}</div>
+      <div>
+        <div class="feed-name">${post.displayName||'Atleta'}</div>
+        <div class="feed-time">${_timeAgo(post.ts)}</div>
+      </div>
+    </div>
+    <div class="feed-wo-name">${_typeIcon(post.type)} ${post.woName||'Allenamento'}</div>
+    <div class="feed-chips">
+      ${post.duration ? `<span class="feed-chip">⏱ ${_fmtDur(post.duration)}</span>` : ''}
+      ${post.sets     ? `<span class="feed-chip">📋 ${post.sets} serie</span>` : ''}
+      ${post.tonnellaggio ? `<span class="feed-chip">⚡ ${post.tonnellaggio}kg vol.</span>` : ''}
+      ${post.kcal     ? `<span class="feed-chip">🔥 ${post.kcal} kcal</span>` : ''}
+    </div>
+    ${prsHtml}
+  </div>`;
+}
+
+async function loadFeed(){
+  const el = document.getElementById('feedList');
+  if(!el || !_auth.currentUser) return;
+
+  try{
+    /* 1. Recupera lista amici accettati */
+    const friendsSnap = await _db.collection('users').doc(_auth.currentUser.uid)
+      .collection('friends').where('status','==','accepted').get();
+
+    if(friendsSnap.empty){
+      el.innerHTML = `<div class="feed-empty">Aggiungi amici per vedere il loro feed!</div>`;
+      return;
+    }
+
+    const friendUids = friendsSnap.docs.map(d => d.id);
+
+    /* 2. Recupera ultimi 5 post per ogni amico (max 10 amici per evitare troppe query) */
+    const promises = friendUids.slice(0,10).map(uid =>
+      _db.collection('users').doc(uid).collection('posts')
+        .orderBy('ts','desc').limit(5).get()
+    );
+
+    const snaps = await Promise.all(promises);
+
+    /* 3. Unisci e ordina per timestamp */
+    const posts = [];
+    snaps.forEach(snap => snap.docs.forEach(d => posts.push({id:d.id, ...d.data()})));
+    posts.sort((a,b) => (b.ts?.toMillis()||0) - (a.ts?.toMillis()||0));
+
+    if(!posts.length){
+      el.innerHTML = `<div class="feed-empty">Nessun allenamento recente degli amici.<br>Allenatevi insieme! 💪</div>`;
+      return;
+    }
+
+    el.innerHTML = posts.map(_renderFeedCard).join('');
+  } catch(e){
+    console.warn('[FT] loadFeed error:', e);
+    el.innerHTML = `<div class="feed-empty">Errore nel caricamento del feed.</div>`;
+  }
 }
 </script>
 <script src="tutorial.js"></script>

@@ -577,13 +577,24 @@ function handlePhoto(e){
   if(!file) return;
   const reader = new FileReader();
   reader.onload = function(ev){
-    currentPhoto = ev.target.result;
-    const img = document.getElementById('avatarImg');
-    img.src = currentPhoto;
-    img.style.display = 'block';
-    document.getElementById('avatarEmoji').style.display = 'none';
-    // deseleziona emoji
-    document.querySelectorAll('.emoji-opt').forEach(c => c.classList.remove('sel'));
+    const tmpImg = new Image();
+    tmpImg.onload = function(){
+      /* ridimensiona a max 200×200 per non riempire il localStorage */
+      const MAX = 200;
+      const scale = Math.min(1, MAX / Math.max(tmpImg.width, tmpImg.height));
+      const w = Math.round(tmpImg.width * scale);
+      const h = Math.round(tmpImg.height * scale);
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(tmpImg, 0, 0, w, h);
+      currentPhoto = cv.toDataURL('image/jpeg', 0.8);
+      const img = document.getElementById('avatarImg');
+      img.src = currentPhoto;
+      img.style.display = 'block';
+      document.getElementById('avatarEmoji').style.display = 'none';
+      document.querySelectorAll('.emoji-opt').forEach(c => c.classList.remove('sel'));
+    };
+    tmpImg.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }

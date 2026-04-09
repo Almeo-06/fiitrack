@@ -783,10 +783,20 @@ document.getElementById('dateBadge').textContent =
 
 // ── Leggi dati da localStorage ──
 let _appData = {sessions:[], streak:0, bestStreak:0, goalSessions:5, workouts:[], assignment:{}};
+let _dataCorrupted = false;
 try{
   const _raw = localStorage.getItem('fittrack_v4');
   if(_raw){ const _d=JSON.parse(_raw); if(_d) _appData=Object.assign(_appData,_d); }
-} catch(e){}
+} catch(e){ _dataCorrupted = true; }
+if(_dataCorrupted){
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const _w = document.createElement('div');
+    _w.style.cssText='position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:rgba(255,170,0,.15);border:1px solid rgba(255,170,0,.4);border-radius:10px;padding:10px 16px;font-size:12px;color:#ffaa00;z-index:999;white-space:nowrap;font-family:var(--font);';
+    _w.textContent = '⚠️ Dati corrotti ripristinati. Verifica il tuo backup.';
+    document.body.appendChild(_w);
+    setTimeout(()=>_w.remove(), 5000);
+  });
+}
 
 // ── BUG 1: init workouts di default se ancora vuoti ──
 if(!(_appData.workouts||[]).length){
@@ -807,6 +817,8 @@ if(!(_appData.workouts||[]).length){
   try{
     const _lsw = _appData.lastStreakWeek;
     if(!_lsw) return;
+    // formato atteso: YYYY-MM-DD — se corrotto ignora senza azzerare
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(_lsw)) return;
     // calcola la chiave della settimana corrente (lunedì)
     const _t = new Date(); _t.setHours(12,0,0,0);
     const _dow = _t.getDay() || 7;
@@ -827,6 +839,18 @@ if(!(_appData.workouts||[]).length){
 const _TLABEL = {gym:'Palestra', run:'Corsa', bike:'Bici', other:'Altro'};
 const _TICON  = {gym:'🏋️', run:'🏃', bike:'🚴', other:'💪'};
 const _DAY_LABELS = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+
+// Rimuovi assignment orfani (workout cancellati ma ancora referenziati)
+(function(){
+  try{
+    const ids = new Set((_appData.workouts||[]).map(w=>w.id));
+    const asgn = _appData.assignment || {};
+    let dirty = false;
+    Object.keys(asgn).forEach(k=>{ if(asgn[k] && !ids.has(asgn[k])){ delete asgn[k]; dirty=true; } });
+    if(dirty){ _appData.assignment=asgn; try{localStorage.setItem('fittrack_v4',JSON.stringify(_appData));}catch(e){} }
+  } catch(e){}
+})();
+
 const PIANO = _DAY_LABELS.map((label, i) => {
   const woId = (_appData.assignment || {})[i] || null;
   const wo   = woId ? (_appData.workouts || []).find(w => w.id === woId) : null;
@@ -1171,7 +1195,7 @@ function renderRecap(idx){
       }).join('');
     }
   }
-  if(sess.sessionNote) html+=`<div class="rp-note-box"><div style="font-size:9px;color:var(--textm);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Note sessione</div>${sess.sessionNote}</div>`;
+  if(sess.sessionNote){const _esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); html+=`<div class="rp-note-box"><div style="font-size:9px;color:var(--textm);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Note sessione</div>${_esc(sess.sessionNote)}</div>`;}
   document.getElementById('recapBody').innerHTML=html;
 }
 

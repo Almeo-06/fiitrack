@@ -711,6 +711,18 @@ html.theme-light .streak-hero::before{ display:none; }
 </div>
 <div class="toast" id="toastMsg"></div>
 
+<!-- OVERLAY PERCORSO GPS -->
+<div id="gpsTrackOverlay" onclick="closeGpsTrack()" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.80);align-items:center;justify-content:center;">
+  <div onclick="event.stopPropagation()" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:20px;width:calc(100% - 48px);max-width:400px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div id="gpsTrackTitle" style="font-size:15px;font-weight:600;color:var(--text);">Percorso</div>
+      <button onclick="closeGpsTrack()" style="background:none;border:none;color:var(--textm);font-size:20px;cursor:pointer;padding:4px;">✕</button>
+    </div>
+    <svg id="gpsTrackSvg" viewBox="0 0 280 200" style="width:100%;border-radius:12px;background:var(--bg3);display:block;"></svg>
+    <div id="gpsTrackStats" style="display:flex;gap:16px;margin-top:14px;justify-content:center;"></div>
+  </div>
+</div>
+
 <!-- DETTAGLIO GIORNO — fuori dalla scroll-area per coprire tutto il viewport -->
 <div class="sheet-overlay" id="dayDetailOverlay" onclick="ddOverlayClick(event)">
   <div class="sheet-panel">
@@ -740,8 +752,12 @@ html.theme-light .streak-hero::before{ display:none; }
     const p = d.profile || {};
     const av = document.getElementById('headerAvatar');
     if(!av) return;
-    if(p.photoDataUrl){
-      av.innerHTML = `<img src="${p.photoDataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    if(p.photoDataUrl && /^data:image\//.test(p.photoDataUrl)){
+      const _img = document.createElement('img');
+      _img.src = p.photoDataUrl;
+      _img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      av.innerHTML = '';
+      av.appendChild(_img);
     } else if(p.avatar && p.avatar !== '😎'){
       av.textContent = p.avatar;
     } else if(p.name || d.name){
@@ -1150,11 +1166,17 @@ function openDayDetail(dateStr){
     const noteHtml = s.sessionNote ? `<div class="dd-note">🖊️ ${s.sessionNote}</div>` : '';
     const sep = si > 0 ? '<div class="dd-sep"></div>' : '';
 
+    const paceHtml = s.paceAvg ? `<div class="dd-stat"><span class="dd-val" style="color:var(--a2)">${s.paceAvg}'</span><span class="dd-lbl">min/km</span></div>` : '';
+    const trackBtn = (s.gpsTrack && s.gpsTrack.length > 2)
+      ? `<button onclick="showGpsTrack(${s.id})" style="margin-top:10px;width:100%;padding:9px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);color:var(--textm);font-size:12px;font-family:var(--font);cursor:pointer;">📍 Vedi percorso</button>`
+      : '';
+
     return `${sep}<div class="dd-session">
       <div class="dd-name">${icon} ${name}</div>
-      <div class="dd-stats">${statsHtml}</div>
+      <div class="dd-stats">${statsHtml}${paceHtml}</div>
       ${exsHtml}
       ${noteHtml}
+      ${trackBtn}
     </div>`;
   }).join('');
 
@@ -1167,6 +1189,59 @@ function closeDayDetail(){
 
 function ddOverlayClick(e){
   if(!e.target.closest('.sheet-panel')) closeDayDetail();
+}
+
+/* ══ PERCORSO GPS — SVG ══ */
+const _GPS_COLORS_R = { run:'#0088ff', bike:'#00c853', other:'#ffaa00' };
+
+function showGpsTrack(sessionId){
+  try{
+    const d = JSON.parse(localStorage.getItem('fittrack_v4')) || {};
+    const s = (d.sessions||[]).find(s => s.id === sessionId);
+    if(!s || !s.gpsTrack || s.gpsTrack.length < 2) return;
+
+    const track = s.gpsTrack;
+    const color = _GPS_COLORS_R[s.type] || _GPS_COLORS_R.other;
+    const W = 280, H = 200, PAD = 16;
+
+    /* normalizza coordinate in pixel */
+    const lats = track.map(p=>p.lat), lons = track.map(p=>p.lon);
+    const minLat=Math.min(...lats), maxLat=Math.max(...lats);
+    const minLon=Math.min(...lons), maxLon=Math.max(...lons);
+    const spanLat = maxLat-minLat || 0.001;
+    const spanLon = maxLon-minLon || 0.001;
+    const scale   = Math.min((W-PAD*2)/spanLon, (H-PAD*2)/spanLat);
+
+    const toX = lon => PAD + (lon-minLon)*scale + ((W-PAD*2) - spanLon*scale)/2;
+    const toY = lat => H - PAD - (lat-minLat)*scale - ((H-PAD*2) - spanLat*scale)/2;
+
+    const pts = track.map(p=>`${toX(p.lon).toFixed(1)},${toY(p.lat).toFixed(1)}`).join(' ');
+
+    /* punto di start e fine */
+    const [x0,y0] = [toX(track[0].lon), toY(track[0].lat)];
+    const [xN,yN] = [toX(track[track.length-1].lon), toY(track[track.length-1].lat)];
+
+    document.getElementById('gpsTrackSvg').innerHTML = `
+      <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+      <circle cx="${x0}" cy="${y0}" r="5" fill="#00e676" stroke="var(--bg2)" stroke-width="2"/>
+      <circle cx="${xN}" cy="${yN}" r="5" fill="${color}" stroke="var(--bg2)" stroke-width="2"/>
+    `;
+
+    document.getElementById('gpsTrackTitle').textContent =
+      `${s.type==='run'?'🏃':'🚴'} ${s.workout||'Percorso'} · ${s.date||''}`;
+
+    const km   = s.km    ? `<span style="font-size:12px;color:${color};font-family:var(--mono);font-weight:600">${s.km} km</span>` : '';
+    const pace = s.paceAvg ? `<span style="font-size:12px;color:var(--textm);font-family:var(--mono)">${s.paceAvg}'/km</span>` : '';
+    const dur  = s.duration ? `<span style="font-size:12px;color:var(--textm);font-family:var(--mono)">${Math.floor(s.duration/60)}min</span>` : '';
+    document.getElementById('gpsTrackStats').innerHTML = [km, pace, dur].filter(Boolean).join('<span style="color:var(--border)">·</span>');
+
+    const ov = document.getElementById('gpsTrackOverlay');
+    ov.style.display = 'flex';
+  } catch(e){ console.warn('showGpsTrack error:', e); }
+}
+
+function closeGpsTrack(){
+  document.getElementById('gpsTrackOverlay').style.display = 'none';
 }
 
 /* ══ SWIPE TO DELETE ══ */
@@ -1833,15 +1908,17 @@ function renderPRChart(){
   const maxW = Math.max(...sorted.map(p => p.weight));
   const CHART_H = 90; /* px, area disegno barre */
 
+  const _escHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const cols = sorted.map(p => {
-    const pct   = maxW > 0 ? Math.round(p.weight / maxW * 100) : 100;
+    const w     = parseFloat(p.weight) || 0;
+    const pct   = maxW > 0 ? Math.round(w / maxW * 100) : 100;
     const barH  = Math.max(4, Math.round(CHART_H * pct / 100));
-    const isMax = p.weight === maxW;
-    const label = p.date.slice(5).replace('-','/'); /* MM/DD */
+    const isMax = w === maxW;
+    const label = _escHtml(/^\d{4}-\d{2}-\d{2}$/.test(p.date) ? p.date.slice(5).replace('-','/') : '');
     return `<div class="pr-bar-col">
       <div class="pr-bar-outer" style="height:${CHART_H}px;">
         <div class="pr-bar-fill" style="height:${barH}px;${isMax ? 'background:linear-gradient(180deg,#ffaa00,#ff6600);' : ''}"></div>
-        <span class="pr-bar-val" style="${isMax ? 'color:#ffaa00;' : ''}">${p.weight}kg</span>
+        <span class="pr-bar-val" style="${isMax ? 'color:#ffaa00;' : ''}">${w}kg</span>
       </div>
       <div class="pr-bar-date">${label}</div>
     </div>`;

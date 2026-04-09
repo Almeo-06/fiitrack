@@ -11,6 +11,8 @@
 <meta name="apple-mobile-web-app-title" content="FitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -786,6 +788,69 @@ html.theme-light .close-btn{
 .ft-toast-body{ flex:1; }
 .ft-toast-name{ font-size:12px; font-weight:500; color:var(--text); }
 .ft-toast-msg{ font-size:11px; color:var(--textm); margin-top:2px; }
+
+/* ── SCHERMATA GPS ── */
+#screenGps{
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh; overflow:hidden;
+}
+.gps-hdr{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px 10px; flex-shrink:0;
+  padding-top:calc(14px + env(safe-area-inset-top,0px));
+}
+.gps-hdr-title{ font-size:15px; font-weight:600; color:var(--text); }
+.gps-timer-sm{ font-family:var(--mono); font-size:13px; color:var(--textm); }
+.gps-map{
+  flex:1; min-height:0; position:relative;
+}
+#leafletMap{ width:100%; height:100%; }
+.gps-stats-bar{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:1px; background:var(--border); flex-shrink:0;
+}
+.gps-stat{
+  background:var(--bg2); padding:14px 0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:2px;
+}
+.gps-stat-val{
+  font-family:var(--mono); font-size:28px; font-weight:600;
+  color:var(--text); line-height:1;
+}
+.gps-stat-lbl{
+  font-size:10px; color:var(--textm);
+  text-transform:uppercase; letter-spacing:1px;
+}
+.gps-controls{
+  display:flex; gap:10px; padding:14px 20px;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  background:var(--bg); flex-shrink:0;
+}
+.gps-btn{
+  flex:1; padding:14px; border-radius:14px;
+  border:none; font-size:15px; font-weight:600;
+  font-family:var(--font); cursor:pointer;
+  transition:opacity .15s;
+}
+.gps-btn:active{ opacity:.75; }
+.gps-btn-start{
+  background:linear-gradient(135deg,var(--gps-c1,#0088ff),var(--gps-c2,#00ccff));
+  color:#fff;
+}
+.gps-btn-pause{
+  background:var(--bg3); border:1.5px solid var(--border); color:var(--textm);
+}
+.gps-btn-stop{
+  background:rgba(255,68,85,.12); border:1.5px solid rgba(255,68,85,.3);
+  color:#ff4455;
+}
+.gps-accuracy{
+  position:absolute; bottom:8px; left:8px; z-index:500;
+  background:rgba(0,0,0,.55); border-radius:6px;
+  padding:3px 8px; font-size:10px; color:#fff;
+  font-family:var(--mono); pointer-events:none;
+}
 </style>
 <script>
 (function(){try{
@@ -815,6 +880,34 @@ html.theme-light .close-btn{
   <div>
     <div id="prBannerText">Nuovo Record!</div>
     <div class="pr-banner-sub" id="prBannerSub"></div>
+  </div>
+</div>
+
+<!-- ══ SCHERMATA GPS (corsa / bici) ══ -->
+<div id="screenGps" style="display:none">
+  <div class="gps-hdr">
+    <div class="gps-hdr-title" id="gpsTitle">Corsa</div>
+    <span class="gps-timer-sm" id="gpsTimerSm">00:00</span>
+    <button class="close-btn" onclick="confirmEndGps()">✕</button>
+  </div>
+  <div class="gps-map">
+    <div id="leafletMap"></div>
+    <div class="gps-accuracy" id="gpsAccuracy">GPS…</div>
+  </div>
+  <div class="gps-stats-bar">
+    <div class="gps-stat">
+      <div class="gps-stat-val" id="gpsKm">0.00</div>
+      <div class="gps-stat-lbl">km</div>
+    </div>
+    <div class="gps-stat">
+      <div class="gps-stat-val" id="gpsPace">--:--</div>
+      <div class="gps-stat-lbl">min/km</div>
+    </div>
+  </div>
+  <div class="gps-controls">
+    <button class="gps-btn gps-btn-start" id="gpsBtnStart" onclick="gpsStart()">Inizia</button>
+    <button class="gps-btn gps-btn-pause" id="gpsBtnPause" onclick="gpsPause()" style="display:none">Pausa</button>
+    <button class="gps-btn gps-btn-stop"  id="gpsBtnStop"  onclick="gpsStop()"  style="display:none">Stop</button>
   </div>
 </div>
 
@@ -1123,7 +1216,10 @@ function getDefault() {
 }
 
 function saveAppData(d){
-  try{ localStorage.setItem(KEY, JSON.stringify(d)); } catch(e){ console.warn('localStorage pieno',e); }
+  try{ localStorage.setItem(KEY, JSON.stringify(d)); } catch(e){
+    console.warn('localStorage pieno',e);
+    showToast('⚠️ Spazio esaurito: sessione non salvata. Libera spazio nelle impostazioni.');
+  }
 }
 
 /* ── Calcolo kcal personalizzato (Mifflin-St Jeor + MET) ──
@@ -1494,6 +1590,7 @@ function setFatigue(val){
 
 /* ── Navigazione schermate ── */
 function show(id){
+  document.getElementById('screenGps').style.display = 'none';
   ['screenEx','screenRec','screenEnd'].forEach(s=>{
     const el = document.getElementById(s);
     el.className = s===id ? 'screen' : 'screen hidden-right';
@@ -2322,8 +2419,10 @@ window.addEventListener('pagehide', ()=>{
 });
 
 /* ── START ── */
-startSessTimer();
-renderEx();
+if(!_isGpsMode){
+  startSessTimer();
+  renderEx();
+}
 
 /* 3. Ripple su tutti i bottoni .fine-btn */
 document.querySelectorAll('.fine-btn').forEach(btn=>{
@@ -2364,6 +2463,49 @@ document.querySelectorAll('.fine-btn').forEach(btn=>{
   } catch(e){ console.warn('[FT] Firebase non disponibile:', e); }
 })();
 
+/* ── Coda notifiche offline ── */
+const _NOTIF_QUEUE_KEY = 'fittrack_notif_queue';
+function _enqueueNotif(payload){
+  try{
+    const q = JSON.parse(localStorage.getItem(_NOTIF_QUEUE_KEY) || '[]');
+    q.push(payload);
+    localStorage.setItem(_NOTIF_QUEUE_KEY, JSON.stringify(q));
+  } catch(e){ console.warn('[FT] enqueue error:', e); }
+}
+async function _flushNotifQueue(){
+  try{
+    const raw = localStorage.getItem(_NOTIF_QUEUE_KEY);
+    if(!raw) return;
+    const q = JSON.parse(raw);
+    if(!q.length) return;
+    for(const p of q) await _sendNotifPayload(p);
+    localStorage.removeItem(_NOTIF_QUEUE_KEY);
+  } catch(e){ console.warn('[FT] flush error:', e); }
+}
+
+async function _sendNotifPayload({ uid, senderName, woName, newPRs }){
+  const snap = await _db.collection('users').doc(uid).collection('friends')
+    .where('status','==','accepted').get();
+  if(snap.empty) return;
+  const batch = _db.batch();
+  const ts = firebase.firestore.FieldValue.serverTimestamp();
+  snap.docs.forEach(d => {
+    const friendUid = d.id;
+    const base = { from: uid, fromName: senderName, ts, read: false };
+    batch.set(
+      _db.collection('users').doc(friendUid).collection('notifications').doc(),
+      { ...base, type: 'workout_done', woName: woName || 'Allenamento' }
+    );
+    (newPRs || []).forEach(pr => {
+      batch.set(
+        _db.collection('users').doc(friendUid).collection('notifications').doc(),
+        { ...base, type: 'personal_record', exName: pr.exName, weight: pr.weight }
+      );
+    });
+  });
+  await batch.commit();
+}
+
 /* ── Notifica amici dopo sessione ── */
 async function _notifyFriendsOnSession(woName, newPRs){
   try{
@@ -2371,42 +2513,252 @@ async function _notifyFriendsOnSession(woName, newPRs){
     const user = _auth.currentUser;
     if(!user) return;
 
-    /* Leggi lista amici accettati */
-    const snap = await _db.collection('users').doc(user.uid).collection('friends')
-      .where('status','==','accepted').get();
-    if(snap.empty) return;
-
-    /* Nome da mostrare: displayName auth > profile.name localStorage */
     let senderName = user.displayName || '';
     try{
       const ld = JSON.parse(localStorage.getItem(KEY)) || {};
       senderName = senderName || (ld.profile && ld.profile.name) || ld.username || 'Un tuo amico';
     } catch(e){}
 
-    const batch = _db.batch();
-    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    const payload = { uid: user.uid, senderName, woName, newPRs: newPRs || [] };
 
-    snap.docs.forEach(d => {
-      const friendUid = d.id;
-      const base = { from: user.uid, fromName: senderName, ts, read: false };
+    if(!navigator.onLine){
+      _enqueueNotif(payload);
+      return;
+    }
 
-      /* notifica sessione completata */
-      batch.set(
-        _db.collection('users').doc(friendUid).collection('notifications').doc(),
-        { ...base, type: 'workout_done', woName: woName || 'Allenamento' }
-      );
-
-      /* una notifica PR per ogni nuovo record */
-      (newPRs || []).forEach(pr => {
-        batch.set(
-          _db.collection('users').doc(friendUid).collection('notifications').doc(),
-          { ...base, type: 'personal_record', exName: pr.exName, weight: pr.weight }
-        );
-      });
-    });
-
-    await batch.commit();
+    try{
+      await _sendNotifPayload(payload);
+      /* invia anche eventuali notifiche accumulate offline */
+      await _flushNotifQueue();
+    } catch(e){
+      console.warn('[FT] notifyFriends error, messo in coda:', e);
+      _enqueueNotif(payload);
+    }
   } catch(e){ console.warn('[FT] notifyFriends error:', e); }
+}
+
+/* flush coda al ritorno online */
+window.addEventListener('online', ()=>{
+  if(window._auth && _auth.currentUser && window._db) _flushNotifQueue();
+});
+
+/* ══════════════════════════════════════════════
+   GPS — CORSA / BICI
+══════════════════════════════════════════════ */
+const _GPS_COLORS = { run:['#0088ff','#00ccff'], bike:['#00c853','#69f0ae'], other:['#ffaa00','#ffd740'] };
+const _isGpsMode  = ['run','bike'].includes(WORKOUT.type);
+
+let _gpsTrack     = [];   /* [{lat, lon, ts}] */
+let _gpsKm        = 0;
+let _gpsWatchId   = null;
+let _gpsPaused    = false;
+let _gpsRunning   = false;
+let _gpsLastLat   = null;
+let _gpsLastLon   = null;
+let _leafletMap   = null;
+let _leafletLine  = null;
+let _leafletMarker= null;
+
+/* ── Inizializza schermata GPS se workout run/bike ── */
+if(_isGpsMode){
+  /* nascondi schermata esercizi, mostra GPS */
+  document.getElementById('screenEx').style.display = 'none';
+  document.getElementById('screenGps').style.display = 'flex';
+
+  /* colori per tipo */
+  const [c1, c2] = _GPS_COLORS[WORKOUT.type] || _GPS_COLORS.other;
+  document.documentElement.style.setProperty('--gps-c1', c1);
+  document.documentElement.style.setProperty('--gps-c2', c2);
+  document.getElementById('gpsTitle').textContent = WORKOUT.name || (WORKOUT.type === 'run' ? 'Corsa' : 'Bici');
+
+  /* init mappa Leaflet */
+  setTimeout(()=>{
+    _leafletMap = L.map('leafletMap', { zoomControl:false, attributionControl:false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(_leafletMap);
+    _leafletLine   = L.polyline([], { color:c1, weight:4, opacity:.85 }).addTo(_leafletMap);
+    _leafletMarker = L.circleMarker([0,0], { radius:7, fillColor:c1, fillOpacity:1, color:'#fff', weight:2 }).addTo(_leafletMap);
+    /* centra su posizione approssimativa subito */
+    navigator.geolocation.getCurrentPosition(p => {
+      _leafletMap.setView([p.coords.latitude, p.coords.longitude], 15);
+      _leafletMarker.setLatLng([p.coords.latitude, p.coords.longitude]);
+    }, ()=>{}, { timeout:5000 });
+  }, 100);
+}
+
+/* ── Haversine ── */
+function _haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* ── Formato passo ── */
+function _fmtPace(kmPerSec){
+  if(!kmPerSec || kmPerSec <= 0) return '--:--';
+  const secPerKm = 1 / kmPerSec;
+  const m = Math.floor(secPerKm / 60);
+  const s = Math.round(secPerKm % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+/* ── Callback errore GPS ── */
+function _onGpsError(err){
+  const msgs = {
+    1: 'Permesso GPS negato. Abilitalo nelle impostazioni del browser.',
+    2: 'Segnale GPS non disponibile. Assicurati di essere all\'aperto.',
+    3: 'GPS troppo lento. Riprova tra qualche secondo.',
+  };
+  const msg = msgs[err.code] || 'Errore GPS.';
+  document.getElementById('gpsAccuracy').textContent = '⚠️ GPS non disponibile';
+  showToast('⚠️ ' + msg);
+}
+
+/* ── Callback GPS ── */
+function _onGpsPosition(pos){
+  const { latitude:lat, longitude:lon, accuracy } = pos.coords;
+  document.getElementById('gpsAccuracy').textContent = `±${Math.round(accuracy)}m`;
+
+  /* filtra punti troppo imprecisi */
+  if(accuracy > 30) return;
+
+  if(_gpsLastLat !== null){
+    const dist = _haversineKm(_gpsLastLat, _gpsLastLon, lat, lon);
+    /* filtra salti impossibili (>15m/s = 54km/h) */
+    const dt = (pos.timestamp - (_gpsTrack[_gpsTrack.length-1]?.ts || pos.timestamp)) / 1000;
+    if(dt > 0 && dist / dt > 0.015) return;
+    _gpsKm += dist;
+    document.getElementById('gpsKm').textContent = _gpsKm.toFixed(2);
+    const pace = sessSec > 0 ? _gpsKm / sessSec : 0;
+    document.getElementById('gpsPace').textContent = _fmtPace(pace);
+  }
+
+  _gpsLastLat = lat; _gpsLastLon = lon;
+  _gpsTrack.push({ lat, lon, ts: pos.timestamp });
+
+  /* aggiorna mappa */
+  if(_leafletLine){
+    const latlngs = _gpsTrack.map(p => [p.lat, p.lon]);
+    _leafletLine.setLatLngs(latlngs);
+    _leafletMarker.setLatLng([lat, lon]);
+    _leafletMap.panTo([lat, lon]);
+  }
+}
+
+/* ── Controlli ── */
+function gpsStart(){
+  if(!navigator.geolocation){ showToast('GPS non disponibile su questo dispositivo.'); return; }
+  _gpsRunning = true; _gpsPaused = false;
+  document.getElementById('gpsBtnStart').style.display = 'none';
+  document.getElementById('gpsBtnPause').style.display = '';
+  document.getElementById('gpsBtnStop').style.display  = '';
+  /* avvia timer */
+  clearInterval(sessInt);
+  sessInt = setInterval(()=>{
+    sessSec++;
+    const el = document.getElementById('gpsTimerSm');
+    if(el) el.textContent = fmt(sessSec);
+  }, 1000);
+  /* avvia GPS */
+  _gpsWatchId = navigator.geolocation.watchPosition(_onGpsPosition, _onGpsError, {
+    enableHighAccuracy: true, maximumAge: 2000, timeout: 10000
+  });
+  _acquireWakeLock();
+}
+
+function gpsPause(){
+  if(_gpsPaused){
+    /* riprendi */
+    _gpsPaused = false;
+    document.getElementById('gpsBtnPause').textContent = 'Pausa';
+    _gpsWatchId = navigator.geolocation.watchPosition(_onGpsPosition, _onGpsError, {
+      enableHighAccuracy: true, maximumAge: 2000, timeout: 10000
+    });
+    clearInterval(sessInt);
+    sessInt = setInterval(()=>{
+      sessSec++;
+      const el = document.getElementById('gpsTimerSm');
+      if(el) el.textContent = fmt(sessSec);
+    }, 1000);
+  } else {
+    /* pausa */
+    _gpsPaused = true;
+    document.getElementById('gpsBtnPause').textContent = 'Riprendi';
+    navigator.geolocation.clearWatch(_gpsWatchId);
+    clearInterval(sessInt);
+    _gpsLastLat = null; _gpsLastLon = null; /* evita salto distanza alla ripresa */
+  }
+}
+
+function gpsStop(){
+  navigator.geolocation.clearWatch(_gpsWatchId);
+  clearInterval(sessInt);
+  _releaseWakeLock();
+  saveGpsSession();
+}
+
+function confirmEndGps(){
+  if(!_gpsRunning){ history.back(); return; }
+  if(confirm('Vuoi terminare la sessione?')) gpsStop();
+}
+
+/* ── Salva sessione GPS ── */
+function saveGpsSession(){
+  const data = loadData();
+  const today = localDateStr();
+  const todayIdx = ((new Date().getDay()+6)%7);
+  const kcal = calcKcal(sessSec, WORKOUT.type);
+  const prevStreak = data.streak;
+
+  data.sessions.unshift({
+    id:        Date.now(),
+    date:      today,
+    dayIndex:  todayIdx,
+    dayLabel:  ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'][todayIdx],
+    type:      WORKOUT.type,
+    typeLabel: WORKOUT.typeLabel,
+    typeIcon:  WORKOUT.typeIcon,
+    kcal:      kcal,
+    duration:  sessSec,
+    km:        Math.round(_gpsKm * 100) / 100,
+    gpsTrack:  _gpsTrack,
+    paceAvg:   sessSec > 0 && _gpsKm > 0 ? Math.round((sessSec/60) / _gpsKm * 10) / 10 : null,
+    note:      `${WORKOUT.type === 'run' ? 'Corsa' : 'Bici'} GPS: ${WORKOUT.name}`,
+    guided:    false,
+    workout:   WORKOUT.name,
+    exsCompleted: [],
+  });
+
+  updateStreak(data, today);
+  saveAppData(data);
+
+  const result = { newStreak: data.streak, prevStreak, isRecord: data.streak >= data.bestStreak };
+  _afterSessionSaved(WORKOUT.name);
+
+  /* mostra schermata fine — riuso quella esistente */
+  document.getElementById('screenGps').style.display = 'none';
+  const min = Math.floor(sessSec/60), sec = sessSec%60;
+  document.getElementById('endSub').textContent = `${WORKOUT.name} · ${WORKOUT.typeLabel}`;
+  animateCount(document.getElementById('endTime'), sessSec, 900, s=>{ const m=Math.floor(s/60),r=s%60; return m>0?`${m}m ${r}s`:`${r}s`; });
+  animateCount(document.getElementById('endKcal'), kcal, 900);
+  /* km: moltiplico x100 per animateCount (che usa interi), poi divido nel formatter */
+  animateCount(document.getElementById('endSeries'), Math.round(_gpsKm * 100), 700, v => (v/100).toFixed(2));
+  /* passo medio in min/km */
+  const _paceStr = (sessSec > 0 && _gpsKm > 0)
+    ? (()=>{ const sPerKm=sessSec/_gpsKm; return `${Math.floor(sPerKm/60)}:${String(Math.round(sPerKm%60)).padStart(2,'0')}`; })()
+    : '--:--';
+  document.getElementById('endExs').textContent = _paceStr;
+
+  /* aggiorna label stats fine */
+  document.querySelectorAll('.end-stat-lbl')[2].textContent = 'km';
+  document.querySelectorAll('.end-stat-lbl')[3].textContent = 'min/km';
+
+  const isRecord = result.isRecord && result.newStreak > result.prevStreak;
+  document.getElementById('streakBadge').innerHTML = `<div class="streak-badge${isRecord?' new-record':''}">🔥 ${result.newStreak} giorni di streak${isRecord?' · Nuovo record! 🏆':''}</div>`;
+  setTimeout(()=>launchConfetti(isRecord?72:36), 300);
+
+  show('screenEnd');
 }
 
 /* ── Modal permesso notifiche ── */
@@ -2443,12 +2795,55 @@ async function _npAllow(){
   } catch(e){ console.warn('[FT] requestPermission error:', e); }
 }
 
+/* ── Pubblica post nel feed (visibile agli amici) ── */
+async function _publishSessionPost(woName){
+  try{
+    if(!window._auth || !window._db) return;
+    const user = _auth.currentUser;
+    if(!user) return;
+
+    /* calcola stats sessione */
+    let totalSets = 0, totalTon = 0;
+    WORKOUT.exs.forEach((ex, i) => {
+      const d = exData[i];
+      const weights = (d.weights||[]).filter(w => w !== null && !isNaN(w));
+      const reps    = (d.reps||[]).filter(r => r !== null && !isNaN(r));
+      totalSets += weights.length;
+      weights.forEach((kg, j) => { totalTon += kg * (reps[j] || ex.reps || 0); });
+    });
+
+    let senderName = user.displayName || '';
+    try{
+      const ld = JSON.parse(localStorage.getItem(KEY)) || {};
+      senderName = senderName || (ld.profile && ld.profile.name) || ld.username || 'Atleta';
+    } catch(e){}
+
+    const post = {
+      uid:         user.uid,
+      displayName: senderName,
+      woName:      woName || 'Allenamento',
+      type:        WORKOUT.type || 'gym',
+      duration:    sessSec,
+      kcal:        calcKcal(sessSec, WORKOUT.type),
+      sets:        totalSets,
+      tonnellaggio: Math.round(totalTon),
+      prs:         _sessionNewPRs.slice(0, 3), /* max 3 PR nel post */
+      ts:          firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await _db.collection('users').doc(user.uid).collection('posts').add(post);
+  } catch(e){ console.warn('[FT] publishPost error:', e); }
+}
+
 /* ── Hook in endSession: chiamato dopo il salvataggio ── */
 function _afterSessionSaved(woName){
   /* 1. Notifica amici su Firestore (sessione + PR raccolti) */
   _notifyFriendsOnSession(woName, _sessionNewPRs);
 
-  /* 2. Chiedi permesso notifiche se non ancora concesso (dopo 1.5s per non rompere l'animazione) */
+  /* 2. Pubblica post nel feed */
+  _publishSessionPost(woName);
+
+  /* 3. Chiedi permesso notifiche se non ancora concesso (dopo 1.5s per non rompere l'animazione) */
   if(typeof Notification !== 'undefined' && Notification.permission === 'default'){
     setTimeout(_showNotifPermModal, 1500);
   }

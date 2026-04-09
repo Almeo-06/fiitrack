@@ -830,9 +830,10 @@ html.theme-light body::before{ display:none; }
           Esporta i tuoi dati per tenerli al sicuro o trasferirli su un altro dispositivo.
         </div>
         <div class="backup-row">
-          <button class="backup-btn" onclick="exportData()">💾 Esporta backup</button>
+          <button class="backup-btn" onclick="exportData()">💾 Backup JSON</button>
           <button class="backup-btn" onclick="document.getElementById('importFile').click()">📥 Importa</button>
         </div>
+        <button class="backup-btn" onclick="exportCSV()" style="width:100%;margin-top:8px;">📊 Esporta sessioni CSV (Excel)</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
 
         <!-- ── CLOUD SYNC ── -->
@@ -881,7 +882,7 @@ html.theme-light body::before{ display:none; }
     </div>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.23</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:10px 0; letter-spacing:1px;">fiittrack v.24</p>
 
 </div>
 
@@ -1539,6 +1540,52 @@ function exportData(){
   showToast('✓ Backup esportato');
 }
 
+function exportCSV(){
+  const sessions = data.sessions || [];
+  if(!sessions.length){ showToast('Nessuna sessione da esportare', false); return; }
+
+  const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+
+  /* ── riga per ogni esercizio di ogni sessione ── */
+  const rows = [['Data','Workout','Tipo','Durata (min)','Esercizio','Serie','Reps','Kg','Tonnellaggio (kg)','Kcal','Streak']];
+  sessions.forEach(s => {
+    const date    = s.date || s.savedAt || '';
+    const woName  = s.woName || s.name || '';
+    const type    = s.type || '';
+    const dur     = s.duration ? Math.round(s.duration / 60) : '';
+    const kcal    = s.kcal || '';
+    const streak  = s.streak ?? '';
+    const exs     = s.exsCompleted || s.exercises || [];
+    if(!exs.length){
+      rows.push([date, woName, type, dur, '', '', '', '', '', kcal, streak].map(esc));
+    } else {
+      exs.forEach(ex => {
+        const sets = ex.sets_data || ex.sets || [];
+        if(!sets.length){
+          rows.push([date, woName, type, dur, ex.name||'', '', '', '', '', kcal, streak].map(esc));
+        } else {
+          sets.forEach(set => {
+            const kg  = set.kg  ?? set.weight ?? '';
+            const rps = set.reps ?? '';
+            const ton = (kg && rps) ? Math.round(kg * rps * 10) / 10 : '';
+            rows.push([date, woName, type, dur, ex.name||'', set.set||'', rps, kg, ton, kcal, streak].map(esc));
+          });
+        }
+      });
+    }
+  });
+
+  const csv  = '\uFEFF' + rows.map(r => r.join(',')).join('\r\n'); /* BOM per Excel */
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `fittrack_sessioni_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ CSV esportato');
+}
+
 function importData(e){
   const file = e.target.files[0];
   if(!file) return;
@@ -1874,6 +1921,7 @@ function applyPreset(i){
 const PAGE_INDEX = 4; // impostazioni.html = indice 4
 
 try{ init(); } catch(e){ console.warn('init error:', e); }
+if(new URLSearchParams(location.search).get('openPreset')==='1') openPreset();
 (function(){
   const sa = document.querySelector('.scroll-area');
   if(!sa) return;

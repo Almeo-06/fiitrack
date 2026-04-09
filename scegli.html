@@ -466,11 +466,18 @@ function buildUI(){
   /* sezione "tutti gli allenamenti" */
   html += '<div class="section-lbl">Tutti gli allenamenti</div>';
   if(WORKOUTS.length === 0){
-    html += `<div style="text-align:center;padding:20px 0;color:var(--textm);font-size:13px;line-height:1.6;">
-      Nessun allenamento creato.<br>
-      <span style="color:var(--a2);cursor:pointer;" onclick="location.href='impostazioni.html'">
-        Creane uno nelle Impostazioni →
-      </span>
+    html += `<div style="text-align:center;padding:28px 0 8px;color:var(--textm);font-size:13px;line-height:1.8;">
+      Nessun allenamento ancora.<br>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+        <button onclick="location.href='impostazioni.html?openPreset=1'"
+          style="padding:11px 18px;border-radius:12px;background:linear-gradient(135deg,var(--a1),var(--a2));border:none;color:#fff;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);">
+          📋 Aggiungi da modello
+        </button>
+        <button onclick="location.href='impostazioni.html'"
+          style="padding:11px 18px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--textm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);">
+          + Crea il tuo
+        </button>
+      </div>
     </div>`;
   } else {
     WORKOUTS.forEach((wo, i) => {
