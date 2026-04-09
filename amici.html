@@ -349,6 +349,42 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   text-align:center; padding:40px 20px;
   color:var(--textm); font-size:13px; line-height:1.8;
 }
+.feed-actions{
+  display:flex; align-items:center; gap:8px; margin-top:10px;
+  padding-top:10px; border-top:1px solid var(--border);
+}
+.feed-like-btn{
+  display:flex; align-items:center; gap:5px;
+  background:none; border:none;
+  padding:6px 10px; border-radius:99px;
+  cursor:pointer; transition:transform .1s;
+  font-family:var(--font);
+}
+.feed-like-btn:active{ transform:scale(.9); }
+.feed-like-btn .fire-svg path{
+  fill:none;
+  stroke:var(--text);
+  stroke-width:1.8;
+  stroke-linejoin:round;
+  stroke-linecap:round;
+  transition:fill .15s, stroke .15s;
+}
+.feed-like-btn.liked .fire-svg path{
+  fill:var(--text);
+  stroke:var(--text);
+}
+.like-count{
+  font-size:12px; color:var(--textm);
+  font-family:var(--mono); transition:color .15s;
+}
+.feed-like-btn.liked .like-count{ color:var(--text); }
+.feed-del-btn{
+  margin-left:auto;
+  background:none; border:none; cursor:pointer;
+  font-size:16px; opacity:.4; padding:6px;
+  transition:opacity .15s;
+}
+.feed-del-btn:active{ opacity:1; }
 
 /* ── TAB BAR ── */
   position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
@@ -1857,6 +1893,7 @@ function _fmtDur(sec){
 }
 
 function _renderFeedCard(post){
+  const myUid    = _auth.currentUser?.uid || '';
   const initials = (post.displayName||'?')[0].toUpperCase();
   const prsHtml  = (post.prs||[]).map(pr =>
     `<div class="feed-pr-row">🏆 Nuovo PR: ${pr.exName} — ${pr.weight}kg</div>`
@@ -1865,7 +1902,15 @@ function _renderFeedCard(post){
     ? `<span style="font-size:9px;font-family:var(--mono);color:var(--a2);background:rgba(var(--a1-rgb),.12);border:1px solid rgba(var(--a1-rgb),.25);border-radius:99px;padding:2px 8px;margin-left:6px;">Tu</span>`
     : '';
 
-  return `<div class="feed-card">
+  const likes     = post.likes || [];
+  const liked     = likes.includes(myUid);
+  const likeCount = likes.length;
+
+  const delBtn = post._isMe
+    ? `<button class="feed-del-btn" onclick="deletePost('${post._ownerUid}','${post.id}')" title="Elimina">🗑</button>`
+    : '';
+
+  return `<div class="feed-card" id="fc-${post.id}">
     <div class="feed-card-top">
       <div class="feed-av">${initials}</div>
       <div style="flex:1">
@@ -1875,13 +1920,79 @@ function _renderFeedCard(post){
     </div>
     <div class="feed-wo-name">${_typeIcon(post.type)} ${post.woName||'Allenamento'}</div>
     <div class="feed-chips">
-      ${post.duration ? `<span class="feed-chip">⏱ ${_fmtDur(post.duration)}</span>` : ''}
-      ${post.sets     ? `<span class="feed-chip">📋 ${post.sets} serie</span>` : ''}
+      ${post.duration     ? `<span class="feed-chip">⏱ ${_fmtDur(post.duration)}</span>` : ''}
+      ${post.sets         ? `<span class="feed-chip">📋 ${post.sets} serie</span>` : ''}
       ${post.tonnellaggio ? `<span class="feed-chip">⚡ ${post.tonnellaggio}kg vol.</span>` : ''}
-      ${post.kcal     ? `<span class="feed-chip">🔥 ${post.kcal} kcal</span>` : ''}
+      ${post.kcal         ? `<span class="feed-chip">🔥 ${post.kcal} kcal</span>` : ''}
     </div>
     ${prsHtml}
+    <div class="feed-actions">
+      <button class="feed-like-btn${liked?' liked':''}"
+        onclick="likePost('${post._ownerUid}','${post.id}',this)">
+        <svg class="fire-svg" viewBox="0 0 20 24" width="18" height="22">
+          <path d="M10 1C9 4 6 6 5 10c-1 3 0 6 1 7-1-2 0-4 1-5 0 3 2 5 3 7 0-2 0-4 1-5 0 2 1 4 0 6 3-2 4-5 3-8 1 2 2 5 1 7 2-3 3-6 2-9C16 7 13 4 10 1z"/>
+        </svg>
+        ${likeCount > 0 ? `<span class="like-count">${likeCount}</span>` : ''}
+      </button>
+      ${delBtn}
+    </div>
   </div>`;
+}
+
+async function likePost(ownerUid, postId, btn){
+  const myUid = _auth.currentUser?.uid;
+  if(!myUid) return;
+  const wasLiked = btn.classList.contains('liked');
+
+  /* aggiornamento ottimistico */
+  btn.classList.toggle('liked');
+  let countEl = btn.querySelector('.like-count');
+  const cur  = countEl ? parseInt(countEl.textContent)||0 : 0;
+  const next = wasLiked ? Math.max(0, cur-1) : cur+1;
+  if(next > 0){
+    if(!countEl){ countEl = document.createElement('span'); countEl.className='like-count'; btn.appendChild(countEl); }
+    countEl.textContent = next;
+  } else {
+    if(countEl) countEl.remove();
+  }
+
+  try {
+    const ref = _db.collection('users').doc(ownerUid).collection('posts').doc(postId);
+    const op  = wasLiked
+      ? firebase.firestore.FieldValue.arrayRemove(myUid)
+      : firebase.firestore.FieldValue.arrayUnion(myUid);
+    await ref.update({ likes: op });
+  } catch(e){
+    /* rollback */
+    btn.classList.toggle('liked');
+    const rollback = wasLiked ? cur : Math.max(0, cur-1);
+    countEl = btn.querySelector('.like-count');
+    if(rollback > 0){
+      if(!countEl){ countEl = document.createElement('span'); countEl.className='like-count'; btn.appendChild(countEl); }
+      countEl.textContent = rollback;
+    } else { if(countEl) countEl.remove(); }
+    showToast('Errore: ' + (e.message||e.code));
+  }
+}
+
+async function deletePost(ownerUid, postId){
+  const btn = document.querySelector(`#fc-${postId} .feed-del-btn`);
+  if(btn && btn.dataset.confirm !== '1'){
+    /* primo tap: mostra conferma */
+    btn.textContent = '✕';
+    btn.style.opacity = '1';
+    btn.style.color = '#ff4455';
+    btn.dataset.confirm = '1';
+    setTimeout(()=>{ btn.textContent='🗑'; btn.style.color=''; btn.style.opacity=''; btn.dataset.confirm=''; }, 3000);
+    return;
+  }
+  try {
+    await _db.collection('users').doc(ownerUid).collection('posts').doc(postId).delete();
+    const card = document.getElementById('fc-' + postId);
+    if(card){ card.style.opacity='0'; card.style.transition='opacity .2s'; setTimeout(()=>card.remove(), 200); }
+  } catch(e){
+    showToast('Errore eliminazione: ' + (e.message||e.code));
+  }
 }
 
 async function loadFeed(){
@@ -1908,8 +2019,8 @@ async function loadFeed(){
 
     /* 3. Unisci tutto e ordina per timestamp */
     const posts = [];
-    mySnap.docs.forEach(d => posts.push({ id:d.id, _isMe:true, ...d.data() }));
-    friendSnaps.forEach(snap => snap.docs.forEach(d => posts.push({id:d.id, ...d.data()})));
+    mySnap.docs.forEach(d => posts.push({ id:d.id, _isMe:true, _ownerUid:myUid, ...d.data() }));
+    friendSnaps.forEach((snap,i) => snap.docs.forEach(d => posts.push({id:d.id, _ownerUid:friendUids[i], ...d.data()})));
     posts.sort((a,b) => (b.ts?.toMillis()||0) - (a.ts?.toMillis()||0));
 
     if(!posts.length){
