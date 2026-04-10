@@ -17,6 +17,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+<script src="analytics.js"></script>
 <style>
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; overscroll-behavior:none; }
 
@@ -227,7 +229,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 /* ── Toast ── */
 #sessToast{ position:fixed; bottom:calc(90px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(16px); background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:10px 18px; font-size:13px; color:var(--text); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; z-index:500; box-shadow:0 4px 20px rgba(0,0,0,.3); }
 #sessToast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-.end-footer{ padding:0 20px calc(24px + env(safe-area-inset-bottom, 0px)); flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
+.end-footer{ padding:0 20px max(40px, calc(16px + env(safe-area-inset-bottom, 0px))); flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
 .home-btn{ width:100%; padding:15px; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:500; cursor:pointer; font-family:var(--font); box-shadow:0 4px 20px rgba(0,0,0,.2); }
 .share-btn{
   width:100%; padding:13px; background:transparent;
@@ -1893,7 +1895,15 @@ function endSession(){
 
   /* 1. Salva in localStorage e aggiorna streak (salta se è il workout tutorial) */
   const result = WORKOUT._tutorial ? { newStreak: 0, prevStreak: 0, isRecord: false, isTutorial: true } : saveSession(sessSec);
-  if(!WORKOUT._tutorial) _afterSessionSaved(WORKOUT.name || 'Allenamento');
+  if(!WORKOUT._tutorial){
+    _afterSessionSaved(WORKOUT.name || 'Allenamento');
+    _ftLog('session_completed', {
+      workout_name: WORKOUT.name || 'Allenamento',
+      workout_type: WORKOUT.type || 'gym',
+      duration_sec: sessSec,
+      exercises:    WORKOUT.exs ? WORKOUT.exs.length : 0
+    });
+  }
 
   /* 2. Render riepilogo */
   const min = Math.floor(sessSec/60);
@@ -2135,7 +2145,10 @@ async function goHome() {
   const toggle = document.getElementById('feedPublishToggle');
   const toggleVisible = document.getElementById('feedToggleRow')?.style.display !== 'none';
   if(toggle && toggleVisible && toggle.checked){
-    try{ await _publishSessionPost(_pendingWoName); } catch(e){}
+    try{
+      await _publishSessionPost(_pendingWoName);
+      _ftLog('feed_post_published', { workout_name: _pendingWoName });
+    } catch(e){}
   }
 
   const isRecord = sessionStorage.getItem('ft_new_streak_record') === '1';

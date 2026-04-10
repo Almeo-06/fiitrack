@@ -9,7 +9,7 @@
    - Risorse statiche (icone, manifest): cache-first
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-04-10-04'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-10-05'; /* bump per forzare aggiornamento */
 
 const CACHE_NAME   = 'fittrack-static-' + SW_VERSION;
 const STATIC_FILES = [
@@ -19,7 +19,7 @@ const STATIC_FILES = [
   'premium/exercises.html', 'premium/sessione-animata.html',
   'premium/css/exercises.css', 'premium/css/sessione-animata.css',
   'premium/js/config.js', 'premium/js/exercises.js', 'premium/js/sessione-animata.js',
-  'tutorial.js', 'widgetLayout.js',
+  'tutorial.js', 'widgetLayout.js', 'analytics.js',
   'icons/icon-192.png', 'icons/icon-512.png',
   'manifest.json'
 ];

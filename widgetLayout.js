@@ -4,6 +4,23 @@
    Funziona su qualsiasi dispositivo / safe area.
 ══════════════════════════════════════════════ */
 (function(){
+  /* ── Rileva safe area bottom in modo affidabile ──
+     env(safe-area-inset-bottom) su alcuni Android ritorna 0 anche quando
+     la gesture bar esiste. Il probe misura il valore CSS reale e lo imposta
+     come variabile --safe-b su :root, aggiornando poi --tab-bar-h di conseguenza. */
+  function _detectSafeB(){
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);pointer-events:none;opacity:0;z-index:-1;';
+    document.body.appendChild(probe);
+    const h = Math.ceil(probe.getBoundingClientRect().height);
+    document.body.removeChild(probe);
+    /* Imposta --safe-b con il valore rilevato (può essere 0 su dispositivi senza gesture bar) */
+    document.documentElement.style.setProperty('--safe-b', h + 'px');
+  }
+  _detectSafeB();
+  window.addEventListener('resize', _detectSafeB, { passive:true });
+  window.addEventListener('orientationchange', _detectSafeB, { passive:true });
+
   function _syncTabH(){
     const tb = document.querySelector('.tab-bar');
     if(!tb) return;

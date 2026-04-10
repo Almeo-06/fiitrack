@@ -11,6 +11,10 @@
   --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
   --green:#00e676; --a1-rgb:0,136,255; --a2-rgb:0,204,255;
   --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+  /* --safe-b: valore reale della gesture bar / home indicator del telefono.
+     Impostato via JS (widgetLayout.js o inline) con probe element.
+     Fallback CSS: env() per iOS, 0 per dispositivi senza gesture bar. */
+  --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Reset ── */
@@ -25,7 +29,8 @@ html{ height:-webkit-fill-available; }
   background:rgba(6,13,26,.97);
   border-top:1px solid var(--border);
   display:flex;
-  padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  /* max() garantisce almeno 20px anche se --safe-b è 0 su Android */
+  padding:8px 0 max(20px, calc(8px + var(--safe-b, env(safe-area-inset-bottom, 0px))));
   z-index:20;
 }
 .tab-bar::before{
@@ -64,7 +69,7 @@ html.theme-light .tab-item.on{ color:var(--a1); }
    e nello snippet inline di ogni pagina senza widgetLayout.
    Il fallback calc(...) copre il primo frame prima che JS giri. ── */
 .scroll-area{
-  padding-bottom: var(--tab-bar-h, calc(70px + env(safe-area-inset-bottom, 0px))) !important;
+  padding-bottom: var(--tab-bar-h, calc(88px + var(--safe-b, env(safe-area-inset-bottom, 0px)))) !important;
 }
 
 /* ── prefers-reduced-motion — base ── */
