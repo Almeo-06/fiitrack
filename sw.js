@@ -9,11 +9,11 @@
    - Risorse statiche (icone, manifest): cache-first
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-04-10-03'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-10-04'; /* bump per forzare aggiornamento */
 
 const CACHE_NAME   = 'fittrack-static-' + SW_VERSION;
 const STATIC_FILES = [
-  'home.html', 'registra.html', 'sessione.html', 'peso.html',
+  'index.html', 'home.html', 'registra.html', 'sessione.html', 'peso.html',
   'profilo.html', 'impostazioni.html', 'sfide.html', 'amici.html',
   'scegli.html', 'onboarding.html', 'privacy.html', 'terms.html',
   'premium/exercises.html', 'premium/sessione-animata.html',
