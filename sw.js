@@ -9,13 +9,13 @@
    - Risorse statiche (icone, manifest): cache-first
 ══════════════════════════════════════════════════════ */
 
-const SW_VERSION = '2026-04-09-06'; /* bump per forzare aggiornamento */
+const SW_VERSION = '2026-04-10-02'; /* bump per forzare aggiornamento */
 
 const CACHE_NAME   = 'fittrack-static-' + SW_VERSION;
 const STATIC_FILES = [
   'home.html', 'registra.html', 'sessione.html', 'peso.html',
   'profilo.html', 'impostazioni.html', 'sfide.html', 'amici.html',
-  'scegli.html', 'onboarding.html',
+  'scegli.html', 'onboarding.html', 'privacy.html', 'terms.html',
   'premium/exercises.html', 'premium/sessione-animata.html',
   'premium/css/exercises.css', 'premium/css/sessione-animata.css',
   'premium/js/config.js', 'premium/js/exercises.js', 'premium/js/sessione-animata.js',
@@ -132,7 +132,7 @@ async function _fire() {
   }
 
   try {
-    await self.registration.showNotification('FitTrack 🔥', opts);
+    await self.registration.showNotification('FiiTrack™ 🔥', opts);
   } catch (err) {
     console.warn('[SW] Notifica fallita:', err);
   }

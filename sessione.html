@@ -787,6 +787,23 @@ html.theme-light .close-btn{
 .ft-toast-name{ font-size:12px; font-weight:500; color:var(--text); }
 .ft-toast-msg{ font-size:11px; color:var(--textm); margin-top:2px; }
 
+/* ── Modale consenso GPS ── */
+#gpsConsentOverlay{
+  position:fixed; inset:0; z-index:999;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+  display:none; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+#gpsConsentOverlay.open{ opacity:1; pointer-events:auto; }
+.gps-consent-sheet{
+  width:100%; max-width:480px;
+  background:var(--bg2); border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border);
+  padding:20px 24px calc(32px + env(safe-area-inset-bottom,0px));
+  transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#gpsConsentOverlay.open .gps-consent-sheet{ transform:translateY(0); }
+
 /* ── SCHERMATA GPS ── */
 #screenGps{
   display:flex; flex-direction:column;
@@ -914,6 +931,23 @@ html.theme-light .close-btn{
     <button class="gps-btn gps-btn-start" id="gpsBtnStart" onclick="gpsStart()">Inizia</button>
     <button class="gps-btn gps-btn-pause" id="gpsBtnPause" onclick="gpsPause()" style="display:none">Pausa</button>
     <button class="gps-btn gps-btn-stop"  id="gpsBtnStop"  onclick="gpsStop()"  style="display:none">Stop</button>
+  </div>
+</div>
+
+<!-- ══ CONSENSO GPS ══ -->
+<div id="gpsConsentOverlay">
+  <div class="gps-consent-sheet">
+    <div class="np-icon">📍</div>
+    <div class="np-title">Accesso alla posizione</div>
+    <div class="np-body">FitTrack™ usa il GPS per tracciare il percorso durante la sessione.<br><br>
+      I dati sono salvati <strong style="color:var(--text)">solo sul tuo dispositivo</strong> e non vengono condivisi con terze parti.</div>
+    <div style="font-size:11px;color:var(--textm);text-align:center;margin-bottom:18px;">
+      Consulta la nostra <a href="privacy.html" style="color:var(--a1);text-decoration:none;">Privacy Policy</a>
+    </div>
+    <div class="np-btns">
+      <button class="np-allow" onclick="gpsConsentAccept()">Accetta e inizia</button>
+      <button class="np-skip" onclick="gpsConsentDecline()">Non ora</button>
+    </div>
   </div>
 </div>
 
@@ -1120,6 +1154,19 @@ html.theme-light .close-btn{
   </div>
   <div class="end-footer">
     <button class="share-btn" id="shareBtn" onclick="shareSession()">📤 Condividi allenamento</button>
+
+    <!-- Toggle pubblica nel feed — default ON, visibile solo se loggato -->
+    <div id="feedToggleRow" style="display:none;align-items:center;gap:12px;padding:6px 4px;">
+      <span style="font-size:13px;color:var(--textm);flex:1;">📢 Pubblica nel feed</span>
+      <label style="position:relative;width:44px;height:24px;flex-shrink:0;cursor:pointer;">
+        <input type="checkbox" id="feedPublishToggle" checked
+          onchange="_syncFeedToggle(this)"
+          style="opacity:0;width:0;height:0;position:absolute;">
+        <span id="feedToggleTrack" style="position:absolute;inset:0;border-radius:99px;background:rgba(var(--a1-rgb),.5);border:1px solid rgba(var(--a1-rgb),.6);transition:background .2s;"></span>
+        <span id="feedToggleThumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--a1);transition:transform .2s;transform:translateX(20px);"></span>
+      </label>
+    </div>
+
     <button class="home-btn" onclick="goHome()">← Torna alla home</button>
   </div>
 </div>
@@ -2070,7 +2117,7 @@ function saveKmNow(val){
   }, 400);
 }
 
-function goHome() {
+async function goHome() {
   /* Salva i km in modo sincrono prima di navigare —
      saveKmNow usa un debounce che verrebbe cancellato da pagehide */
   const _kmEl = document.getElementById('kmInput');
@@ -2083,6 +2130,14 @@ function goHome() {
       localStorage.setItem(KEY, JSON.stringify(_d));
     } catch(e){ console.warn('goHome km save error', e); }
   }
+
+  /* Pubblica nel feed se il toggle è ON */
+  const toggle = document.getElementById('feedPublishToggle');
+  const toggleVisible = document.getElementById('feedToggleRow')?.style.display !== 'none';
+  if(toggle && toggleVisible && toggle.checked){
+    try{ await _publishSessionPost(_pendingWoName); } catch(e){}
+  }
+
   const isRecord = sessionStorage.getItem('ft_new_streak_record') === '1';
   sessionStorage.removeItem('ft_new_streak_record');
   location.href = isRecord ? 'home.html?newRecord=1' : 'home.html';
@@ -2381,8 +2436,8 @@ async function _spShare(){
     if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
       try{
         await navigator.share({
-          title: 'FitTrack · ' + woName,
-          text:  `Ho completato "${woName}" su FitTrack! 💪  Streak ${streak}🔥`,
+          title: 'FitTrack™ · ' + woName,
+          text:  `Ho completato "${woName}" su FitTrack™! 💪  Streak ${streak}🔥`,
           files: [file],
         });
         _spClose();
@@ -2678,6 +2733,30 @@ function _updateSvgMap(){
 /* ── Controlli ── */
 function gpsStart(){
   if(!navigator.geolocation){ showToast('GPS non disponibile su questo dispositivo.'); return; }
+  /* Mostra consenso GDPR solo la prima volta */
+  if(!localStorage.getItem('fittrack_gps_consent')){
+    const ov = document.getElementById('gpsConsentOverlay');
+    ov.style.display = 'flex';
+    requestAnimationFrame(() => ov.classList.add('open'));
+    return;
+  }
+  _startGps();
+}
+
+function gpsConsentAccept(){
+  localStorage.setItem('fittrack_gps_consent','1');
+  const ov = document.getElementById('gpsConsentOverlay');
+  ov.classList.remove('open');
+  setTimeout(() => { ov.style.display = 'none'; _startGps(); }, 280);
+}
+
+function gpsConsentDecline(){
+  const ov = document.getElementById('gpsConsentOverlay');
+  ov.classList.remove('open');
+  setTimeout(() => { ov.style.display = 'none'; }, 280);
+}
+
+function _startGps(){
   _gpsRunning = true; _gpsPaused = false;
   document.getElementById('gpsBtnStart').style.display = 'none';
   document.getElementById('gpsBtnPause').style.display = '';
@@ -2862,20 +2941,63 @@ async function _publishSessionPost(woName){
     };
 
     await _db.collection('users').doc(user.uid).collection('posts').add(post);
-  } catch(e){ console.warn('[FT] publishPost error:', e); }
+
+    /* notifica amici: "X ha pubblicato nel feed" */
+    const friendSnap = await _db.collection('users').doc(user.uid).collection('friends')
+      .where('status','==','accepted').get();
+    if(!friendSnap.empty){
+      const batch = _db.batch();
+      const ts2 = firebase.firestore.FieldValue.serverTimestamp();
+      friendSnap.docs.forEach(d => {
+        batch.set(
+          _db.collection('users').doc(d.id).collection('notifications').doc(),
+          { from: user.uid, fromName: senderName, type: 'friend_posted',
+            woName: woName || 'Allenamento', ts: ts2, read: false }
+        );
+      });
+      await batch.commit();
+    }
+  } catch(e){
+    console.warn('[FT] publishPost error:', e);
+    throw e; /* rilancia per gestire nel bottone manuale */
+  }
 }
 
 /* ── Hook in endSession: chiamato dopo il salvataggio ── */
+let _pendingWoName = '';
+
 function _afterSessionSaved(woName){
+  _pendingWoName = woName || 'Allenamento';
+
   /* 1. Notifica amici su Firestore (sessione + PR raccolti) */
   _notifyFriendsOnSession(woName, _sessionNewPRs);
 
-  /* 2. Pubblica post nel feed */
-  _publishSessionPost(woName);
+  /* 2. Mostra toggle "Pubblica nel feed" solo se loggato */
+  if(window._auth && _auth.currentUser){
+    const row = document.getElementById('feedToggleRow');
+    if(row) row.style.display = 'flex';
+  }
 
   /* 3. Chiedi permesso notifiche se non ancora concesso (dopo 1.5s per non rompere l'animazione) */
   if(typeof Notification !== 'undefined' && Notification.permission === 'default'){
     setTimeout(_showNotifPermModal, 1500);
+  }
+}
+
+/* aggiorna visuale del toggle */
+function _syncFeedToggle(inp){
+  const thumb = document.getElementById('feedToggleThumb');
+  const track = document.getElementById('feedToggleTrack');
+  if(inp.checked){
+    thumb.style.transform = 'translateX(20px)';
+    thumb.style.background = 'var(--a1)';
+    track.style.background = 'rgba(var(--a1-rgb),.5)';
+    track.style.borderColor = 'rgba(var(--a1-rgb),.6)';
+  } else {
+    thumb.style.transform = 'translateX(0)';
+    thumb.style.background = 'var(--textm)';
+    track.style.background = 'var(--bg3)';
+    track.style.borderColor = 'var(--border)';
   }
 }
 </script>

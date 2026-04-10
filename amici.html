@@ -1500,10 +1500,16 @@ function _startWorkoutNotifListener(uid){
         const n = change.doc.data();
 
         /* costruisci titolo e corpo in base al tipo */
-        let title = 'FitTrack 💪', body = '';
+        let title = 'FiiTrack™ 💪', body = '';
         if(n.type === 'personal_record'){
-          title = 'FitTrack 🏅';
+          title = 'FiiTrack™ 🏅';
           body  = `${n.fromName || 'Un amico'} ha battuto il suo PR su ${n.exName} — ${n.weight} kg!`;
+        } else if(n.type === 'like_received'){
+          title = 'FiiTrack™ 👍';
+          body  = `${n.fromName || 'Un amico'} ha messo like al tuo allenamento`;
+        } else if(n.type === 'friend_posted'){
+          title = 'FiiTrack™ 📢';
+          body  = `${n.fromName || 'Un amico'} ha pubblicato un allenamento nel feed`;
         } else {
           body  = `${n.fromName || 'Un amico'} ha completato "${n.woName || 'un allenamento'}"`;
         }
@@ -2040,7 +2046,7 @@ function _renderFeedCard(post){
   /* like avatars sovrapposti */
   let likeAvatarsHtml = '';
   if(likeCount > 0){
-    const visible = likes.slice(0, 3);
+    const visible = likes.slice(0, 4); /* mostra fino a 4 avatar */
     const extra   = likeCount - visible.length;
     const iconsHtml = visible.map(uid => {
       const u = _userCache[uid] || {};
@@ -2050,7 +2056,12 @@ function _renderFeedCard(post){
         : `<div class="like-av">${(u.displayName||u.username||'?')[0].toUpperCase()}</div>`;
     }).join('');
     const extraHtml = extra > 0 ? `<div class="like-av like-av-more">+${extra}</div>` : '';
-    likeAvatarsHtml = `<div class="like-avatars" onclick="openLikesModal('${post.id}')">${iconsHtml}${extraHtml}</div>`;
+    /* solo il proprietario del post può aprire il modal con i nomi */
+    if(post._isMe){
+      likeAvatarsHtml = `<div class="like-avatars" onclick="openLikesModal('${post.id}')" style="cursor:pointer">${iconsHtml}${extraHtml}</div>`;
+    } else {
+      likeAvatarsHtml = `<div class="like-avatars" style="cursor:default;pointer-events:none">${iconsHtml}${extraHtml}</div>`;
+    }
   }
 
   const delBtn = post._isMe
@@ -2119,6 +2130,19 @@ async function likePost(ownerUid, postId, btn){
       ? firebase.firestore.FieldValue.arrayRemove(myUid)
       : firebase.firestore.FieldValue.arrayUnion(myUid);
     await ref.update({ likes: op });
+
+    /* notifica al proprietario del post se è un nuovo like (non unlike) e non è il proprio post */
+    if(!wasLiked && ownerUid !== myUid){
+      const user = _auth.currentUser;
+      _db.collection('users').doc(ownerUid).collection('notifications').add({
+        type: 'like_received',
+        from: myUid,
+        fromName: user.displayName || 'Un amico',
+        postId: postId,
+        read: false,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(()=>{});
+    }
   } catch(e){
     /* rollback */
     btn.classList.toggle('liked');

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FiiTrack™ · Privacy Policy</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
+<style>
+body{
+  background:var(--bg); color:var(--text); font-family:var(--font);
+  max-width:480px; margin:0 auto;
+  min-height:100vh; overscroll-behavior:none;
+}
+.page-hdr{
+  position:sticky; top:0; z-index:10;
+  background:var(--bg); border-bottom:1px solid var(--border);
+  padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px;
+  display:flex; align-items:center; gap:12px;
+}
+.back-btn{
+  width:32px; height:32px; border-radius:50%; background:var(--bg3);
+  border:none; color:var(--textm); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.page-title{ font-size:16px; font-weight:600; color:var(--text); }
+.content{
+  padding:24px 20px calc(40px + env(safe-area-inset-bottom,0px));
+}
+.last-update{
+  font-family:var(--mono); font-size:10px; color:var(--textm);
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:24px;
+}
+.section{ margin-bottom:28px; }
+h2{
+  font-size:14px; font-weight:600; color:var(--a1);
+  font-family:var(--mono); letter-spacing:.5px; text-transform:uppercase;
+  margin:0 0 10px;
+}
+p{ font-size:13px; color:var(--textm); line-height:1.7; margin:0 0 10px; }
+ul{ margin:6px 0 10px; padding-left:18px; }
+li{ font-size:13px; color:var(--textm); line-height:1.7; margin-bottom:4px; }
+.tag{
+  display:inline-block; background:rgba(var(--a1-rgb),.1);
+  border:1px solid rgba(var(--a1-rgb),.2); color:var(--a1);
+  font-size:11px; font-family:var(--mono); border-radius:6px;
+  padding:2px 8px; margin:2px 2px 6px 0;
+}
+.highlight{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px; margin-bottom:10px;
+}
+.highlight p{ margin:0; }
+a{ color:var(--a1); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+hr{ border:none; border-top:1px solid var(--border); margin:24px 0; }
+</style>
+</head>
+<body>
+
+<div class="page-hdr">
+  <button class="back-btn" onclick="history.back()">‹</button>
+  <div class="page-title">Privacy Policy</div>
+</div>
+
+<div class="content">
+  <div class="last-update">Ultimo aggiornamento: 10 aprile 2026</div>
+
+  <div class="section">
+    <h2>Chi siamo</h2>
+    <p>FiiTrack™ è un'applicazione web progressiva (PWA) sviluppata da <strong style="color:var(--text)">Almeo-06</strong> per il tracciamento personale degli allenamenti. L'app è distribuita tramite GitHub Pages all'indirizzo del progetto <em>fiitrack</em>.</p>
+    <p>Per qualsiasi domanda sulla privacy scrivi a: <a href="mailto:privacy@fittrack.app">privacy@fittrack.app</a></p>
+  </div>
+
+  <div class="section">
+    <h2>Dati che raccogliamo</h2>
+
+    <div class="highlight">
+      <p><strong style="color:var(--text)">Dati salvati solo sul tuo dispositivo (localStorage)</strong></p>
+    </div>
+    <ul>
+      <li>Allenamenti, serie, ripetizioni, pesi</li>
+      <li>Peso corporeo e obiettivi</li>
+      <li>Streak e storico sessioni</li>
+      <li>Preferenze app (tema, notifiche)</li>
+      <li>Foto profilo (ridimensionata a max 200×200 px)</li>
+    </ul>
+
+    <div class="highlight">
+      <p><strong style="color:var(--text)">Dati salvati su cloud (Firebase/Firestore) — solo se accedi con Google</strong></p>
+    </div>
+    <ul>
+      <li>Email e nome del tuo account Google</li>
+      <li>Foto profilo Google (URL pubblico)</li>
+      <li>Dati condivisi con amici (streak, sessioni settimana, PR — controllabili nelle impostazioni)</li>
+      <li>Post nel feed sociale (workout completati)</li>
+      <li>Notifiche tra amici</li>
+    </ul>
+
+    <div class="highlight">
+      <p><strong style="color:var(--text)">Dati GPS — solo con consenso esplicito, solo per sessioni corsa/bici</strong></p>
+    </div>
+    <ul>
+      <li>Coordinate geografiche durante la sessione</li>
+      <li>Distanza percorsa e passo medio</li>
+      <li>Il tracciato GPS è salvato solo in localStorage, non viene inviato a server</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Come usiamo i dati</h2>
+    <ul>
+      <li>Mostrare statistiche e progressi personali</li>
+      <li>Calcolare streak e record personali</li>
+      <li>Consentire la funzione amici e il feed sociale (solo se attivato)</li>
+      <li>Inviare notifiche di promemoria allenamento (solo se autorizzato)</li>
+      <li>Tracciare percorso GPS durante le sessioni di corsa/bici (solo se autorizzato)</li>
+    </ul>
+    <p>Non usiamo i tuoi dati per pubblicità, profilazione commerciale o vendita a terze parti.</p>
+  </div>
+
+  <div class="section">
+    <h2>Servizi di terze parti</h2>
+    <ul>
+      <li><strong style="color:var(--text)">Google Firebase</strong> — autenticazione e database cloud. <a href="https://firebase.google.com/support/privacy" target="_blank">Privacy Policy Firebase</a></li>
+      <li><strong style="color:var(--text)">Google Fonts</strong> — font DM Sans e DM Mono caricati da CDN Google. <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy Google</a></li>
+    </ul>
+    <p>Nessun cookie di tracciamento, nessuna piattaforma pubblicitaria.</p>
+  </div>
+
+  <div class="section">
+    <h2>I tuoi diritti (GDPR)</h2>
+    <p>In quanto residente nell'UE hai diritto a:</p>
+    <ul>
+      <li><strong style="color:var(--text)">Accesso</strong> — sapere quali dati abbiamo su di te</li>
+      <li><strong style="color:var(--text)">Rettifica</strong> — correggere dati errati</li>
+      <li><strong style="color:var(--text)">Cancellazione (diritto all'oblio)</strong> — eliminare tutti i tuoi dati</li>
+      <li><strong style="color:var(--text)">Portabilità</strong> — esportare i dati (usa il pulsante "Esporta CSV" nelle Impostazioni)</li>
+      <li><strong style="color:var(--text)">Opposizione</strong> — opporti al trattamento in qualsiasi momento</li>
+    </ul>
+    <p>Per esercitare i tuoi diritti o richiedere la cancellazione dell'account: <a href="mailto:privacy@fittrack.app">privacy@fittrack.app</a></p>
+  </div>
+
+  <div class="section">
+    <h2>Conservazione dei dati</h2>
+    <ul>
+      <li>Dati localStorage: rimangono sul tuo dispositivo finché non li elimini o disinstalli l'app</li>
+      <li>Dati Firestore (cloud): conservati finché non richiedi la cancellazione dell'account</li>
+      <li>Tracciati GPS: solo localStorage, mai su cloud</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Sicurezza</h2>
+    <p>I dati cloud sono protetti dalle regole di sicurezza Firebase (accesso solo all'utente autenticato proprietario). I dati locali sono sul tuo dispositivo e non trasmessi senza consenso.</p>
+  </div>
+
+  <div class="section">
+    <h2>Modifiche a questa policy</h2>
+    <p>Eventuali modifiche saranno notificate tramite la schermata delle impostazioni dell'app. Continuando a usare FiiTrack™ dopo le modifiche, accetti la nuova versione.</p>
+  </div>
+
+  <hr>
+
+  <div style="text-align:center;">
+    <a href="terms.html" style="font-size:12px;">Termini di utilizzo</a>
+    &nbsp;·&nbsp;
+    <a href="impostazioni.html" style="font-size:12px;">Impostazioni</a>
+  </div>
+
+  <p style="text-align:center; font-family:var(--mono); font-size:10px; color:var(--textm); padding:16px 0 0; letter-spacing:1px;">fiittrack · privacy policy</p>
+</div>
+
+</body>
+</html>

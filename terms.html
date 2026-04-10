@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FiiTrack™ · Termini di utilizzo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
+<style>
+body{
+  background:var(--bg); color:var(--text); font-family:var(--font);
+  max-width:480px; margin:0 auto;
+  min-height:100vh; overscroll-behavior:none;
+}
+.page-hdr{
+  position:sticky; top:0; z-index:10;
+  background:var(--bg); border-bottom:1px solid var(--border);
+  padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px;
+  display:flex; align-items:center; gap:12px;
+}
+.back-btn{
+  width:32px; height:32px; border-radius:50%; background:var(--bg3);
+  border:none; color:var(--textm); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.page-title{ font-size:16px; font-weight:600; color:var(--text); }
+.content{
+  padding:24px 20px calc(40px + env(safe-area-inset-bottom,0px));
+}
+.last-update{
+  font-family:var(--mono); font-size:10px; color:var(--textm);
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:24px;
+}
+.section{ margin-bottom:28px; }
+h2{
+  font-size:14px; font-weight:600; color:var(--a1);
+  font-family:var(--mono); letter-spacing:.5px; text-transform:uppercase;
+  margin:0 0 10px;
+}
+p{ font-size:13px; color:var(--textm); line-height:1.7; margin:0 0 10px; }
+ul{ margin:6px 0 10px; padding-left:18px; }
+li{ font-size:13px; color:var(--textm); line-height:1.7; margin-bottom:4px; }
+.highlight{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px; margin-bottom:10px;
+}
+.highlight p{ margin:0; }
+a{ color:var(--a1); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+hr{ border:none; border-top:1px solid var(--border); margin:24px 0; }
+.warning{
+  background:rgba(255,170,0,.08); border:1px solid rgba(255,170,0,.2);
+  border-radius:12px; padding:14px 16px; margin-bottom:10px;
+}
+.warning p{ margin:0; color:var(--textm); }
+</style>
+</head>
+<body>
+
+<div class="page-hdr">
+  <button class="back-btn" onclick="history.back()">‹</button>
+  <div class="page-title">Termini di utilizzo</div>
+</div>
+
+<div class="content">
+  <div class="last-update">Ultimo aggiornamento: 10 aprile 2026</div>
+
+  <div class="section">
+    <h2>Accettazione dei termini</h2>
+    <p>Utilizzando FiiTrack™ accetti questi Termini di utilizzo. Se non li accetti, ti preghiamo di non usare l'app.</p>
+  </div>
+
+  <div class="section">
+    <h2>Descrizione del servizio</h2>
+    <p>FiiTrack™ è un'applicazione web progressiva (PWA) gratuita per il tracciamento personale degli allenamenti, sviluppata da <strong style="color:var(--text)">Almeo-06</strong> e distribuita tramite GitHub Pages.</p>
+    <p>Il servizio include:</p>
+    <ul>
+      <li>Registrazione e pianificazione degli allenamenti</li>
+      <li>Tracciamento del peso corporeo</li>
+      <li>Sfide personali e obiettivi</li>
+      <li>Feed sociale e sistema amici (richiede account Google)</li>
+      <li>Tracciamento GPS per sessioni di corsa e bici</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Account e accesso</h2>
+    <p>L'app funziona senza registrazione per le funzionalità di base. L'accesso con Google è richiesto esclusivamente per il sistema amici e il feed sociale.</p>
+    <p>Sei responsabile della sicurezza del tuo account Google e di tutte le attività eseguite con esso.</p>
+  </div>
+
+  <div class="section">
+    <h2>Contenuti degli utenti</h2>
+    <p>Pubblicando contenuti nel feed sociale (post sessioni, like) dichiari che:</p>
+    <ul>
+      <li>I contenuti sono tuoi o hai il diritto di pubblicarli</li>
+      <li>I contenuti non violano diritti di terze parti</li>
+      <li>I contenuti non sono offensivi, illegali o inappropriati</li>
+    </ul>
+    <p>Mantieni la proprietà dei tuoi contenuti. Ci riserviamo il diritto di rimuovere contenuti che violino questi termini.</p>
+  </div>
+
+  <div class="section">
+    <h2>Uso consentito</h2>
+    <p>Puoi utilizzare FiiTrack™ per:</p>
+    <ul>
+      <li>Uso personale e non commerciale</li>
+      <li>Condivisione con amici tramite le funzioni integrate</li>
+    </ul>
+    <p>Non puoi:</p>
+    <ul>
+      <li>Usare l'app per attività illegali</li>
+      <li>Tentare di accedere ai dati di altri utenti</li>
+      <li>Manipolare il sistema amici, like o sfide in modo fraudolento</li>
+      <li>Fare scraping o uso automatizzato non autorizzato dei dati</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>GPS e posizione</h2>
+    <div class="warning">
+      <p>Il tracking GPS avviene solo dopo il tuo consenso esplicito. Puoi revocare il consenso in qualsiasi momento dalle impostazioni del browser. I dati GPS rimangono esclusivamente sul tuo dispositivo.</p>
+    </div>
+    <p>FiiTrack™ non è un dispositivo medico certificato. Non usare i dati di distanza, passo o calorie per decisioni cliniche o di sicurezza.</p>
+  </div>
+
+  <div class="section">
+    <h2>Limitazione di responsabilità</h2>
+    <div class="warning">
+      <p><strong style="color:var(--text)">Importante:</strong> FiiTrack™ è fornita "così com'è" senza garanzie di alcun tipo. Prima di iniziare qualsiasi programma di allenamento consulta un medico o un professionista del fitness.</p>
+    </div>
+    <p>Non siamo responsabili per:</p>
+    <ul>
+      <li>Infortuni o problemi di salute derivanti dall'uso dell'app</li>
+      <li>Perdita di dati (effettua backup regolari tramite Export CSV)</li>
+      <li>Interruzioni del servizio GitHub Pages o Firebase</li>
+      <li>Imprecisioni nei dati GPS</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Proprietà intellettuale</h2>
+    <p>Il codice, il design e il nome "FiiTrack™" sono di proprietà di Almeo-06. Non puoi copiare, modificare o redistribuire l'app senza autorizzazione scritta.</p>
+    <p>Font DM Sans e DM Mono sono distribuiti sotto licenza SIL Open Font License.</p>
+    <p>Firebase è un servizio Google LLC, soggetto ai propri termini di servizio.</p>
+  </div>
+
+  <div class="section">
+    <h2>Sospensione e terminazione</h2>
+    <p>Ci riserviamo il diritto di sospendere l'accesso alla parte cloud (Firebase) in caso di violazione di questi termini. I dati locali rimarranno sempre sul tuo dispositivo.</p>
+    <p>Puoi smettere di usare l'app in qualsiasi momento. Per eliminare i tuoi dati cloud contatta: <a href="mailto:privacy@fittrack.app">privacy@fittrack.app</a></p>
+  </div>
+
+  <div class="section">
+    <h2>Legge applicabile</h2>
+    <p>Questi termini sono regolati dalla legge italiana e dal diritto dell'Unione Europea (incluso il GDPR). Per qualsiasi controversia è competente il Foro di residenza dell'utente consumatore.</p>
+  </div>
+
+  <div class="section">
+    <h2>Modifiche ai termini</h2>
+    <p>Eventuali modifiche saranno notificate tramite l'app con almeno 15 giorni di preavviso. Continuando a usare FiiTrack™ dopo le modifiche, accetti i nuovi termini.</p>
+  </div>
+
+  <div class="section">
+    <h2>Contatti</h2>
+    <p>Per domande su questi termini: <a href="mailto:privacy@fittrack.app">privacy@fittrack.app</a></p>
+  </div>
+
+  <hr>
+
+  <div style="text-align:center;">
+    <a href="privacy.html" style="font-size:12px;">Privacy Policy</a>
+    &nbsp;·&nbsp;
+    <a href="impostazioni.html" style="font-size:12px;">Impostazioni</a>
+  </div>
+
+  <p style="text-align:center; font-family:var(--mono); font-size:10px; color:var(--textm); padding:16px 0 0; letter-spacing:1px;">fiittrack · termini di utilizzo</p>
+</div>
+
+</body>
+</html>
