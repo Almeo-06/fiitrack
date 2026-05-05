@@ -19,6 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
+<script src="ft-icons.js"></script>
 <style>
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; overscroll-behavior:none; }
 
@@ -37,8 +38,10 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .sess-timer{ font-family:var(--mono); font-size:12px; color:var(--textm); }
 .close-btn{ width:28px; height:28px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .prog-row{ display:flex; align-items:center; gap:10px; }
-.prog-bg{ flex:1; height:3px; background:var(--bg3); border-radius:99px; overflow:hidden; }
-.prog-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--a1),var(--a2)); transform-origin:left; transform:scaleX(0); transition:transform .3s; }
+.prog-ring-sm{ position:relative; width:26px; height:26px; flex-shrink:0; }
+.prog-ring-sm-svg{ width:26px; height:26px; transform:rotate(-90deg); display:block; }
+.prog-ring-sm-bg{ fill:none; stroke:var(--bg3); stroke-width:3; }
+.prog-ring-sm-fill{ fill:none; stroke-width:3; stroke-linecap:round; transition:stroke-dashoffset .3s ease; }
 .prog-lbl{ font-family:var(--mono); font-size:10px; color:var(--textm); white-space:nowrap; }
 
 /* ══ ESERCIZIO ATTIVO ══ */
@@ -726,12 +729,12 @@ html.theme-light .close-btn{
   transform: scale(0); animation: rippleOut .55s linear forwards;
 }
 
-/* 4. Progress bar milestone glow */
+/* 4. Progress ring milestone glow */
 @keyframes progMilestone {
-  0%,100% { opacity: 1; }
-  40%     { box-shadow: 0 0 10px rgba(var(--a1-rgb),.7), 0 0 20px rgba(var(--a1-rgb),.4); }
+  0%,100% { filter: none; }
+  40%     { filter: drop-shadow(0 0 5px rgba(var(--a1-rgb),.9)) drop-shadow(0 0 10px rgba(var(--a1-rgb),.5)); }
 }
-.prog-fill.milestone { animation: progMilestone .55s ease; }
+.prog-ring-sm-fill.milestone { animation: progMilestone .55s ease; }
 
 /* 5. Slide-in esercizio */
 @keyframes exSlideIn {
@@ -744,7 +747,7 @@ html.theme-light .close-btn{
   .skel-row { animation: none; background: var(--bg3); }
   .streak-badge.pulse { animation: none; }
   .ripple-el { animation: none; }
-  .prog-fill.milestone { animation: none; }
+  .prog-ring-sm-fill.milestone { animation: none; }
   .ex-slide-in { animation: none; }
 }
 
@@ -964,7 +967,19 @@ html.theme-light .close-btn{
       </div>
     </div>
     <div class="prog-row">
-      <div class="prog-bg"><div class="prog-fill" id="exFill" style="width:0%"></div></div>
+      <div class="prog-ring-sm">
+        <svg class="prog-ring-sm-svg" viewBox="0 0 26 26">
+          <defs>
+            <linearGradient id="exGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--a1)"/>
+              <stop offset="100%" stop-color="var(--a2)"/>
+            </linearGradient>
+          </defs>
+          <circle class="prog-ring-sm-bg" cx="13" cy="13" r="10"/>
+          <circle class="prog-ring-sm-fill" id="exFill" cx="13" cy="13" r="10"
+            stroke="url(#exGrad)" stroke-dasharray="62.8" stroke-dashoffset="62.8"/>
+        </svg>
+      </div>
       <div class="prog-lbl" id="exProgLbl"></div>
     </div>
   </div>
@@ -1050,7 +1065,13 @@ html.theme-light .close-btn{
       <button class="close-btn" onclick="confirmEnd()">✕</button>
     </div>
     <div class="prog-row">
-      <div class="prog-bg"><div class="prog-fill" id="recFill" style="width:0%"></div></div>
+      <div class="prog-ring-sm">
+        <svg class="prog-ring-sm-svg" viewBox="0 0 26 26">
+          <circle class="prog-ring-sm-bg" cx="13" cy="13" r="10"/>
+          <circle class="prog-ring-sm-fill" id="recFill" cx="13" cy="13" r="10"
+            stroke="url(#exGrad)" stroke-dasharray="62.8" stroke-dashoffset="62.8"/>
+        </svg>
+      </div>
       <div class="prog-lbl" id="recProgLbl"></div>
     </div>
   </div>
@@ -1675,9 +1696,9 @@ function renderEx(){
   const d  = sd[curEx];
   const _p = pct();
   EL.exTitle.textContent   = ex.name;
-  EL.exFill.style.transform = `scaleX(${_p/100})`;
+  EL.exFill.style.strokeDashoffset = (62.8 * (1 - _p / 100)).toFixed(2);
   EL.exProgLbl.textContent = `Serie ${d+1} / ${ex.sets}`;
-  EL.exCircle.textContent  = ex.icon;
+  EL.exCircle.innerHTML    = ftIcon(ex.iconKey || 'altro');
   EL.exName.textContent    = ex.name;
 
   /* label peso/km — legge i PR una volta sola */
@@ -1759,7 +1780,7 @@ function renderEx(){
   const nx = WORKOUT.exs[curEx+1];
   if(nx){
     EL.nextCard.style.display = 'flex';
-    EL.nextIcon.textContent   = nx.icon;
+    EL.nextIcon.innerHTML     = ftIcon(nx.iconKey || 'altro');
     EL.nextName.textContent   = nx.name;
     EL.nextSets.textContent   = `${nx.sets} serie · ${nx.reps} rep`;
   } else {
@@ -1849,7 +1870,7 @@ function openRec(sec){
   const ex = WORKOUT.exs[curEx];
   const d  = sd[curEx];
   EL.recTitle.textContent          = 'Recupero · '+ex.name;
-  EL.recFill.style.transform       = `scaleX(${pct()/100})`;
+  EL.recFill.style.strokeDashoffset = (62.8 * (1 - pct() / 100)).toFixed(2);
 
   const _lastEx = WORKOUT.exs[lastCompletedEx];
   const _lastCG = _lastEx?.circuitGroup ?? null;
@@ -1863,8 +1884,8 @@ function openRec(sec){
 
   const nx = afterExDone && WORKOUT.exs[curEx+1];
   EL.rncCard.innerHTML = nx
-    ? `<div class="rnc-icon">${nx.icon}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${nx.sets} serie · ${nx.reps} rep</div></div>`
-    : `<div class="rnc-icon">${ex.icon}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1} · ${ex.reps} rep</div></div>`;
+    ? `<div class="rnc-icon">${ftIcon(nx.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${nx.sets} serie · ${nx.reps} rep</div></div>`
+    : `<div class="rnc-icon">${ftIcon(ex.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1} · ${ex.reps} rep</div></div>`;
 
   updateRing();
   show('screenRec');
@@ -1966,7 +1987,7 @@ function endSession(){
       return `<div class="end-ex-series">${parts.map(p=>`<span class="end-ex-serie-pill">${p}</span>`).join('')}</div>`;
     })();
     return `<div class="end-ex-row" style="animation-delay:${delay}s">
-      <div class="end-ex-icon">${ex.icon}</div>
+      <div class="end-ex-icon">${ftIcon(ex.iconKey||'altro')}</div>
       <div style="flex:1">
         <div class="end-ex-name">${ex.name}${prBadge}</div>
         <div class="end-ex-detail">${sd[i]} / ${ex.sets} serie · ${ex.timed ? (ex.reps>=60 ? Math.floor(ex.reps/60)+':'+(ex.reps%60).toString().padStart(2,'0') : ex.reps+'s') : ex.reps+' rep'}${weightTxt}</div>

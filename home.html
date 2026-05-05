@@ -514,6 +514,23 @@ html.theme-light #installBanner{
   .wbar-wrap { animation: none; opacity: 1; }
   .hero-track { transition: none; }
 }
+
+/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
+.recap-card{
+  background:transparent; border:none; border-radius:0;
+  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
+}
+.plan-card{
+  background:transparent; border:none; border-radius:0;
+  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
+}
+html.theme-light .recap-card,
+html.theme-light .plan-card{
+  background:transparent !important; box-shadow:none !important;
+  border-top:1px solid var(--border) !important;
+  border-left:none !important; border-right:none !important; border-bottom:none !important;
+}
+/* ════ fine OPEN LAYOUT ════ */
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();

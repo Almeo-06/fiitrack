@@ -15,6 +15,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
+<script src="ft-icons.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -136,7 +137,7 @@ body{
   display:flex; align-items:center; gap:8px;
   background:var(--bg3); border-radius:8px; padding:7px 10px;
 }
-.ex-row-icon{ font-size:14px; width:22px; text-align:center; flex-shrink:0; }
+.ex-row-icon{ font-size:14px; width:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .ex-row-name{ font-size:12px; color:var(--text); flex:1; }
 .ex-row-detail{ font-size:10px; color:var(--textm); font-family:var(--mono); }
 
@@ -301,6 +302,31 @@ html.theme-light body::before{ display:none; }
   .arr { animation: none; }
   .start-btn::after { animation: none; }
 }
+
+/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
+.wo-card{
+  background:transparent; border:none; border-radius:0;
+  border-bottom:1px solid var(--border);
+  padding:14px 0; margin-bottom:0;
+}
+.wo-card:last-child{ border-bottom:none; }
+.wo-card.selected{
+  background:rgba(var(--a1-rgb),.04);
+  border-bottom-color:rgba(var(--a1-rgb),.25);
+  box-shadow:none;
+}
+.wo-card.oggi-card{
+  background:rgba(var(--a1-rgb),.04); border-color:rgba(var(--a1-rgb),.2);
+}
+html.theme-light .wo-card{
+  background:transparent !important; border-top:none !important;
+  border-left:none !important; border-right:none !important;
+  border-bottom:1px solid var(--border) !important; box-shadow:none !important;
+}
+html.theme-light .wo-card.selected{
+  background:rgba(var(--a1-rgb),.04) !important;
+}
+/* ════ fine OPEN LAYOUT ════ */
 </style>
 </head>
 <body>
@@ -388,7 +414,7 @@ html.theme-light body::before{ display:none; }
 })();
 
 /* ── Carica allenamenti da localStorage ── */
-const _TICON2  = {gym:'🏋️', run:'🏃', bike:'🚴', other:'💪'};
+const _TICON2  = {gym:'bilanciere', run:'corsa', bike:'cyclette', other:'corpo_libero'};
 const _TLABEL2 = {gym:'Palestra', run:'Corsa', bike:'Bici', other:'Altro'};
 
 let _sd = {};
@@ -400,10 +426,10 @@ const WORKOUTS = (_sd.workouts && _sd.workouts.length)
       name:      w.name,
       type:      w.type,
       typeLabel: _TLABEL2[w.type] || 'Altro',
-      icon:      _TICON2[w.type]  || '💪',
+      iconKey:   _TICON2[w.type]  || 'corpo_libero',
       exs:       w.exs.map(ex => ({
         name: ex.name, sets: ex.sets, reps: ex.reps,
-        rec:  ex.rec || 90, icon: _TICON2[w.type] || '💪', weight: ex.weight ?? null, timed: ex.timed || false
+        rec:  ex.rec || 90, iconKey: ex.iconKey || _TICON2[w.type] || 'corpo_libero', weight: ex.weight ?? null, timed: ex.timed || false
       }))
     }))
   : [];  /* nessun allenamento personalizzato ancora */
@@ -423,7 +449,7 @@ function renderCard(wo, isToday, delay){
   const min = minStimati(wo.exs);
   const exsHtml = wo.exs.map(ex=>`
     <div class="ex-row">
-      <span class="ex-row-icon">${ex.icon}</span>
+      <span class="ex-row-icon">${ftIcon(ex.iconKey || 'corpo_libero')}</span>
       <span class="ex-row-name">${ex.name}</span>
       <span class="ex-row-detail">${ex.sets}×${ex.reps}</span>
     </div>`).join('');
@@ -435,14 +461,14 @@ function renderCard(wo, isToday, delay){
       ${isToday ? '<div class="oggi-badge">● consigliato oggi</div>' : ''}
       <div class="selected-check">✓</div>
       <div class="wo-top">
-        <div class="wo-icon">${wo.icon}</div>
+        <div class="wo-icon">${ftIcon(wo.iconKey || 'corpo_libero')}</div>
         <div>
           <div class="wo-name">${wo.name}</div>
           <div class="wo-type">${wo.typeLabel}</div>
         </div>
       </div>
       <div class="wo-meta">
-        <span class="wo-chip">🏋️ ${wo.exs.length} esercizi</span>
+        <span class="wo-chip" style="display:inline-flex;align-items:center;gap:4px;">${ftIcon('bilanciere')} ${wo.exs.length} esercizi</span>
         <span class="wo-chip">⏱ ~${min} min</span>
         <span class="wo-chip">🔥 ~${Math.round(min*5.5)} kcal</span>
       </div>
@@ -569,8 +595,8 @@ function avvia(){
     day:       `${giorni[today.getDay()]} · ${wo.typeLabel}`,
     type:      wo.type,
     typeLabel: wo.typeLabel,
-    typeIcon:  wo.icon,
-    exs:       wo.exs.map(ex=>({name:ex.name, sets:ex.sets, reps:ex.reps, rec:ex.rec||90, icon:ex.icon||'💪', circuitGroup:ex.circuitGroup??null, weight:ex.weight??null, timed:ex.timed||false}))
+    typeIcon:  wo.iconKey,
+    exs:       wo.exs.map(ex=>({name:ex.name, sets:ex.sets, reps:ex.reps, rec:ex.rec||90, iconKey:ex.iconKey||'corpo_libero', circuitGroup:ex.circuitGroup??null, weight:ex.weight??null, timed:ex.timed||false}))
   };
   localStorage.setItem('fittrack_pending', JSON.stringify(pending));
   location.href = 'sessione.html';
@@ -632,8 +658,8 @@ function startCustomWorkout(){
   if(!_customExs.length){ alert('Aggiungi almeno un esercizio.'); return; }
   const pending = {
     name: 'Allenamento libero', day: 'Oggi · Palestra',
-    type: 'gym', typeLabel: 'Palestra', typeIcon: '🏋️',
-    exs: _customExs.map(ex => ({name:ex.name, sets:ex.sets, reps:ex.reps, rec:90, icon:'💪'}))
+    type: 'gym', typeLabel: 'Palestra', typeIcon: 'bilanciere',
+    exs: _customExs.map(ex => ({name:ex.name, sets:ex.sets, reps:ex.reps, rec:90, iconKey:'corpo_libero'}))
   };
   localStorage.setItem('fittrack_pending', JSON.stringify(pending));
   location.href = 'sessione.html';

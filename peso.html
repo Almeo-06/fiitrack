@@ -90,20 +90,27 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .bmi-val{ font-size:28px; font-weight:600; line-height:1; margin-bottom:3px; }
 .bmi-cat{ font-size:10px; font-weight:500; letter-spacing:.5px; }
 
-/* barra progresso */
+/* circular goal progress ring */
 .prog-section{ margin-top:14px; }
-.prog-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-.prog-lbl{ font-size:11px; color:var(--textm); }
-.prog-val{ font-family:var(--mono); font-size:11px; font-weight:500; color:var(--a2); }
-.prog-bg{ height:6px; background:var(--bg3); border-radius:99px; overflow:hidden; }
-.prog-fill{
-  height:100%; border-radius:99px;
-  background:linear-gradient(90deg,var(--a1),var(--a2));
-  transition:width .6s cubic-bezier(.34,1.56,.64,1);
+.prog-ring-row{ display:flex; align-items:center; gap:14px; }
+.prog-ring-wrap{ position:relative; flex-shrink:0; }
+.prog-ring-svg{ width:72px; height:72px; transform:rotate(-90deg); display:block; }
+.prog-ring-bg{ fill:none; stroke:var(--bg3); stroke-width:7; }
+.prog-ring-fill{
+  fill:none; stroke-width:7; stroke-linecap:round;
+  transition:stroke-dashoffset .6s cubic-bezier(.34,1.56,.64,1);
 }
-.prog-endpoints{ display:flex; justify-content:space-between; margin-top:4px; }
-.prog-start,.prog-end{ font-family:var(--mono); font-size:9px; color:var(--textm); }
-.prog-end{ color:var(--green); }
+.prog-ring-center{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.prog-ring-pct{ font-family:var(--mono); font-size:14px; font-weight:600; color:var(--a2); line-height:1; }
+.prog-ring-sub{ font-size:8px; color:var(--textm); margin-top:2px; letter-spacing:.3px; text-transform:uppercase; }
+.prog-ring-info{ flex:1; min-width:0; }
+.prog-ring-title{ font-size:11px; color:var(--textm); margin-bottom:8px; }
+.prog-ep-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+.prog-ep-lbl{ font-size:10px; color:var(--textm); }
+.prog-ep-val{ font-family:var(--mono); font-size:10px; font-weight:500; }
 
 /* ── INPUT PESATA ── */
 .input-card{
@@ -336,6 +343,34 @@ html.theme-light .peso-hero::before{ display:none; }
 @media (prefers-reduced-motion: reduce) {
   .start-btn::after { animation: none; }
 }
+
+/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
+.peso-hero{
+  background:transparent; border:none; margin-bottom:0; padding-bottom:24px;
+}
+.peso-hero::before{ display:none; }
+.input-card{
+  background:transparent; border:none; border-radius:0;
+  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
+}
+.chart-card{
+  background:transparent; border:none; border-radius:0;
+  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
+}
+.storico-card{
+  background:transparent; border:none; border-radius:0;
+  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
+}
+html.theme-light .peso-hero{
+  background:transparent !important; border:none !important; box-shadow:none !important;
+}
+html.theme-light .input-card,
+html.theme-light .chart-card,
+html.theme-light .storico-card{
+  background:transparent !important; border-top:1px solid var(--border) !important;
+  box-shadow:none !important; border-left:none !important; border-right:none !important; border-bottom:none !important;
+}
+/* ════ fine OPEN LAYOUT ════ */
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
@@ -380,14 +415,35 @@ html.theme-light .peso-hero::before{ display:none; }
       </div>
     </div>
     <div class="prog-section" id="progSection" style="display:none">
-      <div class="prog-row">
-        <span class="prog-lbl">🎯 Progresso verso obiettivo</span>
-        <span class="prog-val" id="progVal">0%</span>
-      </div>
-      <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-      <div class="prog-endpoints">
-        <span class="prog-start" id="progStart"></span>
-        <span class="prog-end" id="progEnd"></span>
+      <div class="prog-ring-row">
+        <div class="prog-ring-wrap">
+          <svg class="prog-ring-svg" viewBox="0 0 72 72">
+            <defs>
+              <linearGradient id="pgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="var(--a1)"/>
+                <stop offset="100%" stop-color="var(--a2)"/>
+              </linearGradient>
+            </defs>
+            <circle class="prog-ring-bg" cx="36" cy="36" r="30"/>
+            <circle class="prog-ring-fill" id="progFill" cx="36" cy="36" r="30"
+              stroke="url(#pgGrad)" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+          </svg>
+          <div class="prog-ring-center">
+            <span class="prog-ring-pct" id="progVal">0%</span>
+            <span class="prog-ring-sub">goal</span>
+          </div>
+        </div>
+        <div class="prog-ring-info">
+          <div class="prog-ring-title">🎯 Progresso verso obiettivo</div>
+          <div class="prog-ep-row">
+            <span class="prog-ep-lbl">Inizio</span>
+            <span class="prog-ep-val" id="progStart" style="color:var(--textm)"></span>
+          </div>
+          <div class="prog-ep-row">
+            <span class="prog-ep-lbl">Obiettivo</span>
+            <span class="prog-ep-val" id="progEnd" style="color:var(--green)"></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -687,7 +743,7 @@ function renderHero(){
       const done  = Math.abs(start - curr);
       const pct   = Math.min(100, Math.round(done / range * 100));
       document.getElementById('progSection').style.display = 'block';
-      document.getElementById('progFill').style.width      = pct + '%';
+      document.getElementById('progFill').style.strokeDashoffset = (188.5 * (1 - pct / 100)).toFixed(2);
       document.getElementById('progVal').textContent       = pct + '%';
       document.getElementById('progStart').textContent     = start.toFixed(1) + ' kg';
       document.getElementById('progEnd').textContent       = goal.toFixed(1) + ' kg 🎯';
@@ -696,7 +752,7 @@ function renderHero(){
     const curr2 = data.weightLog[0].kg;
     const goal  = data.goalWeight;
     document.getElementById('progSection').style.display = 'block';
-    document.getElementById('progFill').style.width      = '0%';
+    document.getElementById('progFill').style.strokeDashoffset = '188.5';
     document.getElementById('progVal').textContent       = '0%';
     document.getElementById('progStart').textContent     = curr2.toFixed(1) + ' kg';
     document.getElementById('progEnd').textContent       = goal.toFixed(1) + ' kg 🎯';
@@ -805,6 +861,25 @@ function filterByKey(key){
 }
 
 /* ══ GRAFICO SVG ══ */
+function smoothPath(pts){
+  if(!pts || pts.length < 2) return '';
+  if(pts.length === 2)
+    return `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)} L${pts[1].x.toFixed(1)},${pts[1].y.toFixed(1)}`;
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for(let i = 0; i < pts.length - 1; i++){
+    const p0 = pts[Math.max(0, i - 1)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
 let _chartRendering = false;
 function renderChart(){
   if(_chartRendering) return;
@@ -877,9 +952,10 @@ function renderChart(){
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('height', H);
 
-  const pathM  = coordsM.map((c,i)=>`${i===0?'M':'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');
-  const areaM  = pathM + ` L${coordsM[coordsM.length-1].x.toFixed(1)},${(PAD.top+iH).toFixed(1)} L${coordsM[0].x.toFixed(1)},${(PAD.top+iH).toFixed(1)} Z`;
-  const pathC  = coordsC.length>=2 ? coordsC.map((c,i)=>`${i===0?'M':'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ') : '';
+  const pathM  = smoothPath(coordsM);
+  const bottom = (PAD.top + iH).toFixed(1);
+  const areaM  = pathM + ` L${coordsM[coordsM.length-1].x.toFixed(1)},${bottom} L${coordsM[0].x.toFixed(1)},${bottom} Z`;
+  const pathC  = coordsC.length >= 2 ? smoothPath(coordsC) : '';
 
   // y labels (3 valori)
   const yLabels = [minW,(minW+maxW)/2,maxW].map(v=>({ y:yScale(v), val:v.toFixed(1) }));
@@ -900,17 +976,14 @@ function renderChart(){
         <stop offset="100%" stop-color="#00ccff"/>
       </linearGradient>
       <linearGradient id="areaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#0088ff" stop-opacity=".18"/>
+        <stop offset="0%" stop-color="#0088ff" stop-opacity=".28"/>
+        <stop offset="60%" stop-color="#0088ff" stop-opacity=".08"/>
         <stop offset="100%" stop-color="#0088ff" stop-opacity="0"/>
       </linearGradient>
     </defs>
-    <!-- grid lines -->
-    ${yLabels.map(l=>`<line class="chart-gridline" x1="${PAD.left}" y1="${l.y.toFixed(1)}" x2="${W-PAD.right}" y2="${l.y.toFixed(1)}" stroke-dasharray="4,4"/>`).join('')}
-    <!-- y labels -->
-    ${yLabels.map(l=>`<text class="chart-ylabel" x="${PAD.left-6}" y="${(l.y+3).toFixed(1)}">${l.val}</text>`).join('')}
     <!-- area principale -->
     <path class="chart-area" d="${areaM}"/>
-    <!-- linea confronto (sotto per visibilità) -->
+    <!-- linea confronto -->
     ${pathC ? `<path class="chart-line-cmp" d="${pathC}"/>` : ''}
     <!-- linea principale -->
     <path class="chart-line" d="${pathM}"/>

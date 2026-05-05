@@ -495,6 +495,24 @@ html.theme-light body::before{ display:none; }
   [style*="animation:pulse"] { animation: none !important; opacity: 1 !important; }
   .save-btn::after { animation: none; }
 }
+
+/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
+.section{
+  background:transparent; border:none; border-radius:0;
+  border-top:1px solid var(--border); margin-bottom:0; overflow:visible;
+}
+.section:first-of-type{ border-top:none; }
+.sec-header{ padding:16px 0; }
+.sec-header:active{ background:transparent; }
+.sec-inner{
+  border-top:1px solid var(--border);
+  padding-left:0; padding-right:0;
+}
+html.theme-light .section{
+  background:transparent !important; border:none !important;
+  border-top:1px solid var(--border) !important; box-shadow:none !important;
+}
+/* ════ fine OPEN LAYOUT ════ */
 </style>
 </head>
 <body>
@@ -890,7 +908,7 @@ html.theme-light body::before{ display:none; }
     <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini di utilizzo</a>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiiTrack™ v.34</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiiTrack™ v.35</p>
 
 </div>
 
@@ -1204,23 +1222,11 @@ let selType  = 'gym';
 let openExIdx= -1;
 
 function openEditor(i){
-  editIdx = i;
   if(i===-1){
-    document.getElementById('editorTitle').textContent = 'Nuovo allenamento';
-    document.getElementById('edName').value = '';
-    selType  = 'gym';
-    editExs  = [];
+    location.href = 'editor-workout.html';
   } else {
-    const w = data.workouts[i];
-    document.getElementById('editorTitle').textContent = 'Modifica allenamento';
-    document.getElementById('edName').value = w.name;
-    selType  = w.type;
-    editExs  = w.exs.map(e=>({...e, circuitGroup: e.circuitGroup ?? null, metric: e.km != null ? 'km' : (e.metric || 'weight')}));
+    location.href = 'editor-workout.html?idx='+i;
   }
-  openExIdx = -1;
-  renderTypeRow();
-  renderExRows();
-  document.getElementById('editorOverlay').classList.add('open');
 }
 
 function closeEditor(){
