@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FiitTrack · Editor Allenamento</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#020810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="shared.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
+<script src="analytics.js"></script>
+<script src="ft-icons.js"></script>
+<script src="exercises-db.js"></script>
+<script>
+/* Tema inline — evita flash bianco */
+(function(){
+  try {
+    const d = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    const t = d.theme || 'blue';
+    if (t === 'light') document.documentElement.classList.add('theme-light');
+    if (t === 'purple') {
+      document.documentElement.style.setProperty('--a1','#7c3aed');
+      document.documentElement.style.setProperty('--a2','#a855f7');
+      document.documentElement.style.setProperty('--a1-rgb','124,58,237');
+    }
+    const mc = document.querySelector('meta[name="theme-color"]');
+    if (mc) mc.content = t === 'light' ? '#dce8ff' : '#020810';
+  } catch(e){}
+})();
+</script>
+<style>
+/* ── Layout base ── */
+body {
+  background:var(--bg); color:var(--text); font-family:var(--font);
+  max-width:480px; margin:0 auto;
+  height:100vh; height:100dvh; min-height:-webkit-fill-available;
+  display:flex; flex-direction:column; overflow:hidden;
+  overscroll-behavior:none;
+}
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 90% 40% at 50% -5%, rgba(var(--a1-rgb),.09), transparent),
+    radial-gradient(ellipse 50% 30% at 90% 95%, rgba(var(--a1-rgb),.04), transparent);
+}
+
+/* ── Header fisso ── */
+.ed-header {
+  flex-shrink:0; position:relative; z-index:10;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 12px;
+  border-bottom:1px solid var(--border);
+  background:rgba(6,13,26,.97);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  display:flex; align-items:center; gap:12px;
+}
+html.theme-light .ed-header {
+  background:rgba(255,255,255,.96);
+  border-bottom-color:rgba(0,102,221,.15);
+}
+.ed-back {
+  width:34px; height:34px; border-radius:10px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.ed-title { flex:1; font-size:15px; font-weight:600; color:var(--text); }
+.ed-save {
+  padding:8px 18px; background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:10px; color:#fff;
+  font-size:13px; font-weight:500; cursor:pointer;
+  font-family:var(--font); flex-shrink:0;
+  position:relative; overflow:hidden;
+  transition:opacity .15s;
+}
+.ed-save:active { opacity:.85; }
+.ed-save::after {
+  content:''; position:absolute; top:0; left:-60%; width:35%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transform:skewX(-15deg); animation:btnShine 3s ease infinite;
+}
+@keyframes btnShine { 0%,55%{left:-60%;} 80%,100%{left:130%;} }
+
+/* ── Scroll area ── */
+.ed-scroll {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:20px 16px calc(40px + env(safe-area-inset-bottom, 0px));
+  position:relative; z-index:1;
+}
+.ed-scroll::-webkit-scrollbar { width:0; }
+
+/* ── Sezione ── */
+.ed-section { margin-bottom:20px; }
+.ed-sec-lbl {
+  font-size:10px; color:var(--textm); text-transform:uppercase;
+  letter-spacing:1.5px; margin-bottom:8px;
+  display:flex; align-items:center; gap:8px;
+}
+.ed-sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── Input nome ── */
+.ed-name-inp {
+  width:100%; background:var(--bg2); border:1.5px solid var(--border);
+  border-radius:12px; padding:13px 16px; color:var(--text);
+  font-family:var(--font); font-size:16px; font-weight:500; outline:none;
+  transition:border-color .15s;
+}
+.ed-name-inp:focus { border-color:var(--a1); }
+.ed-name-inp::placeholder { color:var(--textm); }
+
+/* ── Tipo attività (chips) ── */
+.type-chips { display:flex; gap:8px; }
+.type-chip {
+  flex:1; padding:10px 6px; background:var(--bg2);
+  border:1.5px solid var(--border); border-radius:11px;
+  color:var(--textm); font-size:11px; font-weight:500;
+  cursor:pointer; text-align:center; transition:all .15s;
+  line-height:1.4;
+}
+.type-chip.sel {
+  background:rgba(var(--a1-rgb),.1);
+  border-color:rgba(var(--a1-rgb),.35); color:var(--a1);
+}
+
+/* ── Lista esercizi ── */
+.ex-rows { display:flex; flex-direction:column; gap:0; margin-bottom:12px; }
+
+.ex-row {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; overflow:hidden; margin-bottom:6px;
+}
+.ex-row-hdr {
+  display:flex; align-items:center; gap:8px;
+  padding:11px 12px; cursor:pointer;
+  user-select:none;
+}
+.ex-drag-handle {
+  width:22px; display:flex; align-items:center; justify-content:center;
+  color:var(--border); font-size:16px; cursor:grab; user-select:none;
+  touch-action:none; flex-shrink:0; letter-spacing:1px;
+  transition:color .15s;
+}
+.ex-drag-handle:active { cursor:grabbing; color:var(--a1); }
+.ex-row.is-dragging {
+  position:relative; z-index:50;
+  box-shadow:0 10px 36px rgba(0,0,0,.7);
+  border-color:rgba(var(--a1-rgb),.4);
+  opacity:.95;
+}
+.ex-row.drag-over { border-color:var(--a1); background:rgba(var(--a1-rgb),.05); }
+
+.ex-circuit-bar { width:3px; align-self:stretch; border-radius:2px; flex-shrink:0; transition:background .2s; }
+.ex-num {
+  width:22px; height:22px; border-radius:6px;
+  background:rgba(var(--a1-rgb),.1); border:1px solid rgba(var(--a1-rgb),.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:var(--a1); flex-shrink:0; font-family:var(--mono);
+}
+.ex-row-name { font-size:13px; font-weight:500; color:var(--text); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ex-row-meta { font-size:11px; color:var(--textm); white-space:nowrap; flex-shrink:0; }
+.ex-row-chevron { font-size:12px; color:var(--textm); flex-shrink:0; transition:transform .2s; }
+.ex-row-chevron.open { transform:rotate(90deg); }
+.ex-del-btn { background:none; border:none; color:var(--textm); cursor:pointer; font-size:14px; padding:2px; flex-shrink:0; }
+
+/* ── Body esercizio espanso ── */
+.ex-row-body { display:none; padding:0 12px 12px; border-top:1px solid var(--border); padding-top:12px; }
+.ex-row-body.open { display:block; }
+.ex-type-row { display:flex; gap:6px; margin-bottom:10px; }
+.ex-type-btn {
+  flex:1; padding:7px 6px; border-radius:9px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--textm); font-size:11px; font-weight:500;
+  cursor:pointer; font-family:var(--font); transition:all .15s;
+}
+.ex-type-btn.active { background:rgba(var(--a1-rgb),.1); border-color:rgba(var(--a1-rgb),.4); color:var(--a2); }
+
+.ex-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.ex-field { display:flex; flex-direction:column; gap:4px; }
+.ex-field-lbl { font-size:10px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; justify-content:space-between; }
+.ex-field-inp {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:9px 10px; color:var(--text);
+  font-family:var(--mono); font-size:14px; font-weight:500;
+  outline:none; transition:border-color .15s; width:100%;
+  -moz-appearance:textfield;
+}
+.ex-field-inp:focus { border-color:var(--a1); }
+.ex-field-inp::-webkit-inner-spin-button,
+.ex-field-inp::-webkit-outer-spin-button { -webkit-appearance:none; }
+
+/* note esercizio */
+.ex-note-row { margin-top:8px; display:flex; flex-direction:column; gap:4px; }
+.ex-note-inp {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-family:var(--font);
+  font-size:12px; padding:8px 10px; outline:none; resize:none;
+  line-height:1.4; transition:border-color .15s; min-height:44px;
+}
+.ex-note-inp:focus { border-color:var(--a1); }
+.ex-note-inp::placeholder { color:var(--textm); }
+
+/* metric toggle */
+.metric-toggle { display:flex; gap:4px; }
+.metric-btn {
+  padding:2px 7px; font-size:10px; border-radius:6px;
+  border:1px solid var(--border); background:var(--bg3);
+  color:var(--textm); cursor:pointer; font-family:var(--font);
+  transition:all .15s;
+}
+.metric-btn.active { background:var(--a1); border-color:var(--a1); color:#fff; }
+
+/* ── Connettore circuito ── */
+.circuit-link-row {
+  display:flex; justify-content:center; align-items:center;
+  height:18px; position:relative; z-index:2; margin:-3px 0;
+}
+.circuit-link-row::before {
+  content:''; position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%); width:1px; height:100%;
+  background:var(--border);
+}
+.circuit-link-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:20px;
+  background:var(--bg2); border:1px solid var(--border);
+  font-size:10px; font-weight:500; cursor:pointer;
+  font-family:var(--font); color:var(--textm);
+  transition:all .15s; position:relative; z-index:1; white-space:nowrap;
+}
+.circuit-link-btn.linked { border-style:solid; }
+.circuit-link-btn:active { transform:scale(.93); }
+
+/* ── Pulsanti aggiungi ── */
+.add-ex-btns { display:flex; gap:8px; margin-bottom:6px; }
+.add-ex-btn-db {
+  flex:1; padding:12px; background:rgba(var(--a1-rgb),.07);
+  border:1px solid rgba(var(--a1-rgb),.25); border-radius:11px;
+  color:var(--a1); font-size:12px; font-weight:500; cursor:pointer;
+  font-family:var(--font); text-align:center;
+  transition:background .15s, border-color .15s;
+}
+.add-ex-btn-db:active { background:rgba(var(--a1-rgb),.14); }
+.add-ex-btn-manual {
+  flex:1; padding:12px; background:transparent;
+  border:1px dashed var(--border); border-radius:11px;
+  color:var(--textm); font-size:12px; font-weight:500; cursor:pointer;
+  font-family:var(--font); text-align:center;
+  transition:border-color .15s, color .15s;
+}
+.add-ex-btn-manual:active { border-color:var(--a1); color:var(--a1); }
+
+/* ── Empty state ── */
+.ex-empty {
+  background:rgba(var(--a1-rgb),.05); border:1px dashed rgba(var(--a1-rgb),.25);
+  border-radius:14px; padding:24px 16px; text-align:center; margin-bottom:12px;
+}
+.ex-empty-icon { font-size:32px; margin-bottom:10px; }
+.ex-empty-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:6px; }
+.ex-empty-sub { font-size:12px; color:var(--textm); line-height:1.6; }
+
+/* ── Overlay ricerca esercizi ── */
+.search-overlay {
+  position:fixed; inset:0; z-index:100;
+  background:var(--bg); display:none; flex-direction:column;
+  padding-top:env(safe-area-inset-top, 0px);
+  animation:slideUpFull .28s cubic-bezier(.4,0,.2,1);
+}
+.search-overlay.open { display:flex; }
+@keyframes slideUpFull { from{transform:translateY(100%);} to{transform:translateY(0);} }
+
+.search-hdr {
+  flex-shrink:0; padding:14px 16px 12px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:12px;
+}
+.search-close {
+  width:34px; height:34px; border-radius:10px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.search-hdr-title { flex:1; font-size:15px; font-weight:600; color:var(--text); }
+
+/* Barra di ricerca */
+.search-bar-wrap { flex-shrink:0; padding:12px 16px 0; }
+.search-bar {
+  width:100%; background:var(--bg2); border:1.5px solid var(--border);
+  border-radius:12px; padding:11px 14px 11px 40px;
+  color:var(--text); font-family:var(--font); font-size:14px; outline:none;
+  transition:border-color .15s; box-sizing:border-box;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%23304870' stroke-width='2'/%3E%3Cpath d='M16.5 16.5l4 4' stroke='%23304870' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:12px center;
+}
+.search-bar:focus { border-color:var(--a1); }
+.search-bar::placeholder { color:var(--textm); }
+
+/* Filtri gruppo */
+.search-filters {
+  flex-shrink:0; padding:10px 0 10px 16px;
+  display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
+.search-filters::-webkit-scrollbar { display:none; }
+.filter-chip {
+  padding:6px 14px; border-radius:99px; white-space:nowrap;
+  background:var(--bg2); border:1px solid var(--border);
+  color:var(--textm); font-size:12px; font-weight:500; cursor:pointer;
+  transition:all .15s; flex-shrink:0;
+}
+.filter-chip.sel {
+  background:rgba(var(--a1-rgb),.12);
+  border-color:rgba(var(--a1-rgb),.4); color:var(--a1);
+}
+.filter-chip:last-child { margin-right:16px; }
+
+/* Lista risultati */
+.search-results {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:6px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+.search-results::-webkit-scrollbar { width:0; }
+
+.search-sec-lbl {
+  font-size:10px; color:var(--textm); text-transform:uppercase;
+  letter-spacing:1.5px; padding:12px 0 8px;
+  display:flex; align-items:center; gap:8px;
+  position:sticky; top:0; background:var(--bg); z-index:2;
+}
+.search-sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.ex-card {
+  display:flex; align-items:center; gap:12px;
+  padding:11px 12px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:11px; margin-bottom:6px; cursor:pointer;
+  transition:background .12s, border-color .12s;
+}
+.ex-card:active { background:var(--bg3); border-color:rgba(var(--a1-rgb),.3); }
+.ex-card-emoji { font-size:22px; flex-shrink:0; width:36px; display:flex; align-items:center; justify-content:center; }
+.ex-card-info { flex:1; min-width:0; }
+.ex-card-nome { font-size:13px; font-weight:500; color:var(--text); }
+.ex-card-meta { font-size:11px; color:var(--textm); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ex-card-add {
+  width:30px; height:30px; border-radius:9px; flex-shrink:0;
+  background:rgba(var(--a1-rgb),.1); border:1px solid rgba(var(--a1-rgb),.25);
+  color:var(--a1); font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .12s;
+}
+.ex-card-add:active { background:rgba(var(--a1-rgb),.25); }
+.ex-card-add.added { background:rgba(0,230,118,.1); border-color:rgba(0,230,118,.3); color:var(--green); }
+
+.no-results {
+  text-align:center; padding:40px 20px;
+  font-size:13px; color:var(--textm); line-height:1.6;
+}
+.no-results-icon { font-size:32px; margin-bottom:10px; }
+
+/* Pulsante aggiungi personalizzato nel search */
+.add-custom-btn {
+  width:100%; padding:12px 16px; background:transparent;
+  border:1px dashed rgba(var(--a1-rgb),.3); border-radius:12px;
+  color:var(--a1); font-size:12px; font-weight:500; cursor:pointer;
+  font-family:var(--font); margin-top:8px; text-align:center;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:background .15s;
+}
+.add-custom-btn:active { background:rgba(var(--a1-rgb),.07); }
+
+/* ── Toast ── */
+.ed-toast {
+  position:fixed; bottom:calc(24px + env(safe-area-inset-bottom,0px)); left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:12px; padding:10px 18px;
+  font-size:13px; color:var(--text); white-space:nowrap;
+  opacity:0; pointer-events:none;
+  transition:opacity .2s, transform .2s;
+  z-index:500; box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.ed-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.ed-toast.green { color:var(--green); border-color:rgba(0,230,118,.3); background:rgba(0,230,118,.07); }
+.ed-toast.red   { color:var(--red);   border-color:rgba(255,50,50,.3);  background:rgba(255,50,50,.07);  }
+
+/* ── Slide animation (transizione in/out dalla pagina) ── */
+@keyframes slideInFromRight { from{opacity:0;transform:translateX(48px);} to{opacity:1;transform:translateX(0);} }
+.ed-scroll { animation:slideInFromRight .28s cubic-bezier(.25,1,.3,1) both; }
+
+/* ── Light theme overrides ── */
+html.theme-light .search-overlay { background:var(--bg); }
+html.theme-light .search-bar {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%234a7099' stroke-width='2'/%3E%3Cpath d='M16.5 16.5l4 4' stroke='%234a7099' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+html.theme-light .search-sec-lbl { background:var(--bg); }
+html.theme-light body::before { display:none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="ed-header">
+  <button class="ed-back" onclick="goBack()">‹</button>
+  <div class="ed-title" id="edTitle">Nuovo allenamento</div>
+  <button class="ed-save" onclick="saveWorkout()">Salva</button>
+</div>
+
+<!-- CONTENUTO PRINCIPALE -->
+<div class="ed-scroll" id="edScroll">
+
+  <!-- Nome -->
+  <div class="ed-section">
+    <div class="ed-sec-lbl">Nome</div>
+    <input class="ed-name-inp" id="woName" placeholder="es. Forza A, Corsa mattutina…" oninput="markDirty()">
+  </div>
+
+  <!-- Tipo -->
+  <div class="ed-section">
+    <div class="ed-sec-lbl">Tipo attività</div>
+    <div class="type-chips" id="typeChips"></div>
+  </div>
+
+  <!-- Esercizi -->
+  <div class="ed-section">
+    <div class="ed-sec-lbl">Esercizi</div>
+    <div class="ex-rows" id="exRows"></div>
+    <div class="add-ex-btns">
+      <button class="add-ex-btn-db" onclick="openSearch()">🔍 Scegli dal catalogo</button>
+      <button class="add-ex-btn-manual" onclick="addExManual()">✏️ Aggiungi libero</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- OVERLAY RICERCA ESERCIZI -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-hdr">
+    <button class="search-close" onclick="closeSearch()">‹</button>
+    <div class="search-hdr-title">Aggiungi esercizio</div>
+  </div>
+  <div class="search-bar-wrap">
+    <input class="search-bar" id="searchInput" placeholder="Cerca per nome, muscolo o attrezzo…"
+      oninput="renderSearchResults()" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="search-filters" id="searchFilters"></div>
+  <div class="search-results" id="searchResults"></div>
+</div>
+
+<!-- TOAST -->
+<div class="ed-toast" id="edToast"></div>
+
+<script>
+/* ══ COSTANTI ══ */
+const KEY  = 'fittrack_v4';
+const ACTS = [
+  { id:'gym',   label:'bilanciere',  full:'Palestra' },
+  { id:'run',   label:'corsa',       full:'Corsa'    },
+  { id:'bike',  label:'cyclette',    full:'Bici'     },
+  { id:'other', label:'corpo_libero',full:'Altro'    },
+];
+const FILTER_GROUPS = [
+  { id:'tutti',   label:'Tutti'   },
+  { id:'petto',   label:'Petto'   },
+  { id:'schiena', label:'Schiena' },
+  { id:'spalle',  label:'Spalle'  },
+  { id:'gambe',   label:'Gambe'   },
+  { id:'braccia', label:'Braccia' },
+  { id:'core',    label:'Core'    },
+  { id:'cardio',  label:'Cardio'  },
+  { id:'casa',    label:'Casa'    },
+];
+const CIRCUIT_COLORS = ['#00e676','#ff9800','#e040fb','#40c4ff','#ff4081'];
+
+/* ══ STATO ══ */
+let data      = {};
+let editIdx   = -1;   // -1 = nuovo, N = modifica
+let selType   = 'gym';
+let editExs   = [];
+let openExIdx = -1;
+let isDirty   = false;
+let selFilter = 'tutti';
+let addedIds  = new Set(); // esercizi già aggiunti in questa sessione (per feedback visivo)
+
+/* ══ INIT ══ */
+(function(){
+  try { data = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e){ data = {}; }
+  if (!data.workouts) data.workouts = [];
+
+  const params = new URLSearchParams(location.search);
+  const idx    = params.get('idx');
+
+  if (idx !== null && data.workouts[+idx]) {
+    editIdx  = +idx;
+    const w  = data.workouts[editIdx];
+    document.getElementById('woName').value = w.name;
+    document.getElementById('edTitle').textContent = 'Modifica allenamento';
+    selType  = w.type || 'gym';
+    editExs  = w.exs.map(e => ({
+      ...e,
+      circuitGroup: e.circuitGroup ?? null,
+      metric: e.km != null ? 'km' : (e.metric || 'weight'),
+    }));
+  }
+
+  renderTypeChips();
+  renderExRows();
+  renderFilters();
+  renderSearchResults();
+})();
+
+/* ══ STORAGE ══ */
+function saveData() {
+  try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){}
+}
+
+function markDirty() { isDirty = true; }
+
+/* ══ TIPO ATTIVITÀ ══ */
+function renderTypeChips() {
+  document.getElementById('typeChips').innerHTML = ACTS.map(a =>
+    `<div class="type-chip${selType===a.id?' sel':''}" onclick="setType('${a.id}')">
+      <div style="font-size:18px;margin-bottom:2px;display:flex;align-items:center;justify-content:center;">${ftIcon(a.label)}</div>
+      <div>${a.full}</div>
+    </div>`
+  ).join('');
+}
+function setType(id) { selType = id; markDirty(); renderTypeChips(); }
+
+/* ══ ESERCIZI — render ══ */
+function renderExRows() {
+  const el = document.getElementById('exRows');
+
+  if (!editExs.length) {
+    el.innerHTML = `<div class="ex-empty">
+      <div class="ex-empty-icon">${ftIcon('bilanciere')}</div>
+      <div class="ex-empty-title">Nessun esercizio</div>
+      <div class="ex-empty-sub">Scegli dal catalogo o aggiungine uno libero</div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  editExs.forEach((ex, i) => {
+    const cg    = ex.circuitGroup ?? null;
+    const color = cg !== null ? CIRCUIT_COLORS[cg % CIRCUIT_COLORS.length] : null;
+    const bar   = color ? `background:${color}` : 'background:transparent';
+    const meta  = ex.timed ? `${ex.sets}×${secsToMMSS(ex.reps)}` : ex.metric==='km' ? `${ex.sets}×${ex.km??'–'}km` : `${ex.sets}×${ex.reps}`;
+    const isOpen = openExIdx === i;
+
+    html += `<div class="ex-row" id="exrow_${i}">
+      <div class="ex-row-hdr" onclick="toggleEx(${i})">
+        <div class="ex-drag-handle" ontouchstart="initDrag(event,${i})" onmousedown="initDrag(event,${i})" onclick="event.stopPropagation()" ondragstart="return false">≡</div>
+        <div class="ex-circuit-bar" style="${bar}"></div>
+        <div class="ex-num">${i+1}</div>
+        <div class="ex-row-name" id="exrn_${i}">${escHtml(ex.name||'Esercizio '+(i+1))}</div>
+        <div class="ex-row-meta" id="exrs_${i}">${meta}</div>
+        <div class="ex-row-chevron${isOpen?' open':''}">›</div>
+        <button class="ex-del-btn" onclick="delEx(event,${i})">✕</button>
+      </div>
+      <div class="ex-row-body${isOpen?' open':''}" id="exrb_${i}">
+        <div class="ex-type-row">
+          <button class="ex-type-btn${!ex.timed?' active':''}" onclick="setExTimed(${i},false,event)">🔢 Rip.</button>
+          <button class="ex-type-btn${ex.timed?' active':''}" onclick="setExTimed(${i},true,event)">⏱ Tempo</button>
+        </div>
+        <div class="ex-fields">
+          <div class="ex-field" style="grid-column:span 2">
+            <label class="ex-field-lbl">Nome esercizio</label>
+            <input class="ex-field-inp" style="font-family:var(--font);font-size:13px"
+              value="${escAttr(ex.name)}" placeholder="es. Squat, Plank…"
+              oninput="editExs[${i}].name=this.value;updateExHdr(${i});markDirty()">
+          </div>
+          <div class="ex-field">
+            <label class="ex-field-lbl">Serie</label>
+            <input class="ex-field-inp" type="number" value="${ex.sets}" min="1" max="20"
+              oninput="editExs[${i}].sets=+this.value;updateExHdr(${i});markDirty()">
+          </div>
+          <div class="ex-field">
+            <label class="ex-field-lbl">${ex.timed?'Durata (mm:ss)':'Ripetizioni'}</label>
+            ${ex.timed
+              ? `<input class="ex-field-inp" type="text" inputmode="numeric"
+                   value="${secsToMMSS(ex.reps)}" placeholder="es. 1:00" maxlength="5"
+                   style="font-family:var(--mono);letter-spacing:1px"
+                   oninput="setTimedDuration(${i},this.value)"
+                   onblur="this.value=secsToMMSS(editExs[${i}].reps)">`
+              : `<input class="ex-field-inp" type="number" value="${ex.reps}" min="1" max="500"
+                   oninput="editExs[${i}].reps=+this.value;updateExHdr(${i});markDirty()">`
+            }
+          </div>
+          <div class="ex-field">
+            <label class="ex-field-lbl">Recupero (sec)</label>
+            <input class="ex-field-inp" type="number" value="${ex.rec}" min="0" max="600" step="10"
+              oninput="editExs[${i}].rec=+this.value;markDirty()">
+          </div>
+          <div class="ex-field">
+            <label class="ex-field-lbl">
+              <span>${ex.metric==='km'?'Km obiettivo':'Peso (kg)'}</span>
+              <span class="metric-toggle">
+                <button class="metric-btn${ex.metric!=='km'?' active':''}" onclick="setMetric(${i},'weight',event)">⚖️</button>
+                <button class="metric-btn${ex.metric==='km'?' active':''}" onclick="setMetric(${i},'km',event)">📏</button>
+              </span>
+            </label>
+            ${ex.metric==='km'
+              ? `<input class="ex-field-inp" type="number" min="0" max="999" step="0.1" value="${ex.km??''}" placeholder="es. 5.0"
+                   oninput="editExs[${i}].km=this.value===''?null:+this.value;updateExHdr(${i});markDirty()">`
+              : `<input class="ex-field-inp" type="number" min="0" max="999" step="0.5" value="${ex.weight??''}" placeholder="es. 80"
+                   oninput="editExs[${i}].weight=this.value===''?null:+this.value;markDirty()">`
+            }
+          </div>
+        </div>
+        <div class="ex-note-row">
+          <label class="ex-field-lbl">Note (opzionale)</label>
+          <textarea class="ex-note-inp" rows="1" placeholder="es. pausa attiva, tecnica, variante…"
+            oninput="editExs[${i}].note=this.value;markDirty()">${escHtml(ex.note||'')}</textarea>
+        </div>
+      </div>
+    </div>`;
+
+    /* pulsante collega circuito tra ex i e i+1 */
+    if (i < editExs.length - 1) {
+      const nextCg   = editExs[i+1].circuitGroup ?? null;
+      const linked   = cg !== null && cg === nextCg;
+      const btnColor  = linked ? color : 'var(--textm)';
+      const btnBorder = linked ? color : 'var(--border)';
+      const btnLabel  = linked ? '⊖ Circuito' : '⊕ Collega';
+      html += `<div class="circuit-link-row">
+        <button class="circuit-link-btn${linked?' linked':''}"
+          style="color:${btnColor};border-color:${btnBorder}"
+          onclick="toggleCircuit(${i})">${btnLabel}</button>
+      </div>`;
+    }
+  });
+
+  el.innerHTML = html;
+}
+
+/* ══ ESERCIZI — logica ══ */
+function updateExHdr(i) {
+  const ex   = editExs[i];
+  const name = document.getElementById('exrn_'+i);
+  const meta = document.getElementById('exrs_'+i);
+  if (name) name.textContent = ex.name || 'Esercizio '+(i+1);
+  if (meta) {
+    meta.textContent = ex.timed
+      ? `${ex.sets}×${secsToMMSS(ex.reps)}`
+      : ex.metric==='km' ? `${ex.sets}×${ex.km??'–'}km` : `${ex.sets}×${ex.reps}`;
+  }
+}
+
+function toggleEx(i) {
+  openExIdx = openExIdx === i ? -1 : i;
+  renderExRows();
+}
+
+function delEx(e, i) {
+  e.stopPropagation();
+  editExs.splice(i, 1);
+  if (openExIdx >= editExs.length) openExIdx = -1;
+  markDirty();
+  renderExRows();
+}
+
+function setExTimed(i, val, e) {
+  if (e) e.stopPropagation();
+  editExs[i].timed = val;
+  if (val) { editExs[i].metric = 'weight'; editExs[i].km = null; }
+  markDirty();
+  renderExRows();
+}
+
+function setMetric(i, mode, e) {
+  if (e) e.stopPropagation();
+  editExs[i].metric = mode;
+  if (mode === 'km') editExs[i].weight = null;
+  else               editExs[i].km = null;
+  openExIdx = i;
+  markDirty();
+  renderExRows();
+}
+
+function addExManual() {
+  editExs.push({ id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, weight:null, km:null, metric:'weight', timed:false, circuitGroup:null });
+  openExIdx = editExs.length - 1;
+  markDirty();
+  renderExRows();
+  setTimeout(() => {
+    const el = document.getElementById('exrow_'+(editExs.length-1));
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+  }, 80);
+}
+
+/* ── Aggiunge dal DB ── */
+function addExFromDb(dbEx) {
+  const wo = ftDbExToWorkoutEx(dbEx);
+  editExs.push(wo);
+  addedIds.add(dbEx.id);
+  markDirty();
+  renderExRows();
+  renderSearchResults(); // aggiorna icona aggiungi
+  showToast('✓ '+dbEx.nome+' aggiunto', 'green');
+}
+
+/* ── Sezione circuito ── */
+function getNextGroupId() {
+  const used = new Set(editExs.map(e => e.circuitGroup).filter(g => g !== null));
+  let id = 0; while (used.has(id)) id++; return id;
+}
+
+function toggleCircuit(i) {
+  const a = editExs[i], b = editExs[i+1];
+  const cgA = a.circuitGroup ?? null, cgB = b.circuitGroup ?? null;
+  if (cgA !== null && cgA === cgB) {
+    const tail = [];
+    for (let j = i+1; j < editExs.length && editExs[j].circuitGroup === cgA; j++) tail.push(j);
+    const headCount = editExs.filter((e,j) => j<=i && e.circuitGroup===cgA).length;
+    if (headCount===1 && tail.length===1) { a.circuitGroup=null; b.circuitGroup=null; }
+    else if (tail.length===1) { b.circuitGroup=null; }
+    else { const ng=getNextGroupId(); tail.forEach(j=>editExs[j].circuitGroup=ng); if(headCount===1) a.circuitGroup=null; }
+  } else {
+    const tg = cgA!==null ? cgA : (cgB!==null ? cgB : getNextGroupId());
+    a.circuitGroup = tg; b.circuitGroup = tg;
+  }
+  markDirty();
+  renderExRows();
+}
+
+/* ── Drag & Drop ── */
+let _dragIdx = -1, _dragStartY = 0, _dragEl = null;
+function _clientY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+
+function initDrag(e, idx) {
+  if (e.cancelable) e.preventDefault();
+  e.stopPropagation();
+  _dragIdx = idx; _dragStartY = _clientY(e);
+  const rows = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
+  _dragEl = rows[idx];
+  if (!_dragEl) return;
+  _dragEl.classList.add('is-dragging');
+  document.addEventListener('touchmove', _onDragMove, { passive:false });
+  document.addEventListener('touchend', _onDragEnd);
+  document.addEventListener('mousemove', _onDragMove);
+  document.addEventListener('mouseup', _onDragEnd);
+}
+
+function _onDragMove(e) {
+  if (_dragIdx < 0 || !_dragEl) return;
+  if (e.cancelable) e.preventDefault();
+  const dy = _clientY(e) - _dragStartY;
+  _dragEl.style.transform = `translateY(${dy}px) scale(1.02)`;
+  const rows = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
+  const midY = _dragEl.getBoundingClientRect().top + _dragEl.getBoundingClientRect().height / 2;
+  rows.forEach((r, i) => {
+    r.classList.remove('drag-over');
+    if (i !== _dragIdx) {
+      const rr = r.getBoundingClientRect();
+      if (midY < rr.top + rr.height / 2) r.classList.add('drag-over');
+    }
+  });
+}
+
+function _onDragEnd() {
+  document.removeEventListener('touchmove', _onDragMove);
+  document.removeEventListener('touchend', _onDragEnd);
+  document.removeEventListener('mousemove', _onDragMove);
+  document.removeEventListener('mouseup', _onDragEnd);
+  if (!_dragEl || _dragIdx < 0) { _dragCleanup(); return; }
+  const rows = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
+  const midY = _dragEl.getBoundingClientRect().top + _dragEl.getBoundingClientRect().height / 2;
+  let dropIdx = rows.length;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i].getBoundingClientRect();
+    if (midY < r.top + r.height / 2) { dropIdx = i; break; }
+  }
+  let insertAt = dropIdx > _dragIdx ? dropIdx - 1 : dropIdx;
+  insertAt = Math.max(0, Math.min(insertAt, editExs.length - 1));
+  const fromIdx = _dragIdx;
+  _dragCleanup();
+  if (insertAt !== fromIdx) {
+    const moved = editExs.splice(fromIdx, 1)[0];
+    editExs.splice(insertAt, 0, moved);
+    if (openExIdx === fromIdx) openExIdx = insertAt;
+    else if (openExIdx > fromIdx && openExIdx <= insertAt) openExIdx--;
+    else if (openExIdx < fromIdx && openExIdx >= insertAt) openExIdx++;
+    markDirty();
+    renderExRows();
+  }
+}
+
+function _dragCleanup() {
+  document.querySelectorAll('#exRows .ex-row').forEach(r => {
+    r.classList.remove('is-dragging', 'drag-over');
+    r.style.transform = '';
+  });
+  _dragEl = null; _dragIdx = -1;
+}
+
+/* ── Utilità tempo ── */
+function secsToMMSS(s) {
+  s = Math.max(0, Math.round(s || 0));
+  return Math.floor(s/60) + ':' + (s%60).toString().padStart(2,'0');
+}
+function mmssToSecs(str) {
+  str = (str||'').trim();
+  if (/^\d+$/.test(str)) return Math.min(+str, 599);
+  const parts = str.split(':');
+  if (parts.length !== 2 || parts[0].length > 2 || parts[1].length > 2) return null;
+  const m = parseInt(parts[0],10), s = parseInt(parts[1],10);
+  if (isNaN(m)||isNaN(s)||s>59||m>99) return null;
+  return m*60+s;
+}
+function setTimedDuration(i, val) {
+  const secs = mmssToSecs(val);
+  if (secs !== null && secs > 0) { editExs[i].reps = secs; updateExHdr(i); markDirty(); }
+}
+
+/* ── Escape HTML ── */
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return escHtml(s); }
+
+/* ══ SALVA ALLENAMENTO ══ */
+function saveWorkout() {
+  const name = document.getElementById('woName').value.trim();
+  if (!name) { showToast('Dai un nome all\'allenamento!', 'red'); return; }
+  if (!editExs.length) { showToast('Aggiungi almeno un esercizio!', 'red'); return; }
+
+  const wo = {
+    id:   editIdx === -1 ? 'w_'+Date.now() : data.workouts[editIdx].id,
+    name, type:selType, exs:editExs,
+  };
+
+  if (editIdx === -1) data.workouts.push(wo);
+  else                data.workouts[editIdx] = wo;
+
+  saveData();
+  isDirty = false;
+  showToast('✓ Allenamento salvato', 'green');
+  setTimeout(() => location.href = 'impostazioni.html', 600);
+}
+
+/* ── Torna indietro con confirm se ci sono modifiche ── */
+function goBack() {
+  if (isDirty && editExs.length) {
+    if (!confirm('Hai modifiche non salvate. Vuoi uscire senza salvare?')) return;
+  }
+  location.href = 'impostazioni.html';
+}
+
+/* ══ SEARCH OVERLAY ══ */
+function renderFilters() {
+  document.getElementById('searchFilters').innerHTML = FILTER_GROUPS.map(g =>
+    `<div class="filter-chip${selFilter===g.id?' sel':''}" onclick="setFilter('${g.id}')">${g.label}</div>`
+  ).join('');
+}
+
+function setFilter(id) {
+  selFilter = id;
+  renderFilters();
+  renderSearchResults();
+}
+
+function openSearch() {
+  addedIds.clear();
+  document.getElementById('searchInput').value = '';
+  selFilter = 'tutti';
+  renderFilters();
+  renderSearchResults();
+  document.getElementById('searchOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('searchInput').focus(), 100);
+}
+
+function closeSearch() {
+  document.getElementById('searchOverlay').classList.remove('open');
+}
+
+function renderSearchResults() {
+  const query = document.getElementById('searchInput')?.value || '';
+  const list  = ftSearchExercises(query, selFilter);
+  const el    = document.getElementById('searchResults');
+  if (!el) return;
+
+  if (!list.length) {
+    el.innerHTML = `<div class="no-results">
+      <div class="no-results-icon">🔍</div>
+      Nessun risultato per "<strong>${escHtml(query)}</strong>".<br>Prova un'altra parola o aggiungilo manualmente.
+      <button class="add-custom-btn" onclick="addExManual();closeSearch()">✏️ Aggiungi "${escHtml(query)}" manualmente</button>
+    </div>`;
+    return;
+  }
+
+  /* Raggruppa per gruppo se non c'è un filtro attivo */
+  let html = '';
+  if (selFilter === 'tutti' && !query.trim()) {
+    const grouped = {};
+    list.forEach(e => { if (!grouped[e.gruppo]) grouped[e.gruppo] = []; grouped[e.gruppo].push(e); });
+    const order = ['petto','schiena','spalle','gambe','braccia','core','cardio','casa'];
+    const labels = { petto:'Petto',schiena:'Schiena',spalle:'Spalle',gambe:'Gambe',braccia:'Braccia',core:'Core',cardio:'Cardio',casa:'Casa' };
+    order.forEach(g => {
+      if (!grouped[g]) return;
+      html += `<div class="search-sec-lbl">${labels[g]}</div>`;
+      grouped[g].forEach(e => { html += exCardHtml(e); });
+    });
+  } else {
+    list.forEach(e => { html += exCardHtml(e); });
+  }
+
+  html += `<button class="add-custom-btn" onclick="addExManual();closeSearch()">✏️ Non trovi l'esercizio? Aggiungilo manualmente</button>`;
+  el.innerHTML = html;
+}
+
+function exCardHtml(e) {
+  const added   = addedIds.has(e.id);
+  const addIcon = added ? '✓' : '+';
+  const addCls  = added ? ' added' : '';
+  const meta    = e.attrezzo + ' · ' + e.muscoli.slice(0,2).join(', ');
+  return `<div class="ex-card">
+    <div class="ex-card-emoji">${ftIcon(e.icona || 'altro')}</div>
+    <div class="ex-card-info">
+      <div class="ex-card-nome">${escHtml(e.nome)}</div>
+      <div class="ex-card-meta">${escHtml(meta)}</div>
+    </div>
+    <button class="ex-card-add${addCls}" onclick="addExFromDb(EXERCISES_DB.find(x=>x.id==='${e.id}'))">${addIcon}</button>
+  </div>`;
+}
+
+/* ══ TOAST ══ */
+let _toastTimer = null;
+function showToast(msg, type) {
+  const el = document.getElementById('edToast');
+  el.textContent = msg;
+  el.className = 'ed-toast show' + (type ? ' '+type : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

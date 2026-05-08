@@ -34,7 +34,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .logo{ font-weight:600; font-size:20px; color:var(--text); }
 .logo span{ color:var(--a2); }
 .date-badge{ font-family:var(--mono); font-size:10px; color:var(--textm); background:var(--bg2); border:1px solid var(--border); padding:4px 9px; border-radius:6px; letter-spacing:.5px; }
-.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; }
+.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--a1); display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; }
 
 /* ── HERO CAROUSEL ── */
 .hero-carousel{ position:relative; border-radius:20px; margin-bottom:12px; touch-action:pan-y; overflow:hidden; }
@@ -57,22 +57,28 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .sdot.rest{ background:linear-gradient(90deg,#3344aa,#5566cc); }
 .sdot.skipped{ background:#e53935; opacity:.75; }
 .sdot.today{ background:transparent; border:1.5px solid var(--a1); }
-.sdot-lbl{ font-family:var(--mono); font-size:8px; color:var(--textm); }
+.sdot-lbl{ font-family:var(--mono); font-size:10px; color:var(--textm); }
 .sdot-lbl.oggi{ color:var(--a2); }
 .streak-legend{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-.sl-item{ display:flex; align-items:center; gap:5px; font-size:9px; color:var(--textm); font-family:var(--mono); }
+.sl-item{ display:flex; align-items:center; gap:5px; font-size:10px; color:var(--textm); font-family:var(--mono); }
 .sl-dot{ width:14px; height:4px; border-radius:3px; flex-shrink:0; }
 .sl-dot.active{ background:linear-gradient(90deg,var(--a1),var(--a2)); }
 .sl-dot.rest{ background:linear-gradient(90deg,#3344aa,#5566cc); }
 .sl-dot.skipped{ background:#e53935; opacity:.75; }
 .sl-dot.today{ background:transparent; border:1.5px solid var(--a1); width:12px; }
-.goal-nums{ font-size:22px; font-weight:600; color:var(--green); line-height:1; }
-.goal-lbl{ font-size:10px; color:var(--textm); margin-top:2px; }
-.goal-bar-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; margin-top:10px; }
-.goal-bar-text{ font-size:10px; color:var(--textm); }
-.goal-bar-val{ font-family:var(--mono); font-size:11px; font-weight:500; color:var(--a2); }
-.goal-bar-bg{ height:4px; background:var(--bg3); border-radius:99px; overflow:hidden; }
-.goal-bar-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--a1),var(--a2)); }
+.goal-nums{ font-size:17px; font-weight:600; color:var(--green); line-height:1; }
+.goal-lbl{ font-size:10px; color:var(--textm); margin-top:3px; }
+.goal-ring-outer{ position:relative; width:72px; height:72px; flex-shrink:0; }
+.goal-ring-svg{ width:72px; height:72px; transform:rotate(-90deg); display:block; }
+.goal-ring-bg-c{ fill:none; stroke:var(--bg3); stroke-width:5; }
+.goal-ring-fill-c{ fill:none; stroke-width:5; stroke-linecap:round; stroke-dasharray:188.5; stroke-dashoffset:188.5; transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
+.goal-ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes goalPulseRed{
+  0%,100%{ stroke:rgba(229,57,53,.15); }
+  50%    { stroke:rgba(229,57,53,.50); }
+}
+.goal-ring-zero .goal-ring-bg-c{ animation:goalPulseRed 2.8s ease-in-out infinite; }
+.goal-ring-zero .goal-nums{ color:#e05555; }
 
 /* sfide card nel carousel */
 .sfide-hero{ background:linear-gradient(135deg,#030e1a,#060d1a); border:1px solid rgba(0,0,0,.2); border-radius:18px; padding:18px; position:relative; overflow:hidden; min-height:120px; display:flex; flex-direction:column; justify-content:center; }
@@ -81,16 +87,19 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .sfide-empty-icon{ font-size:28px; margin-bottom:8px; }
 .sfide-empty-txt{ font-size:13px; color:var(--textm); line-height:1.5; }
 .sfide-empty-cta{ font-size:12px; color:var(--a2); margin-top:6px; }
-.sfide-summary-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-.sfide-count-num{ font-size:36px; font-weight:600; color:var(--a2); line-height:1; letter-spacing:-1px; }
-.sfide-count-lbl{ font-size:11px; color:var(--textm); margin-top:2px; }
-.sfide-avg{ text-align:right; }
-.sfide-avg-num{ font-size:22px; font-weight:600; color:var(--green); line-height:1; }
+.sfide-ring-row{ display:flex; align-items:center; gap:16px; }
+.sfide-ring-outer{ position:relative; width:88px; height:88px; flex-shrink:0; }
+.sfide-ring-svg{ width:88px; height:88px; transform:rotate(-90deg); display:block; }
+.sfide-ring-bg-c{ fill:none; stroke:var(--bg3); stroke-width:5; }
+.sfide-ring-fill-c{ fill:none; stroke-width:5; stroke-linecap:round; stroke-dasharray:213.6; stroke-dashoffset:213.6; transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
+.sfide-ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.sfide-avg-num{ font-size:20px; font-weight:600; color:var(--green); line-height:1; }
 .sfide-avg-lbl{ font-size:10px; color:var(--textm); margin-top:2px; }
-.sfide-urgente-lbl{ font-size:9px; color:var(--textm); margin-bottom:4px; letter-spacing:.5px; text-transform:uppercase; }
+.sfide-ring-info{ flex:1; min-width:0; }
+.sfide-count-num{ font-size:32px; font-weight:600; color:var(--a2); line-height:1; letter-spacing:-1px; }
+.sfide-count-lbl{ font-size:11px; color:var(--textm); margin-top:2px; margin-bottom:12px; }
+.sfide-urgente-lbl{ font-size:10px; color:var(--textm); margin-bottom:3px; letter-spacing:.5px; text-transform:uppercase; }
 .sfide-urgente-name{ font-size:12px; color:var(--text); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.sfide-prog-bg{ height:4px; background:var(--bg3); border-radius:99px; overflow:hidden; margin-top:8px; }
-.sfide-prog-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--a1),var(--a2)); }
 
 /* recap */
 .recap-card{ background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; }
@@ -99,7 +108,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .recap-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
 .rstat{ background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:10px 8px; text-align:center; }
 .rstat-val{ font-size:18px; font-weight:600; line-height:1; }
-.rstat-lbl{ font-size:9px; color:var(--textm); margin-top:3px; text-transform:uppercase; letter-spacing:.8px; }
+.rstat-lbl{ font-size:10px; color:var(--textm); margin-top:3px; text-transform:uppercase; letter-spacing:.8px; }
 .week-bars{ display:flex; gap:5px; align-items:flex-end; height:40px; }
 .wbar-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; height:100%; justify-content:flex-end; }
 .wbar{ width:100%; border-radius:3px 3px 0 0; min-height:3px; }
@@ -108,7 +117,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .wbar.skipped{ background:linear-gradient(180deg,#e53935,#b71c1c); }
 .wbar.oggi{ background:linear-gradient(180deg,var(--a2),var(--a1)); opacity:.4; }
 .wbar.empty{ background:var(--bg3); }
-.wbar-day{ font-family:var(--mono); font-size:8px; color:var(--textm); }
+.wbar-day{ font-family:var(--mono); font-size:10px; color:var(--textm); }
 .wbar-day.oggi-lbl{ color:var(--a2); }
 
 /* piano */
@@ -137,7 +146,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .day-name{ font-size:13px; font-weight:500; color:var(--text); }
 .oggi-tag{ font-size:10px; color:var(--a1); }
 .day-sub{ font-size:10px; color:var(--textm); margin-top:1px; }
-.day-badge{ font-size:9px; padding:2px 7px; border-radius:5px; font-weight:500; letter-spacing:.5px; white-space:nowrap; margin-left:auto; flex-shrink:0; }
+.day-badge{ font-size:10px; padding:2px 7px; border-radius:5px; font-weight:500; letter-spacing:.5px; white-space:nowrap; margin-left:auto; flex-shrink:0; }
 .b-oggi{ background:rgba(var(--a1-rgb),.12); color:var(--a1); border:1px solid rgba(0,0,0,.2); }
 .b-fatto{ background:rgba(0,230,118,.08); color:var(--green); border:1px solid rgba(0,230,118,.2); }
 .b-saltato{ background:rgba(229,57,53,.1); color:#e57373; border:1px solid rgba(229,57,53,.25); }
@@ -164,30 +173,16 @@ body::before{
 .scroll-area.slide-out-left { animation:slideOutToLeft   .22s cubic-bezier(.4,0,.6,1) both; }
 .scroll-area.slide-out-right{ animation:slideOutToRight  .22s cubic-bezier(.4,0,.6,1) both; }
 
-/* streak glow pulsante */
-@keyframes streakGlow{
-  0%,100%{ text-shadow:0 0 18px rgba(0,204,255,.25); }
-  50%{     text-shadow:0 0 38px rgba(0,204,255,.6), 0 0 70px rgba(var(--a1-rgb),.2); }
-}
-.streak-num{ animation:streakGlow 2.8s ease-in-out infinite; }
-
-/* streak hero bordo animato */
-@keyframes heroGlow{
-  0%,100%{ border-color:rgba(var(--a1-rgb),.2); box-shadow:none; }
-  50%{     border-color:rgba(0,204,255,.4); box-shadow:0 0 24px rgba(var(--a1-rgb),.1); }
-}
-.streak-hero{ animation:heroGlow 3.5s ease-in-out infinite; }
-
-/* shine sui bottoni principali */
+/* shine sui bottoni principali — passa ogni 7s, non distrae */
 .start-btn{ position:relative; overflow:hidden; }
 .start-btn::after{
   content:''; position:absolute; top:0; left:-60%;
   width:35%; height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
   transform:skewX(-15deg);
-  animation:btnShine 3s ease infinite;
+  animation:btnShine 7s ease infinite;
 }
-@keyframes btnShine{ 0%,55%{left:-60%;} 80%,100%{left:130%;} }
+@keyframes btnShine{ 0%,70%{left:-60%;} 88%,100%{left:130%;} }
 
 /* barre settimana che salgono */
 .wbar-wrap{ animation:barFadeIn .4s ease both; }
@@ -205,7 +200,7 @@ body::before{
 .day-row:active{ transform:scale(.97); }
 .day-name-oggi{ font-size:14px; font-weight:700; color:var(--a2); }
 .oggi-swipe-hint{
-  font-size:9px; color:var(--a1); font-family:var(--mono);
+  font-size:10px; color:var(--a1); font-family:var(--mono);
   letter-spacing:.5px; margin-top:3px;
   display:flex; align-items:center; gap:4px;
 }
@@ -244,15 +239,15 @@ body::before{
 }
 .rp-hdr{ padding:calc(14px + env(safe-area-inset-top,0px)) 14px 12px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:flex-start; gap:10px; }
 .rp-close{ width:28px; height:28px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.rp-done-lbl{ font-family:var(--mono); font-size:9px; color:var(--green); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+.rp-done-lbl{ font-family:var(--mono); font-size:10px; color:var(--green); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
 .rp-title{ font-size:16px; font-weight:600; color:var(--text); }
 .rp-body{ flex:1; overflow-y:auto; padding:16px 14px calc(30px + env(safe-area-inset-bottom,0px)); -webkit-overflow-scrolling:touch; }
 .rp-body::-webkit-scrollbar{ width:0; }
 .rp-stats{ display:flex; gap:8px; margin-bottom:16px; }
 .rp-stat{ flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:10px 8px; text-align:center; }
 .rp-val{ font-size:16px; font-weight:700; color:var(--a2); margin-bottom:2px; }
-.rp-lbl{ font-size:9px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; }
-.rp-section-title{ font-size:9px; font-weight:500; color:var(--textm); letter-spacing:2px; text-transform:uppercase; margin:0 0 10px; }
+.rp-lbl{ font-size:10px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; }
+.rp-section-title{ font-size:10px; font-weight:500; color:var(--textm); letter-spacing:2px; text-transform:uppercase; margin:0 0 10px; }
 .rp-ex-row{ display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); }
 .rp-ex-row:last-child{ border-bottom:none; }
 .rp-ex-check{ font-size:11px; color:var(--green); flex-shrink:0; }
@@ -261,7 +256,7 @@ body::before{
 .rp-ex-note{ font-size:10px; color:var(--textm); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .rp-note-box{ background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--text); line-height:1.5; }
 /* hint → riepilogo sui giorni completati */
-.fatto-hint{ font-size:9px; color:var(--a1); font-family:var(--mono); letter-spacing:.5px; margin-top:3px; display:flex; align-items:center; gap:3px; }
+.fatto-hint{ font-size:10px; color:var(--a1); font-family:var(--mono); letter-spacing:.5px; margin-top:3px; display:flex; align-items:center; gap:3px; }
 @keyframes arrowRight{ 0%,100%{transform:translateX(0);} 60%{transform:translateX(3px);} }
 .fatto-hint::after{ content:'›'; font-size:11px; animation:arrowRight 1.5s ease-in-out infinite; }
 
@@ -280,7 +275,7 @@ body::before{
 .d-hdr{ padding:14px 14px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .d-top{ display:flex; align-items:flex-start; gap:9px; }
 .d-close{ width:27px; height:27px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.d-day-lbl{ font-family:var(--mono); font-size:9px; color:var(--textm); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+.d-day-lbl{ font-family:var(--mono); font-size:10px; color:var(--textm); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
 .d-title{ font-size:16px; font-weight:600; color:var(--text); margin-bottom:2px; }
 .d-meta{ font-size:10px; color:var(--textm); display:flex; gap:8px; }
 .d-list{ flex:1; overflow-y:auto; padding:11px 13px; }
@@ -300,7 +295,7 @@ body::before{
 .pb-top{ display:flex; align-items:center; gap:10px; }
 .pb-back{ width:30px; height:30px; border-radius:50%; background:var(--bg3); border:none; color:var(--textm); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .pb-start{ width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-left:auto; box-shadow:0 2px 12px rgba(var(--a1-rgb),.4); }
-.pb-day-lbl{ font-family:var(--mono); font-size:9px; color:var(--textm); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+.pb-day-lbl{ font-family:var(--mono); font-size:10px; color:var(--textm); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
 .pb-title{ font-size:18px; font-weight:600; color:var(--text); margin-bottom:2px; }
 .pb-meta{ font-size:10px; color:var(--textm); display:flex; gap:10px; }
 .pb-list{ flex:1; overflow-y:auto; padding:12px 16px; }
@@ -317,7 +312,7 @@ body::before{
 .et1 .ex-circ{ background:rgba(var(--a1-rgb),.12); border:1.5px solid rgba(var(--a1-rgb),.28); }
 .et2 .ex-circ{ background:rgba(0,204,255,.1); border:1.5px solid rgba(0,204,255,.22); }
 .et3 .ex-circ{ background:rgba(0,100,200,.1); border:1.5px solid rgba(0,100,200,.22); }
-.ex-tag{ position:absolute; top:6px; right:9px; font-size:9px; color:rgba(0,30,60,.5); letter-spacing:1px; text-transform:uppercase; font-family:var(--mono); }
+.ex-tag{ position:absolute; top:6px; right:9px; font-size:10px; color:rgba(0,30,60,.5); letter-spacing:1px; text-transform:uppercase; font-family:var(--mono); }
 .ex-body{ padding:10px 12px 11px; }
 .ex-name{ font-size:13px; font-weight:500; color:var(--text); margin-bottom:2px; }
 .ex-info{ font-size:10px; color:var(--textm); margin-bottom:8px; }
@@ -504,8 +499,6 @@ html.theme-light #installBanner{
   border-color:var(--border);
 }
 @media (prefers-reduced-motion: reduce) {
-  .streak-num { animation: none; }
-  .streak-hero { animation: none; }
   .start-btn::after { animation: none; }
   .day-row.today { animation: none; box-shadow: none; }
   .oggi-swipe-hint::after { animation: none; }
@@ -690,16 +683,23 @@ html.theme-light .plan-card{
                   <span class="sl-item"><span class="sl-dot today"></span>Oggi</span>
                 </div>
               </div>
-              <div style="text-align:right;">
-                <div class="goal-nums">3/5</div>
-                <div class="goal-lbl">obiettivo sett.</div>
+              <div class="goal-ring-outer">
+                <svg class="goal-ring-svg" viewBox="0 0 72 72">
+                  <defs>
+                    <linearGradient id="goalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="var(--a1)"/>
+                      <stop offset="100%" stop-color="var(--green)"/>
+                    </linearGradient>
+                  </defs>
+                  <circle class="goal-ring-bg-c" cx="36" cy="36" r="30"/>
+                  <circle class="goal-ring-fill-c" id="goalBarFill" cx="36" cy="36" r="30" stroke="url(#goalGrad)"/>
+                </svg>
+                <div class="goal-ring-center">
+                  <span class="goal-nums" id="goalNums">3/5</span>
+                  <span class="goal-lbl">obiettivo</span>
+                </div>
               </div>
             </div>
-            <div class="goal-bar-row">
-              <span class="goal-bar-text">🎯 Sessioni questa settimana</span>
-              <span class="goal-bar-val">3 / 5</span>
-            </div>
-            <div class="goal-bar-bg"><div class="goal-bar-fill" style="width:60%"></div></div>
           </div>
         </div>
 
@@ -712,19 +712,30 @@ html.theme-light .plan-card{
               <div class="sfide-empty-cta">Tocca per crearne una →</div>
             </div>
             <div id="sfideSummary" style="display:none">
-              <div class="sfide-summary-row">
-                <div>
+              <div class="sfide-ring-row">
+                <div class="sfide-ring-outer">
+                  <svg class="sfide-ring-svg" viewBox="0 0 80 80">
+                    <defs>
+                      <linearGradient id="sfGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="var(--a1)"/>
+                        <stop offset="100%" stop-color="var(--a2)"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="sfide-ring-bg-c" cx="40" cy="40" r="34"/>
+                    <circle class="sfide-ring-fill-c" id="sfideProgFill" cx="40" cy="40" r="34" stroke="url(#sfGrad)"/>
+                  </svg>
+                  <div class="sfide-ring-center">
+                    <span class="sfide-avg-num" id="sfideAvgPct">0%</span>
+                    <span class="sfide-avg-lbl">medio</span>
+                  </div>
+                </div>
+                <div class="sfide-ring-info">
                   <div class="sfide-count-num" id="sfideCountNum">0</div>
                   <div class="sfide-count-lbl">sfide attive</div>
-                </div>
-                <div class="sfide-avg">
-                  <div class="sfide-avg-num" id="sfideAvgPct">0%</div>
-                  <div class="sfide-avg-lbl">completamento medio</div>
+                  <div class="sfide-urgente-lbl">più urgente</div>
+                  <div class="sfide-urgente-name" id="sfideUrgenteName">—</div>
                 </div>
               </div>
-              <div class="sfide-urgente-lbl">più urgente</div>
-              <div class="sfide-urgente-name" id="sfideUrgenteName">—</div>
-              <div class="sfide-prog-bg"><div class="sfide-prog-fill" id="sfideProgFill" style="width:0%"></div></div>
             </div>
           </div>
         </div>
@@ -761,11 +772,11 @@ html.theme-light .plan-card{
 </div>
 
 <div class="tab-bar">
-  <div class="tab-item on"  onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
-  <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
-  <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
-  <div class="tab-item"     onclick="navigateTo('amici.html',3)">        <div class="tab-icon">👥</div>Amici</div>
-  <div class="tab-item"     onclick="navigateTo('impostazioni.html',4)"> <div class="tab-icon">⚙️</div>Impost.</div>
+  <div class="tab-item on"  onclick="navigateTo('home.html',0)">         <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 21V13h6v8"/></svg></div>Home</div>
+  <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="8" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="19" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r=".9" fill="currentColor" stroke="none"/></svg></div>Registra</div>
+  <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 19 9 5 6 12 2 12"/></svg></div>Peso</div>
+  <div class="tab-item"     onclick="navigateTo('amici.html',3)">        <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1"/><circle cx="17.5" cy="7.5" r="2.5"/><path d="M21 20v-.5a4 4 0 0 0-3-3.87"/></svg></div>Amici</div>
+  <div class="tab-item"     onclick="navigateTo('impostazioni.html',4)"> <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>Impost.</div>
 </div>
 
 <script>
@@ -960,9 +971,9 @@ PIANO.forEach((d,i)=>{ if(d.type!=='rest') attachSwipe(i, getDayStatus(i)==='ogg
     const km   = _weekSessions.reduce((a,s)=>a+(s.km||0),0);
     const pct2 = Math.min(100, Math.round(cnt/goal*100));
 
-    document.querySelector('.goal-nums').textContent    = cnt+'/'+goal;
-    document.querySelector('.goal-bar-val').textContent = cnt+' / '+goal;
-    document.querySelector('.goal-bar-fill').style.width= pct2+'%';
+    document.getElementById('goalNums').textContent = cnt+'/'+goal;
+    document.getElementById('goalBarFill').style.strokeDashoffset = (188.5 * (1 - pct2/100)).toFixed(2);
+    document.querySelector('.goal-ring-outer').classList.toggle('goal-ring-zero', cnt === 0);
 
     const vals = document.querySelectorAll('.rstat-val');
     if(vals[0]) vals[0].textContent = kcal ? kcal.toLocaleString('it') : '0';
@@ -1214,7 +1225,7 @@ function renderRecap(idx){
       }).join('');
     }
   }
-  if(sess.sessionNote){const _esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); html+=`<div class="rp-note-box"><div style="font-size:9px;color:var(--textm);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Note sessione</div>${_esc(sess.sessionNote)}</div>`;}
+  if(sess.sessionNote){const _esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); html+=`<div class="rp-note-box"><div style="font-size:10px;color:var(--textm);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Note sessione</div>${_esc(sess.sessionNote)}</div>`;}
   document.getElementById('recapBody').innerHTML=html;
 }
 
@@ -1349,7 +1360,7 @@ function navigateTo(url, toIndex){
           return acc + Math.min(100, cur / t * 100);
         }, 0) / active.length);
         document.getElementById('sfideAvgPct').textContent = avgPct + '%';
-        document.getElementById('sfideProgFill').style.width = avgPct + '%';
+        document.getElementById('sfideProgFill').style.strokeDashoffset = (213.6 * (1 - avgPct / 100)).toFixed(2);
         // sfida più urgente (endDate più vicina)
         const today = new Date(); today.setHours(0,0,0,0);
         const sorted = [...active].sort((a, b) => {

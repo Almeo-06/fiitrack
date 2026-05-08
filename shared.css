@@ -6,9 +6,9 @@
 
 /* ── Variabili ── */
 :root{
-  --bg:#020810; --bg2:#060d1a; --bg3:#0a1428;
+  --bg:#020810; --bg2:#060d1a; --bg3:#101e36;
   --a1:#0088ff; --a2:#00ccff;
-  --text:#e0f4ff; --textm:#304870; --border:#0d1e38;
+  --text:#e0f4ff; --textm:#6688aa; --border:#162640;
   --green:#00e676; --a1-rgb:0,136,255; --a2-rgb:0,204,255;
   --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
   /* --safe-b: valore reale della gesture bar / home indicator del telefono.
@@ -38,14 +38,15 @@ html{ height:-webkit-fill-available; }
   pointer-events:none;
   background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
 }
-.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; color:var(--textm); cursor:pointer; position:relative; }
+.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:var(--textm); cursor:pointer; position:relative; }
 .tab-item.on{ color:var(--a2); }
 .tab-item.on::after{
   content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
   width:18px; height:2px; border-radius:0 0 3px 3px;
   background:var(--a2); box-shadow:0 0 8px var(--a2);
 }
-.tab-icon{ font-size:18px; }
+.tab-icon{ width:20px; height:20px; display:flex; align-items:center; justify-content:center; }
+.tab-icon svg{ width:20px; height:20px; }
 
 /* ── Tema light — variabili base ── */
 html.theme-light{

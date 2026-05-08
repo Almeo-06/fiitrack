@@ -127,16 +127,16 @@ body::before{
 .ch-delete:active{ border-color:var(--red); color:var(--red); }
 .ch-prog-label{ font-size:10px; color:var(--textm); margin-top:4px; }
 .ch-ring-wrap{ position:relative; flex-shrink:0; }
-.ch-ring-svg{ width:44px; height:44px; transform:rotate(-90deg); display:block; }
-.ch-ring-bg-c{ fill:none; stroke:var(--bg3); stroke-width:4; }
+.ch-ring-svg{ width:60px; height:60px; transform:rotate(-90deg); display:block; }
+.ch-ring-bg-c{ fill:none; stroke:var(--bg3); stroke-width:4.5; }
 .ch-ring-fill-c{
-  fill:none; stroke-width:4; stroke-linecap:round;
+  fill:none; stroke-width:4.5; stroke-linecap:round;
   transition:stroke-dashoffset .4s cubic-bezier(.25,1,.3,1);
 }
 .ch-ring-center-c{
   position:absolute; inset:0;
   display:flex; align-items:center; justify-content:center;
-  font-family:var(--mono); font-size:9px; font-weight:600; color:var(--a2);
+  font-family:var(--mono); font-size:11px; font-weight:600; color:var(--a2);
 }
 .ch-manual-row{ display:flex; align-items:center; gap:8px; margin-top:8px; }
 .ch-manual-label{ font-size:10px; color:var(--textm); flex:1; }
@@ -148,7 +148,7 @@ body::before{
 .ch-manual-input:focus{ outline:none; border-color:var(--a1); }
 .ch-done-badge{
   display:inline-flex; align-items:center; gap:4px;
-  font-size:9px; color:var(--green); background:rgba(0,230,118,.1);
+  font-size:10px; color:var(--green); background:rgba(0,230,118,.1);
   border:1px solid rgba(0,230,118,.25); border-radius:5px; padding:2px 6px;
   margin-top:8px; letter-spacing:.5px;
 }
@@ -313,10 +313,10 @@ html.theme-light .challenge-card{
 
 <!-- TAB BAR -->
 <div class="tab-bar">
-  <div class="tab-item on"  onclick="location.href='home.html'">        <div class="tab-icon">🏠</div>Home</div>
-  <div class="tab-item"     onclick="sfideNavigateTo('registra.html',1)"><div class="tab-icon">📝</div>Registra</div>
-  <div class="tab-item"     onclick="sfideNavigateTo('peso.html',2)">    <div class="tab-icon">⚖️</div>Peso</div>
-  <div class="tab-item"     onclick="sfideNavigateTo('impostazioni.html',3)"><div class="tab-icon">⚙️</div>Impost.</div>
+  <div class="tab-item on"  onclick="location.href='home.html'">        <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 21V13h6v8"/></svg></div>Home</div>
+  <div class="tab-item"     onclick="sfideNavigateTo('registra.html',1)"><div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="8" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="19" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r=".9" fill="currentColor" stroke="none"/></svg></div>Registra</div>
+  <div class="tab-item"     onclick="sfideNavigateTo('peso.html',2)">    <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 19 9 5 6 12 2 12"/></svg></div>Peso</div>
+  <div class="tab-item"     onclick="sfideNavigateTo('impostazioni.html',3)"><div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>Impost.</div>
 </div>
 
 <!-- SHEET OVERLAY -->
@@ -474,7 +474,7 @@ function renderChallenge(c, isCompleted){
   const isCustom = c.type === 'custom';
   const unitLabel = c.unit || '';
   const gradId = `chGrad${c.id}`;
-  const ringDash = (113.1 * (1 - pct / 100)).toFixed(2);
+  const ringDash = (163.4 * (1 - pct / 100)).toFixed(2);
   const ringColor1 = isDone ? '#00aa44' : 'var(--a1)';
   const ringColor2 = isDone ? 'var(--green)' : 'var(--a2)';
   const ringTextColor = isDone ? 'var(--green)' : 'var(--a2)';
@@ -500,16 +500,16 @@ function renderChallenge(c, isCompleted){
       </div>
       <div class="ch-right">
         <div class="ch-ring-wrap">
-          <svg class="ch-ring-svg" viewBox="0 0 44 44">
+          <svg class="ch-ring-svg" viewBox="0 0 60 60">
             <defs>
               <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="${ringColor1}"/>
                 <stop offset="100%" stop-color="${ringColor2}"/>
               </linearGradient>
             </defs>
-            <circle class="ch-ring-bg-c" cx="22" cy="22" r="18"/>
-            <circle class="ch-ring-fill-c" cx="22" cy="22" r="18"
-              stroke="url(#${gradId})" stroke-dasharray="113.1" stroke-dashoffset="${ringDash}"/>
+            <circle class="ch-ring-bg-c" cx="30" cy="30" r="26"/>
+            <circle class="ch-ring-fill-c" cx="30" cy="30" r="26"
+              stroke="url(#${gradId})" stroke-dasharray="163.4" stroke-dashoffset="${ringDash}"/>
           </svg>
           <div class="ch-ring-center-c" style="color:${ringTextColor}">${pct}%</div>
         </div>

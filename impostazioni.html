@@ -30,7 +30,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .logo{ font-weight:600; font-size:20px; color:var(--text); }
 .logo span{ color:var(--a2); }
 .page-label{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:1px; }
-.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--green); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; }
+.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--a1); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; }
 
 /* ── SEZIONE A TENDINA ── */
 .section{
@@ -123,7 +123,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 }
 .wo-card-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:4px; }
 .wo-card-name{ font-size:13px; font-weight:500; color:var(--text); }
-.wo-card-type{ font-size:9px; padding:2px 7px; border-radius:5px; background:var(--bg2); color:var(--textm); border:1px solid var(--border); }
+.wo-card-type{ font-size:10px; padding:2px 7px; border-radius:5px; background:var(--bg2); color:var(--textm); border:1px solid var(--border); }
 .wo-card-meta{ font-size:11px; color:var(--textm); margin-bottom:8px; display:flex; gap:8px; }
 .wo-card-btns{ display:flex; gap:6px; }
 .wo-btn{ flex:1; padding:6px; border-radius:8px; font-size:11px; font-weight:500; text-align:center; cursor:pointer; border:1px solid var(--border); background:var(--bg2); color:var(--textm); font-family:var(--font); }
@@ -161,7 +161,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 
 /* campi editor */
 .field-group{ margin-bottom:14px; }
-.field-lbl{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; display:block; }
+.field-lbl{ font-size:10px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; display:block; }
 .field-inp{
   width:100%; background:var(--bg3); border:1px solid var(--border);
   border-radius:10px; padding:11px 14px; color:var(--text);
@@ -179,7 +179,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 }
 .type-chip.sel{ background:rgba(var(--a1-rgb),.1); border-color:rgba(var(--a1-rgb),.3); color:var(--a1); }
 .sec-lbl{
-  font-size:9px; color:var(--textm); text-transform:uppercase;
+  font-size:10px; color:var(--textm); text-transform:uppercase;
   letter-spacing:1.5px; margin-bottom:8px;
   display:flex; align-items:center; gap:8px;
 }
@@ -224,7 +224,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 }
 .ex-fields{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .ex-field{ display:flex; flex-direction:column; gap:4px; }
-.ex-field-lbl{ font-size:9px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; }
+.ex-field-lbl{ font-size:10px; color:var(--textm); letter-spacing:1px; text-transform:uppercase; }
 .ex-field-inp{
   background:var(--bg2); border:1px solid var(--border);
   border-radius:8px; padding:8px 10px; color:var(--text);
@@ -360,7 +360,7 @@ body::before{
 .preset-body{ flex:1; overflow-y:auto; padding:12px 16px 28px; }
 .preset-body::-webkit-scrollbar{ width:0; }
 .preset-sec-lbl{
-  font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px;
+  font-size:10px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px;
   margin:14px 0 8px; display:flex; align-items:center; gap:8px;
 }
 .preset-sec-lbl::after{ content:''; flex:1; height:1px; background:var(--border); }
@@ -396,7 +396,7 @@ body::before{
 .preset-detail-name{ font-size:17px; font-weight:600; color:var(--text); }
 .preset-detail-meta{ font-size:12px; color:var(--textm); margin-top:3px; }
 .preset-ex-lbl{
-  font-size:9px; color:var(--textm); text-transform:uppercase;
+  font-size:10px; color:var(--textm); text-transform:uppercase;
   letter-spacing:1.5px; margin-bottom:10px;
   display:flex; align-items:center; gap:8px;
 }
@@ -446,7 +446,7 @@ body::before{
 .fb-title{ font-size:16px; font-weight:600; color:var(--text); }
 .fb-close{ background:none; border:none; color:var(--textm); font-size:20px; cursor:pointer; padding:4px; }
 .fb-body{ padding:16px; }
-.fb-lbl{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; display:block; }
+.fb-lbl{ font-size:10px; color:var(--textm); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; display:block; }
 .fb-stars{ display:flex; gap:8px; margin-bottom:16px; }
 .fb-star{
   font-size:28px; cursor:pointer;
@@ -858,7 +858,7 @@ html.theme-light .section{
 
         <!-- ── CLOUD SYNC ── -->
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-          <div style="font-size:9px;color:var(--textm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">☁️ Sincronizzazione Cloud</div>
+          <div style="font-size:10px;color:var(--textm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">☁️ Sincronizzazione Cloud</div>
 
           <!-- Non loggato -->
           <div id="cloudLoggedOut">
@@ -908,16 +908,16 @@ html.theme-light .section{
     <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini di utilizzo</a>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiiTrack™ v.36</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiiTrack™ v.37</p>
 
 </div>
 
 <div class="tab-bar">
-  <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon">🏠</div>Home</div>
-  <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon">📝</div>Registra</div>
-  <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon">⚖️</div>Peso</div>
-  <div class="tab-item"     onclick="navigateTo('amici.html',3)">        <div class="tab-icon">👥</div>Amici</div>
-  <div class="tab-item on"  onclick="navigateTo('impostazioni.html',4)"> <div class="tab-icon">⚙️</div>Impost.</div>
+  <div class="tab-item"     onclick="navigateTo('home.html',0)">         <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 21V13h6v8"/></svg></div>Home</div>
+  <div class="tab-item"     onclick="navigateTo('registra.html',1)">     <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="8" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="19" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r=".9" fill="currentColor" stroke="none"/></svg></div>Registra</div>
+  <div class="tab-item"     onclick="navigateTo('peso.html',2)">         <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 19 9 5 6 12 2 12"/></svg></div>Peso</div>
+  <div class="tab-item"     onclick="navigateTo('amici.html',3)">        <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1"/><circle cx="17.5" cy="7.5" r="2.5"/><path d="M21 20v-.5a4 4 0 0 0-3-3.87"/></svg></div>Amici</div>
+  <div class="tab-item on"  onclick="navigateTo('impostazioni.html',4)"> <div class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>Impost.</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1857,7 +1857,7 @@ function renderPresetList(){
     }
     const exists = data.workouts.some(w => w.name.toLowerCase() === p.name.toLowerCase());
     const existsTxt = exists
-      ? `<span style="font-size:9px;color:var(--textm);margin-left:6px;font-style:italic;">già presente</span>`
+      ? `<span style="font-size:10px;color:var(--textm);margin-left:6px;font-style:italic;">già presente</span>`
       : '';
     html += `<div class="preset-card" onclick="showPresetDetail(${i})">
       <div class="preset-card-icon">${p.icon}</div>
