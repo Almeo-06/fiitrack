@@ -58,23 +58,101 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
   border:2px solid var(--bg);
 }
 
-/* ── STATO: NON LOGGATO ── */
-.login-card{
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:18px; padding:28px 20px; text-align:center;
-  margin-top:20px;
+/* ── SCHERMATA LOGIN FULL-SCREEN ── */
+#stateLogin{
+  position:fixed; inset:0; z-index:50;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:32px 28px calc(32px + env(safe-area-inset-bottom,0px));
+  overflow-y:auto;
 }
-.login-card-icon{ font-size:48px; margin-bottom:16px; }
-.login-card-title{ font-size:18px; font-weight:600; color:var(--text); margin-bottom:8px; }
-.login-card-sub{ font-size:13px; color:var(--textm); line-height:1.6; margin-bottom:20px; }
-.google-btn{
-  width:100%; padding:13px; border-radius:12px;
+.lp-logo{
+  width:72px; height:72px; border-radius:20px;
   background:linear-gradient(135deg,var(--a1),var(--a2));
-  border:none; color:#fff; font-size:14px; font-weight:500;
-  cursor:pointer; font-family:var(--font);
-  display:flex; align-items:center; justify-content:center; gap:8px;
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:18px;
+  box-shadow:0 8px 28px color-mix(in srgb,var(--a1) 40%,transparent);
 }
-.google-btn img{ width:16px; height:16px; }
+.lp-logo svg{ width:36px; height:36px; }
+.lp-appname{
+  font-size:26px; font-weight:700; color:var(--text);
+  letter-spacing:-.4px; margin-bottom:6px;
+}
+.lp-tagline{
+  font-size:13px; color:var(--textm); text-align:center;
+  line-height:1.5; margin-bottom:32px; max-width:260px;
+}
+.lp-body{ width:100%; max-width:360px; }
+
+/* bottone Google */
+.google-btn{
+  width:100%; padding:14px; border-radius:14px;
+  background:var(--bg2); border:1.5px solid var(--border);
+  color:var(--text); font-size:14px; font-weight:500;
+  cursor:pointer; font-family:var(--font);
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:border-color .15s;
+}
+.google-btn:hover{ border-color:var(--a1); }
+.google-btn img{ width:18px; height:18px; }
+
+/* divisore or */
+.auth-divider{
+  display:flex; align-items:center; gap:10px;
+  margin:20px 0; color:var(--textm); font-size:12px;
+}
+.auth-divider::before,.auth-divider::after{
+  content:''; flex:1; height:1px; background:var(--border);
+}
+
+/* input con icona */
+.auth-field{
+  position:relative; margin-bottom:12px;
+}
+.auth-field-icon{
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:var(--textm); display:flex; pointer-events:none;
+}
+.auth-field-icon svg{ width:16px; height:16px; }
+.auth-input{
+  width:100%; padding:14px 14px 14px 42px;
+  border-radius:14px;
+  background:var(--bg2); border:1.5px solid var(--border);
+  color:var(--text); font-size:14px; font-family:var(--font);
+  box-sizing:border-box; transition:border-color .15s;
+}
+.auth-input:focus{ outline:none; border-color:var(--a1); }
+.auth-input::placeholder{ color:var(--textm); }
+
+/* bottone primario */
+.auth-cta{
+  width:100%; padding:15px; border-radius:14px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; color:#fff; font-size:15px; font-weight:600;
+  cursor:pointer; font-family:var(--font); margin-top:4px;
+  box-shadow:0 6px 20px color-mix(in srgb,var(--a1) 35%,transparent);
+  transition:opacity .15s;
+}
+.auth-cta:disabled{ opacity:.5; cursor:default; }
+
+/* link toggle */
+.auth-toggle{
+  margin-top:18px; font-size:13px; color:var(--textm); text-align:center;
+}
+.auth-toggle a{
+  color:var(--a2); cursor:pointer; font-weight:500; text-decoration:none;
+}
+
+/* continua senza account */
+.auth-guest{
+  width:100%; padding:14px; border-radius:14px;
+  background:transparent; border:1.5px solid var(--border);
+  color:var(--textm); font-size:13px; font-weight:500;
+  cursor:pointer; font-family:var(--font);
+  transition:border-color .15s, color .15s;
+}
+.auth-guest:hover{ border-color:var(--border); color:var(--text); }
 
 /* ── USERNAME SETUP OVERLAY ── */
 .overlay{
@@ -598,32 +676,72 @@ html.theme-light body::before{ display:none; }
     </div>
   </div>
 
-  <!-- STATO: NON LOGGATO -->
+  <!-- STATO: NON LOGGATO — full screen -->
   <div id="stateLogin">
-    <div class="login-card">
-      <div class="login-card-icon">👥</div>
-      <div class="login-card-title">Connettiti con i tuoi amici</div>
-      <div class="login-card-sub">
-        Accedi con Google per sbloccare le funzioni social.<br>
-        <strong style="color:var(--text);">L'app funziona normalmente senza account.</strong>
-      </div>
-      <div style="text-align:left;margin-bottom:20px;display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--textm);">
-          <span style="font-size:16px;">🔥</span> Vedi la streak e i PR dei tuoi amici
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--textm);">
-          <span style="font-size:16px;">⚔️</span> Sfide 1vs1 e di gruppo
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--textm);">
-          <span style="font-size:16px;">🔒</span> Nessun dato di allenamento condiviso senza consenso
-        </div>
-      </div>
+
+    <!-- Logo + nome app -->
+    <div class="lp-logo" aria-hidden="true">
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="15" width="4" height="6" rx="2" fill="white" opacity=".85"/>
+        <rect x="29" y="15" width="4" height="6" rx="2" fill="white" opacity=".85"/>
+        <rect x="7" y="12" width="4" height="12" rx="2" fill="white"/>
+        <rect x="25" y="12" width="4" height="12" rx="2" fill="white"/>
+        <rect x="11" y="16" width="14" height="4" rx="2" fill="white"/>
+      </svg>
+    </div>
+    <div class="lp-appname">FiitTracker™</div>
+    <p class="lp-tagline">Traccia i tuoi allenamenti.<br>Sfida i tuoi amici.</p>
+
+    <div class="lp-body">
+
+      <!-- Google -->
       <button class="google-btn" id="googleLoginBtn" onclick="loginGoogle()">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
-        <span id="googleLoginTxt">Accedi con Google</span>
+        <span id="googleLoginTxt">Continua con Google</span>
       </button>
-      <div id="loginError" style="display:none;margin-top:12px;font-size:12px;color:#e57373;text-align:center;"></div>
-    </div>
+
+      <div class="auth-divider">o</div>
+
+      <!-- Email + Password -->
+      <div class="auth-field">
+        <span class="auth-field-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg>
+        </span>
+        <input class="auth-input" id="authEmail" type="email" placeholder="Email@gmail.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <span class="auth-field-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <input class="auth-input" id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <div class="auth-field" id="confirmField" style="display:none">
+        <span class="auth-field-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <input class="auth-input" id="authPasswordConfirm" type="password" placeholder="Conferma password" autocomplete="new-password">
+      </div>
+
+      <!-- Errore -->
+      <div id="loginError" style="display:none;margin-bottom:10px;font-size:12px;color:#e57373;text-align:center;"></div>
+
+      <!-- CTA principale -->
+      <button class="auth-cta" id="emailAuthBtn" onclick="submitEmailAuth()">
+        <span id="emailAuthTxt">Accedi</span>
+      </button>
+
+      <!-- Toggle login ↔ registrazione -->
+      <div class="auth-toggle">
+        <span id="authToggleLabel">Non hai un account?</span>
+        <a id="authToggleLink" onclick="toggleAuthMode()"> Registrati</a>
+      </div>
+
+      <div class="auth-divider" style="margin-top:28px;">o</div>
+
+      <!-- Guest -->
+      <button class="auth-guest" onclick="continueAsGuest()">Continua senza account</button>
+
+    </div><!-- /lp-body -->
   </div>
 
   <!-- STATO: LOGGATO, FUNZIONI AMICI -->
@@ -918,6 +1036,77 @@ async function loginGoogle(){
     const msg = e.code === 'auth/network-request-failed'
       ? 'Connessione assente. Riprova con internet attivo.'
       : 'Accesso non riuscito. Riprova.';
+    if(err){ err.textContent = msg; err.style.display = 'block'; }
+    else showToast(msg);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   EMAIL / PASSWORD AUTH
+══════════════════════════════════════════════ */
+let _authMode = 'login'; // 'login' | 'register'
+
+function toggleAuthMode(){
+  _authMode = _authMode === 'login' ? 'register' : 'login';
+  const isReg = _authMode === 'register';
+  document.getElementById('confirmField').style.display  = isReg ? '' : 'none';
+  document.getElementById('emailAuthTxt').textContent    = isReg ? 'Crea account' : 'Accedi';
+  document.getElementById('authToggleLabel').textContent = isReg ? 'Hai già un account?' : 'Non hai un account?';
+  document.getElementById('authToggleLink').textContent  = isReg ? ' Accedi' : ' Registrati';
+  document.getElementById('authPassword').autocomplete   = isReg ? 'new-password' : 'current-password';
+  const err = document.getElementById('loginError');
+  if(err){ err.style.display = 'none'; err.textContent = ''; }
+}
+
+function continueAsGuest(){
+  window.location.href = 'home.html';
+}
+
+async function submitEmailAuth(){
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  const pass2 = document.getElementById('authPasswordConfirm').value;
+  const btn   = document.getElementById('emailAuthBtn');
+  const txt   = document.getElementById('emailAuthTxt');
+  const err   = document.getElementById('loginError');
+
+  if(err){ err.style.display = 'none'; err.textContent = ''; }
+
+  if(!email || !pass){
+    err.textContent = 'Inserisci email e password.'; err.style.display = 'block'; return;
+  }
+  if(_authMode === 'register' && pass !== pass2){
+    err.textContent = 'Le password non coincidono.'; err.style.display = 'block'; return;
+  }
+  if(pass.length < 6){
+    err.textContent = 'La password deve avere almeno 6 caratteri.'; err.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  txt.textContent = _authMode === 'register' ? 'Creazione…' : 'Accesso…';
+
+  try{
+    if(_authMode === 'register'){
+      await _auth.createUserWithEmailAndPassword(email, pass);
+      _ftLog('sign_up', { method: 'email' });
+    } else {
+      await _auth.signInWithEmailAndPassword(email, pass);
+      _ftLog('login', { method: 'email' });
+    }
+    /* onAuthStateChanged gestisce il resto */
+  } catch(e){
+    btn.disabled = false;
+    txt.textContent = _authMode === 'register' ? 'Crea account' : 'Accedi';
+    const msgs = {
+      'auth/email-already-in-use'   : 'Email già registrata. Prova ad accedere.',
+      'auth/invalid-email'          : 'Email non valida.',
+      'auth/wrong-password'         : 'Password errata. Riprova.',
+      'auth/user-not-found'         : 'Nessun account trovato con questa email.',
+      'auth/invalid-credential'     : 'Email o password errata.',
+      'auth/network-request-failed' : 'Connessione assente. Riprova con internet attivo.',
+      'auth/too-many-requests'      : 'Troppi tentativi. Attendi qualche minuto.',
+    };
+    const msg = msgs[e.code] || 'Errore di accesso. Riprova.';
     if(err){ err.textContent = msg; err.style.display = 'block'; }
     else showToast(msg);
   }
