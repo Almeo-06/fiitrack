@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitTrack · Impostazioni</title>
+<title>FiitTrack · Impostazioni</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#020810">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared.css">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -484,12 +484,6 @@ body::before{
 /* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
 
-/* ── PWA standalone: padding extra per il safe-area ── */
-@media all and (display-mode: standalone) {
-  .scroll-area {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
 @keyframes pulse{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
 @media (prefers-reduced-motion: reduce) {
   [style*="animation:pulse"] { animation: none !important; opacity: 1 !important; }
@@ -559,7 +553,7 @@ html.theme-light .section{
 <div class="scroll-area">
 
   <div class="header">
-    <div class="logo">Fit<span>Track</span></div>
+    <div class="logo">Fiit<span>Track</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="page-label">IMPOSTAZIONI</div>
       <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
@@ -763,7 +757,7 @@ html.theme-light .section{
     <div class="sec-body" id="body_privacy">
       <div class="sec-inner">
         <div style="font-size:12px;color:var(--textm);margin-bottom:14px;line-height:1.6;">
-          Scegli quali dati sono visibili ai tuoi amici su FitTrack™.
+          Scegli quali dati sono visibili ai tuoi amici su FiitTrack™.
         </div>
         <div id="privacyLoginMsg" style="font-size:12px;color:var(--textm);text-align:center;padding:10px 0;">
           Accedi con Google dalla sezione Dati per gestire la privacy.
@@ -893,9 +887,9 @@ html.theme-light .section{
           </div>
         </div>
 
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
-          <button style="width:100%;padding:10px;background:rgba(255,50,50,.06);border:1px solid rgba(255,50,50,.2);border-radius:10px;color:var(--red);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);" onclick="confirmReset()">
-            🗑 Azzera tutti i dati
+        <div id="signOutRow" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <button style="width:100%;padding:10px;background:rgba(255,50,50,.06);border:1px solid rgba(255,50,50,.2);border-radius:10px;color:var(--red);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);" onclick="signOutCloud()">
+            Disconnettiti
           </button>
         </div>
       </div>
@@ -908,7 +902,7 @@ html.theme-light .section{
     <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini di utilizzo</a>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiiTrack™ v.37</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.38</p>
 
 </div>
 
@@ -1981,6 +1975,7 @@ _auth.onAuthStateChanged(function(user) {
   if (user) {
     document.getElementById('cloudLoggedOut').style.display = 'none';
     document.getElementById('cloudLoggedIn').style.display = '';
+    document.getElementById('signOutRow').style.display = '';
     document.getElementById('cloudUserName').textContent = user.displayName || 'Utente anonimo';
     document.getElementById('cloudUserEmail').textContent = user.email || '';
     const photo = document.getElementById('cloudUserPhoto');
@@ -1993,6 +1988,7 @@ _auth.onAuthStateChanged(function(user) {
   } else {
     document.getElementById('cloudLoggedOut').style.display = '';
     document.getElementById('cloudLoggedIn').style.display = 'none';
+    document.getElementById('signOutRow').style.display = 'none';
     _stopAutoSync();
   }
 });

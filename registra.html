@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitTrack · Registra</title>
+<title>FiitTrack · Registra</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#020810">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="prefetch" href="sessione.html">
 <link rel="prefetch" href="home.html">
@@ -16,6 +16,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
+<script src="ft-animate.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -374,12 +375,6 @@ html.theme-light .streak-hero{
 }
 html.theme-light .streak-hero::before{ display:none; }
 
-/* ── PWA standalone: padding extra per il safe-area ── */
-@media all and (display-mode: standalone) {
-  .scroll-area {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
 
 /* ── PULSANTE AGGIUNGI SESSIONE ── */
 .add-sess-btn{
@@ -633,13 +628,13 @@ html.theme-light .month-stats{
 </head>
 <body>
 
-<div id="ftSplash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:#020810;transition:opacity .35s ease,visibility .35s ease;"><style>html.theme-light #ftSplash{background:#dce8ff;}@keyframes ftPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.06);opacity:1;}}@keyframes ftDotBounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}#ftSplashLogo{font-family:system-ui,-apple-system,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.5px;color:#e0f4ff;animation:ftPulse 2s ease-in-out infinite;}html.theme-light #ftSplashLogo{color:#0066dd;}#ftSplashLogo span{color:#00ccff;}html.theme-light #ftSplashLogo span{color:#0099ff;}.ft-dot{width:7px;height:7px;border-radius:50%;background:#00ccff;opacity:.4;display:inline-block;margin:0 4px;animation:ftDotBounce 1.2s ease-in-out infinite;}html.theme-light .ft-dot{background:#0066dd;}.ft-dot:nth-child(2){animation-delay:.15s;}.ft-dot:nth-child(3){animation-delay:.3s;}</style><div id="ftSplashLogo">Fit<span>Track</span></div><div><span class="ft-dot"></span><span class="ft-dot"></span><span class="ft-dot"></span></div></div>
+<div id="ftSplash" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:#020810;transition:opacity .35s ease,visibility .35s ease;"><style>html.theme-light #ftSplash{background:#dce8ff;}@keyframes ftPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.06);opacity:1;}}@keyframes ftDotBounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}#ftSplashLogo{font-family:system-ui,-apple-system,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.5px;color:#e0f4ff;animation:ftPulse 2s ease-in-out infinite;}html.theme-light #ftSplashLogo{color:#0066dd;}#ftSplashLogo span{color:#00ccff;}html.theme-light #ftSplashLogo span{color:#0099ff;}.ft-dot{width:7px;height:7px;border-radius:50%;background:#00ccff;opacity:.4;display:inline-block;margin:0 4px;animation:ftDotBounce 1.2s ease-in-out infinite;}html.theme-light .ft-dot{background:#0066dd;}.ft-dot:nth-child(2){animation-delay:.15s;}.ft-dot:nth-child(3){animation-delay:.3s;}</style><div id="ftSplashLogo">Fiit<span>Track</span></div><div><span class="ft-dot"></span><span class="ft-dot"></span><span class="ft-dot"></span></div></div>
 
 <div class="scroll-area">
 
   <!-- header -->
   <div class="header">
-    <div class="logo">Fit<span>Track</span></div>
+    <div class="logo">Fiit<span>Track</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="page-label">REGISTRA</div>
       <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
@@ -957,11 +952,14 @@ function renderMonthStats(){
 
   document.getElementById('monthStatsGrid').innerHTML = cards.map(c => `
     <div class="ms-card${c.click?' clickable':''}"${c.click?` onclick="${c.click}"`:''}>
-      <div class="ms-val" style="color:${c.color}">${c.val}</div>
+      <div class="ms-val" style="color:${c.color}" data-val="${c.val}">${isNaN(+c.val) ? c.val : 0}</div>
       <div class="ms-lbl">${c.lbl}</div>
       ${c.delta}
       ${c.hint ? `<div class="ms-mode-hint">${c.hint}</div>` : ''}
     </div>`).join('');
+  document.getElementById('monthStatsGrid').querySelectorAll('.ms-val').forEach(el => {
+    animateCount(el, +el.dataset.val);
+  });
 }
 
 /* ══════════════════════════════════════════

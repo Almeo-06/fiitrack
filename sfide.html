@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitTrack · Sfide</title>
+<title>FiitTrack · Sfide</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#020810">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
+<script src="ft-animate.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -230,12 +231,6 @@ body::before{
 /* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
 
-/* ── PWA standalone: padding extra per il safe-area ── */
-@media all and (display-mode: standalone) {
-  .scroll-area {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
 
 /* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
 .challenge-card{
@@ -509,9 +504,9 @@ function renderChallenge(c, isCompleted){
             </defs>
             <circle class="ch-ring-bg-c" cx="30" cy="30" r="26"/>
             <circle class="ch-ring-fill-c" cx="30" cy="30" r="26"
-              stroke="url(#${gradId})" stroke-dasharray="163.4" stroke-dashoffset="${ringDash}"/>
+              stroke="url(#${gradId})" stroke-dasharray="163.4" stroke-dashoffset="163.4" data-target="${ringDash}"/>
           </svg>
-          <div class="ch-ring-center-c" style="color:${ringTextColor}">${pct}%</div>
+          <div class="ch-ring-center-c" style="color:${ringTextColor}" data-pct="${pct}">0%</div>
         </div>
         <button class="ch-delete" onclick="deleteChallenge('${c.id}')" title="Elimina">✕</button>
       </div>
@@ -546,6 +541,12 @@ function renderAll(){
       return da - db;
     });
     activeList.innerHTML = sorted.map(c => renderChallenge(c, false)).join('');
+    activeList.querySelectorAll('.ch-ring-fill-c').forEach(el => {
+      animateRing(el, +el.dataset.target, 163.4);
+    });
+    activeList.querySelectorAll('.ch-ring-center-c').forEach(el => {
+      animateCount(el, +el.dataset.pct, 800, 0, '%');
+    });
   }
 
   if(completed.length > 0){

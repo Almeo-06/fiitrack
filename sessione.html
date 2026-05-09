@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitTrack · Sessione</title>
+<title>FiitTrack · Sessione</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#020810">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared.css">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -944,7 +944,7 @@ html.theme-light .close-btn{
   <div class="gps-consent-sheet">
     <div class="np-icon">📍</div>
     <div class="np-title">Accesso alla posizione</div>
-    <div class="np-body">FitTrack™ usa il GPS per tracciare il percorso durante la sessione.<br><br>
+    <div class="np-body">FiitTrack™ usa il GPS per tracciare il percorso durante la sessione.<br><br>
       I dati sono salvati <strong style="color:var(--text)">solo sul tuo dispositivo</strong> e non vengono condivisi con terze parti.</div>
     <div style="font-size:11px;color:var(--textm);text-align:center;margin-bottom:18px;">
       Consulta la nostra <a href="privacy.html" style="color:var(--a1);text-decoration:none;">Privacy Policy</a>
@@ -2407,7 +2407,7 @@ async function shareSession(){
   ctx.textAlign = 'left';
 
   /* Nome */
-  const displayName = userName || 'FitTracker';
+  const displayName = userName || 'FiitTracker';
   ctx.font = '500 13px sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.7)';
   ctx.fillText(displayName, avCX + 22, avCY - 4);
@@ -2470,8 +2470,8 @@ async function _spShare(){
     if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
       try{
         await navigator.share({
-          title: 'FitTrack™ · ' + woName,
-          text:  `Ho completato "${woName}" su FitTrack™! 💪  Streak ${streak}🔥`,
+          title: 'FiitTrack™ · ' + woName,
+          text:  `Ho completato "${woName}" su FiitTrack™! 💪  Streak ${streak}🔥`,
           files: [file],
         });
         _spClose();

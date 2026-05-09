@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitTrack · Home</title>
+<title>FiitTrack · Home</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#020810">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="prefetch" href="sessione.html">
 <link rel="prefetch" href="registra.html">
@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
+<script src="ft-animate.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -438,12 +439,6 @@ html.theme-light #pageB{ background:var(--bg2) !important; }
 html.theme-light .et1,html.theme-light .et2,html.theme-light .et3{ background:var(--bg3) !important; }
 html.theme-light .edot{ background:#dbeeff !important; }
 
-/* ── PWA standalone: padding extra per il safe-area ── */
-@media all and (display-mode: standalone) {
-  .scroll-area {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
 
 /* ══ INSTALL BANNER ══ */
 #installBanner{
@@ -567,7 +562,7 @@ html.theme-light .plan-card{
     .ft-dot:nth-child(2){ animation-delay:.15s; }
     .ft-dot:nth-child(3){ animation-delay:.3s;  }
   </style>
-  <div id="ftSplashLogo">Fit<span>Track</span></div>
+  <div id="ftSplashLogo">Fiit<span>Track</span></div>
   <div>
     <span class="ft-dot"></span>
     <span class="ft-dot"></span>
@@ -582,7 +577,7 @@ html.theme-light .plan-card{
     <div class="ib-row">
       <div class="ib-icon-wrap">💪</div>
       <div class="ib-text">
-        <div class="ib-title">Installa FitTrack™</div>
+        <div class="ib-title">Installa FiitTrack™</div>
         <div class="ib-sub">Accedi in un tap · funziona offline</div>
       </div>
       <button class="ib-install-btn" onclick="triggerInstall()">Installa</button>
@@ -657,7 +652,7 @@ html.theme-light .plan-card{
 
   <div class="scroll-area">
     <div class="header">
-      <div class="logo">Fit<span>Track</span></div>
+      <div class="logo">Fiit<span>Track</span></div>
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="date-badge" id="dateBadge"></div>
         <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo">😎</div>
@@ -963,7 +958,7 @@ PIANO.forEach((d,i)=>{ if(d.type!=='rest') attachSwipe(i, getDayStatus(i)==='ogg
 (function(){
   try{
     const streak = _appData.streak || 0;
-    document.querySelector('.streak-num').textContent = streak;
+    animateCount(document.querySelector('.streak-num'), streak);
 
     const goal = _appData.goalSessions || 5;
     const cnt  = _weekSessions.length;
@@ -972,13 +967,13 @@ PIANO.forEach((d,i)=>{ if(d.type!=='rest') attachSwipe(i, getDayStatus(i)==='ogg
     const pct2 = Math.min(100, Math.round(cnt/goal*100));
 
     document.getElementById('goalNums').textContent = cnt+'/'+goal;
-    document.getElementById('goalBarFill').style.strokeDashoffset = (188.5 * (1 - pct2/100)).toFixed(2);
+    animateRing(document.getElementById('goalBarFill'), +(188.5 * (1 - pct2/100)).toFixed(2), 188.5);
     document.querySelector('.goal-ring-outer').classList.toggle('goal-ring-zero', cnt === 0);
 
     const vals = document.querySelectorAll('.rstat-val');
-    if(vals[0]) vals[0].textContent = kcal ? kcal.toLocaleString('it') : '0';
-    if(vals[1]) vals[1].textContent = cnt;
-    if(vals[2]) vals[2].textContent = km.toFixed(1);
+    if(vals[0]) animateCount(vals[0], kcal || 0);
+    if(vals[1]) animateCount(vals[1], cnt);
+    if(vals[2]) animateCount(vals[2], km, 800, 1);
 
     // Barre settimanali con colori reali
     const bars = WD.map((_,i)=>{
@@ -1329,9 +1324,11 @@ function navigateTo(url, toIndex){
 
   let curIdx = 0;
   let hcSx = 0, hcSy = 0, hcDrag = false, hcAxis = null;
+  const cardW = () => carousel.offsetWidth;
 
-  function goToHeroCard(idx){
+  function goToHeroCard(idx, animate = true){
     curIdx = idx;
+    track.style.transition = animate ? '' : 'none';
     track.style.transform = `translateX(${-idx * 100}%)`;
     dot0.classList.toggle('active', idx === 0);
     dot1.classList.toggle('active', idx === 1);
@@ -1352,15 +1349,15 @@ function navigateTo(url, toIndex){
       } else {
         sfideEmpty.style.display   = 'none';
         sfideSummary.style.display = 'block';
-        document.getElementById('sfideCountNum').textContent = active.length;
+        animateCount(document.getElementById('sfideCountNum'), active.length);
         // progresso medio
         const avgPct = Math.round(active.reduce((acc, c) => {
           const t = c.target || 1;
           const cur = c.manualCurrent != null ? c.manualCurrent : (c.current || 0);
           return acc + Math.min(100, cur / t * 100);
         }, 0) / active.length);
-        document.getElementById('sfideAvgPct').textContent = avgPct + '%';
-        document.getElementById('sfideProgFill').style.strokeDashoffset = (213.6 * (1 - avgPct / 100)).toFixed(2);
+        animateCount(document.getElementById('sfideAvgPct'), avgPct, 800, 0, '%');
+        animateRing(document.getElementById('sfideProgFill'), +(213.6 * (1 - avgPct / 100)).toFixed(2), 213.6);
         // sfida più urgente (endDate più vicina)
         const today = new Date(); today.setHours(0,0,0,0);
         const sorted = [...active].sort((a, b) => {
@@ -1378,40 +1375,65 @@ function navigateTo(url, toIndex){
     } catch(e){ console.warn('hero sfide', e); }
   })();
 
-  // Swipe touch
+  // Swipe touch — segue il dito in tempo reale
   carousel.addEventListener('touchstart', e => {
     hcSx = e.touches[0].clientX;
     hcSy = e.touches[0].clientY;
     hcDrag = false;
     hcAxis = null;
+    track.style.transition = 'none';
   }, {passive: true});
   carousel.addEventListener('touchmove', e => {
     const dx = e.touches[0].clientX - hcSx;
     const dy = e.touches[0].clientY - hcSy;
     if(!hcAxis){ if(Math.abs(dx) > 5) hcAxis = 'x'; else if(Math.abs(dy) > 5) hcAxis = 'y'; }
-    if(hcAxis === 'x'){ hcDrag = true; e.preventDefault(); }
+    if(hcAxis !== 'x') return;
+    hcDrag = true;
+    e.preventDefault();
+    // spostamento live + rubber band ai bordi
+    let offset = -curIdx * cardW() + dx;
+    const max = 0, min = -(cardW());
+    if(offset > max) offset = max + (offset - max) * 0.25;
+    if(offset < min) offset = min + (offset - min) * 0.25;
+    track.style.transform = `translateX(${offset}px)`;
   }, {passive: false});
   carousel.addEventListener('touchend', e => {
-    if(!hcDrag) return;
+    if(!hcDrag){ track.style.transition = ''; return; }
     const dx = e.changedTouches[0].clientX - hcSx;
-    if(dx < -40 && curIdx === 0) goToHeroCard(1);
-    else if(dx > 40 && curIdx === 1) goToHeroCard(0);
+    let nextIdx = curIdx;
+    if(dx < -40 && curIdx === 0) nextIdx = 1;
+    else if(dx > 40 && curIdx === 1) nextIdx = 0;
+    goToHeroCard(nextIdx, true);
     hcDrag = false;
-    // blocca il click sintetico che il browser genera dopo uno swipe
     e.preventDefault();
     carousel.addEventListener('click', ev => ev.stopPropagation(), {capture:true, once:true});
   });
 
   // Drag mouse
   let hcMd = false, hcMsx = 0;
-  carousel.addEventListener('mousedown', e => { hcMd = true; hcMsx = e.clientX; });
-  window.addEventListener('mousemove', e => { if(hcMd){ const dx = e.clientX - hcMsx; if(Math.abs(dx) > 5) hcDrag = true; } });
+  carousel.addEventListener('mousedown', e => {
+    hcMd = true; hcMsx = e.clientX; hcDrag = false;
+    track.style.transition = 'none';
+  });
+  window.addEventListener('mousemove', e => {
+    if(!hcMd) return;
+    const dx = e.clientX - hcMsx;
+    if(Math.abs(dx) > 5) hcDrag = true;
+    let offset = -curIdx * cardW() + dx;
+    const max = 0, min = -(cardW());
+    if(offset > max) offset = max + (offset - max) * 0.25;
+    if(offset < min) offset = min + (offset - min) * 0.25;
+    track.style.transform = `translateX(${offset}px)`;
+  });
   window.addEventListener('mouseup', e => {
     if(!hcMd) return; hcMd = false;
-    if(!hcDrag) return; hcDrag = false;
+    if(!hcDrag){ track.style.transition = ''; return; }
+    hcDrag = false;
     const dx = e.clientX - hcMsx;
-    if(dx < -40 && curIdx === 0) goToHeroCard(1);
-    else if(dx > 40 && curIdx === 1) goToHeroCard(0);
+    let nextIdx = curIdx;
+    if(dx < -40 && curIdx === 0) nextIdx = 1;
+    else if(dx > 40 && curIdx === 1) nextIdx = 0;
+    goToHeroCard(nextIdx, true);
   });
 
   // Dot click

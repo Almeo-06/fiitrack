@@ -70,7 +70,8 @@ html.theme-light .tab-item.on{ color:var(--a1); }
    e nello snippet inline di ogni pagina senza widgetLayout.
    Il fallback calc(...) copre il primo frame prima che JS giri. ── */
 .scroll-area{
-  padding-bottom: var(--tab-bar-h, calc(88px + var(--safe-b, env(safe-area-inset-bottom, 0px)))) !important;
+  /* +24px di buffer sopra la tab bar per non finire sotto il gradiente ::before */
+  padding-bottom: calc(var(--tab-bar-h, calc(88px + var(--safe-b, env(safe-area-inset-bottom, 0px)))) + 24px) !important;
 }
 
 /* ── prefers-reduced-motion — base ── */

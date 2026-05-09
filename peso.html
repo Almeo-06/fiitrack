@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FitTrack · Peso</title>
+<title>FiitTrack · Peso</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#020810">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FitTrack">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="shared.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
+<script src="ft-animate.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -334,12 +335,6 @@ html.theme-light .peso-hero{
 }
 html.theme-light .peso-hero::before{ display:none; }
 
-/* ── PWA standalone: padding extra per il safe-area ── */
-@media all and (display-mode: standalone) {
-  .scroll-area {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .start-btn::after { animation: none; }
 }
@@ -382,7 +377,7 @@ html.theme-light .storico-card{
 
   <!-- header -->
   <div class="header">
-    <div class="logo">Fit<span>Track</span></div>
+    <div class="logo">Fiit<span>Track</span></div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="page-label">Peso &amp; BMI</div>
       <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
@@ -728,7 +723,7 @@ function renderHero(){
     const h   = data.height / 100;
     const bmi = +(curr / (h*h)).toFixed(1);
     const {cat, color} = bmiCategory(bmi);
-    document.getElementById('bmiVal').textContent       = bmi;
+    animateCount(document.getElementById('bmiVal'), bmi, 800, 1);
     document.getElementById('bmiCat').textContent       = cat;
     document.getElementById('bmiCat').style.color       = color;
     document.getElementById('bmiVal').style.color       = color;
@@ -743,8 +738,8 @@ function renderHero(){
       const done  = Math.abs(start - curr);
       const pct   = Math.min(100, Math.round(done / range * 100));
       document.getElementById('progSection').style.display = 'block';
-      document.getElementById('progFill').style.strokeDashoffset = (188.5 * (1 - pct / 100)).toFixed(2);
-      document.getElementById('progVal').textContent       = pct + '%';
+      animateRing(document.getElementById('progFill'), +(188.5 * (1 - pct / 100)).toFixed(2), 188.5);
+      animateCount(document.getElementById('progVal'), pct, 800, 0, '%');
       document.getElementById('progStart').textContent     = start.toFixed(1) + ' kg';
       document.getElementById('progEnd').textContent       = goal.toFixed(1) + ' kg 🎯';
     }

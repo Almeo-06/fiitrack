@@ -657,6 +657,8 @@ function toggleEx(i) {
 function delEx(e, i) {
   e.stopPropagation();
   editExs.splice(i, 1);
+  if (openExIdx === i)      openExIdx = -1;
+  else if (openExIdx > i)   openExIdx--;
   if (openExIdx >= editExs.length) openExIdx = -1;
   markDirty();
   renderExRows();
@@ -751,13 +753,13 @@ function _onDragMove(e) {
   _dragEl.style.transform = `translateY(${dy}px) scale(1.02)`;
   const rows = [...document.getElementById('exRows').querySelectorAll('.ex-row')];
   const midY = _dragEl.getBoundingClientRect().top + _dragEl.getBoundingClientRect().height / 2;
-  rows.forEach((r, i) => {
-    r.classList.remove('drag-over');
-    if (i !== _dragIdx) {
-      const rr = r.getBoundingClientRect();
-      if (midY < rr.top + rr.height / 2) r.classList.add('drag-over');
-    }
-  });
+  let dropTarget = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (i === _dragIdx) continue;
+    const rr = rows[i].getBoundingClientRect();
+    if (midY < rr.top + rr.height / 2) { dropTarget = i; break; }
+  }
+  rows.forEach((r, i) => r.classList.toggle('drag-over', i === dropTarget));
 }
 
 function _onDragEnd() {
