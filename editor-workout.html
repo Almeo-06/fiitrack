@@ -344,6 +344,7 @@ html.theme-light .ed-header {
 .ex-card-info { flex:1; min-width:0; }
 .ex-card-nome { font-size:13px; font-weight:500; color:var(--text); }
 .ex-card-meta { font-size:11px; color:var(--textm); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ex-card-last { font-size:10px; color:var(--a2); margin-top:3px; font-family:var(--mono); }
 .ex-card-add {
   width:30px; height:30px; border-radius:9px; flex-shrink:0;
   background:rgba(var(--a1-rgb),.1); border:1px solid rgba(var(--a1-rgb),.25);
@@ -373,18 +374,20 @@ html.theme-light .ed-header {
 
 /* ── Toast ── */
 .ed-toast {
-  position:fixed; bottom:calc(24px + env(safe-area-inset-bottom,0px)); left:50%;
-  transform:translateX(-50%) translateY(16px);
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:12px; padding:10px 18px;
-  font-size:13px; color:var(--text); white-space:nowrap;
+  position:fixed; bottom:calc(28px + env(safe-area-inset-bottom,0px)); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(18,24,38,.92); border:1px solid rgba(255,255,255,.1);
+  border-radius:18px; padding:12px 22px;
+  font-size:13px; font-weight:500; color:var(--text); white-space:nowrap;
   opacity:0; pointer-events:none;
-  transition:opacity .2s, transform .2s;
-  z-index:500; box-shadow:0 4px 20px rgba(0,0,0,.3);
+  transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1);
+  z-index:500;
+  box-shadow:0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
 }
 .ed-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-.ed-toast.green { color:var(--green); border-color:rgba(0,230,118,.3); background:rgba(0,230,118,.07); }
-.ed-toast.red   { color:var(--red);   border-color:rgba(255,50,50,.3);  background:rgba(255,50,50,.07);  }
+.ed-toast.green { color:var(--green); border-color:rgba(0,230,118,.35); background:rgba(0,230,118,.1); }
+.ed-toast.red   { color:var(--red);   border-color:rgba(255,50,50,.35);  background:rgba(255,50,50,.1);  }
 
 /* ── Slide animation (transizione in/out dalla pagina) ── */
 @keyframes slideInFromRight { from{opacity:0;transform:translateX(48px);} to{opacity:1;transform:translateX(0);} }
@@ -911,16 +914,36 @@ function renderSearchResults() {
   el.innerHTML = html;
 }
 
+function _lastPerformedLabel(nome){
+  try{
+    const d    = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    const sess = d.sessions || [];
+    for(let i = sess.length - 1; i >= 0; i--){
+      const ex = (sess[i].exsCompleted || []).find(e =>
+        (e.name || '').toLowerCase() === nome.toLowerCase()
+      );
+      if(ex){
+        const last = (ex.sets_data || []).filter(s => s.kg > 0).slice(-1)[0];
+        if(last) return `Ultima: ${ex.sets_data.length}×${last.reps}r @ ${last.kg}kg`;
+      }
+    }
+  } catch(e){}
+  return null;
+}
+
 function exCardHtml(e) {
   const added   = addedIds.has(e.id);
   const addIcon = added ? '✓' : '+';
   const addCls  = added ? ' added' : '';
   const meta    = e.attrezzo + ' · ' + e.muscoli.slice(0,2).join(', ');
+  const last    = _lastPerformedLabel(e.nome);
+  const lastHtml = last ? `<div class="ex-card-last">🕐 ${last}</div>` : '';
   return `<div class="ex-card">
     <div class="ex-card-emoji">${ftIcon(e.icona || 'altro')}</div>
     <div class="ex-card-info">
       <div class="ex-card-nome">${escHtml(e.nome)}</div>
       <div class="ex-card-meta">${escHtml(meta)}</div>
+      ${lastHtml}
     </div>
     <button class="ex-card-add${addCls}" onclick="addExFromDb(EXERCISES_DB.find(x=>x.id==='${e.id}'))">${addIcon}</button>
   </div>`;

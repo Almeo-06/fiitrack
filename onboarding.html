@@ -40,39 +40,31 @@ body::before{
 .prog-wrap{
   position:relative; z-index:10; flex-shrink:0;
   padding:calc(env(safe-area-inset-top,0px) + 20px) 28px 0;
+  display:flex; align-items:center; gap:12px;
 }
-.prog-track{ height:5px; background:var(--border); border-radius:99px; overflow:hidden; }
+.prog-track{ flex:1; height:5px; background:var(--border); border-radius:99px; overflow:hidden; }
 .prog-fill{
   height:100%; border-radius:99px;
   background:linear-gradient(90deg,var(--a1),var(--a2));
-  width:10%;
+  width:33%;
   transition:width .45s cubic-bezier(.4,0,.2,1);
 }
 
 /* ── SLIDES ── */
 .slider-wrap{ flex:1; overflow:hidden; position:relative; z-index:1; min-height:0; }
 .slides-track{
-  display:flex; width:1000%; height:100%;
+  display:flex; width:300%; height:100%;
   transition:transform .42s cubic-bezier(.4,0,.2,1);
   will-change:transform;
 }
 .slide{
-  width:10%; height:100%;
+  width:33.333%; height:100%;
   display:flex; flex-direction:column;
   padding:0 28px; overflow-y:auto;
   -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
-.slide::-webkit-scrollbar{ width:0; }
-
-/* ── BODY COMUNI ── */
-.s1-body,.s2-body,.s4-body,.s5-body{
-  flex:1; display:flex; flex-direction:column;
-  justify-content:center; padding:20px 0 24px;
-}
-.s3-body,.s6-body,.s7-body,.s8-body,.s9-body,.s10-body{
-  flex:1; display:flex; flex-direction:column;
-  padding:24px 0;
-}
+.slide::-webkit-scrollbar{ display:none; }
 
 /* ── TESTI COMUNI ── */
 .slide-q{
@@ -80,15 +72,17 @@ body::before{
   letter-spacing:-.8px; line-height:1.15; margin-bottom:10px;
 }
 .slide-q em{ color:var(--a2); font-style:normal; }
-.slide-hint{ font-size:14px; color:var(--textm); margin-bottom:28px; }
+.slide-hint{ font-size:14px; color:var(--textm); margin-bottom:24px; }
 .slide-sec{
   font-family:var(--mono); font-size:10px; letter-spacing:2px;
-  color:var(--a1); text-transform:uppercase; margin-bottom:12px;
+  color:var(--a1); text-transform:uppercase; margin-bottom:10px; margin-top:20px;
 }
 
-/* ─────────────────────────────────────
-   SLIDE 1 — WELCOME
-───────────────────────────────────── */
+/* ── SLIDE 1: WELCOME ── */
+.s1-body{
+  flex:1; display:flex; flex-direction:column;
+  justify-content:center; padding:20px 0 24px;
+}
 .s1-emoji{
   font-size:76px; margin-bottom:30px;
   display:inline-block; line-height:1;
@@ -134,86 +128,65 @@ body::before{
 .sp-dots{ display:flex; gap:5px; margin-top:10px; }
 .spdot{ height:5px; border-radius:3px; }
 
-/* ─────────────────────────────────────
-   SLIDE 2 — NOME
-───────────────────────────────────── */
+/* ── SLIDE 2: CHI SEI ── */
+.s2-body{
+  display:flex; flex-direction:column;
+  padding:24px 0 32px;
+}
 .big-input{
   width:100%; background:var(--bg2); border:2px solid var(--border);
   border-radius:16px; padding:18px 20px;
   color:var(--text); font-family:var(--font);
   font-size:24px; font-weight:600; outline:none;
   transition:border-color .2s, box-shadow .2s;
-  caret-color:var(--a2);
+  caret-color:var(--a2); box-sizing:border-box;
 }
 .big-input:focus{
   border-color:var(--a1);
   box-shadow:0 0 0 4px rgba(var(--a1-rgb),.1);
 }
-.big-input::placeholder{
-  color:var(--border); font-weight:400; font-size:18px;
-}
+.big-input::placeholder{ color:var(--border); font-weight:400; font-size:18px; }
 
-/* ─────────────────────────────────────
-   SLIDE 3 — OBIETTIVO
-───────────────────────────────────── */
 .goal-grid{
-  display:grid; grid-template-columns:1fr 1fr;
-  gap:12px; flex:1; min-height:0;
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
 }
 .goal-card{
   background:var(--bg2); border:2px solid var(--border);
-  border-radius:20px; padding:20px 14px 18px;
+  border-radius:18px; padding:16px 12px 14px;
   cursor:pointer; text-align:center;
   display:flex; flex-direction:column;
-  align-items:center; gap:10px;
+  align-items:center; gap:8px;
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
-  position:relative; overflow:hidden;
-}
-.goal-card::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  opacity:0; transition:opacity .2s; border-radius:18px;
 }
 .goal-card.sel{
-  border-color:var(--a1);
-  transform:scale(1.04);
-  box-shadow:0 6px 24px rgba(var(--a1-rgb),.18);
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent;
+  transform:scale(1.035);
+  box-shadow:0 8px 28px rgba(var(--a1-rgb),.4);
+  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
 }
-.goal-card.sel::after{ opacity:.08; }
-.goal-emoji{
-  font-size:32px; line-height:1;
-  position:relative; z-index:1;
-  transition:transform .2s;
-}
-.goal-card.sel .goal-emoji{ transform:scale(1.2); }
-.goal-name{
-  font-size:14px; font-weight:600; color:var(--text);
-  position:relative; z-index:1;
-  transition:color .2s;
-}
-.goal-card.sel .goal-name{ color:var(--a2); }
+.goal-emoji{ font-size:28px; line-height:1; transition:transform .2s; }
+.goal-card.sel .goal-emoji{ transform:scale(1.15); }
+.goal-name{ font-size:13px; font-weight:600; color:var(--text); }
+.goal-card.sel .goal-name{ color:#fff; }
 
-/* ─────────────────────────────────────
-   SLIDE 4 — DATI FISICI
-───────────────────────────────────── */
-.gender-row{
-  display:flex; gap:10px; margin-bottom:18px;
-}
+.gender-row{ display:flex; gap:10px; }
 .gender-btn{
-  flex:1; padding:16px 12px; text-align:center;
+  flex:1; padding:14px 12px; text-align:center;
   background:var(--bg2); border:2px solid var(--border);
-  border-radius:16px; cursor:pointer;
-  font-size:16px; font-weight:600; color:var(--textm);
+  border-radius:14px; cursor:pointer;
+  font-size:15px; font-weight:600; color:var(--textm);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
 }
 .gender-btn.sel{
-  border-color:var(--a1); color:var(--a2);
-  background:rgba(var(--a1-rgb),.06);
-  transform:scale(1.02);
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent; color:#fff;
+  transform:scale(1.03);
+  box-shadow:0 6px 20px rgba(var(--a1-rgb),.35);
+  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
 }
-.stat-grid{
-  display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;
-}
+
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
 .stat-field{
   background:var(--bg2); border:1.5px solid var(--border);
   border-radius:14px; padding:12px 14px;
@@ -235,78 +208,13 @@ body::before{
 .stat-input::-webkit-outer-spin-button{ -webkit-appearance:none; }
 .stat-unit{ font-size:11px; color:var(--textm); white-space:nowrap; }
 
-/* ─────────────────────────────────────
-   SLIDE 5 — PESO TARGET
-───────────────────────────────────── */
-.opt-badge{
-  display:inline-block; background:rgba(var(--a1-rgb),.1);
-  color:var(--a1); font-size:10px; font-weight:600;
-  padding:3px 10px; border-radius:99px; margin-bottom:12px;
-  text-transform:uppercase; letter-spacing:1.5px;
-  border:1px solid rgba(var(--a1-rgb),.2);
+/* ── SLIDE 3: COME TI ALLENI ── */
+.s3-body{
+  display:flex; flex-direction:column;
+  padding:24px 0 32px;
 }
-.target-input-wrap{
-  display:flex; align-items:center; gap:10px;
-  background:var(--bg2); border:2px solid var(--border);
-  border-radius:16px; padding:18px 20px; margin-top:20px;
-  transition:border-color .2s, box-shadow .2s;
-}
-.target-input-wrap:focus-within{
-  border-color:var(--a1);
-  box-shadow:0 0 0 4px rgba(var(--a1-rgb),.1);
-}
-.target-input{
-  flex:1; background:none; border:none; outline:none;
-  color:var(--text); font-size:32px; font-weight:700;
-  font-family:var(--mono); min-width:0;
-  caret-color:var(--a2);
-  -moz-appearance:textfield;
-}
-.target-input::-webkit-inner-spin-button,
-.target-input::-webkit-outer-spin-button{ -webkit-appearance:none; }
-.target-input::placeholder{ color:var(--border); font-size:28px; }
-.target-unit{ font-size:18px; color:var(--textm); font-weight:500; }
-.skip-hint{
-  text-align:center; margin-top:16px;
-  font-size:13px; color:var(--textm);
-}
-.skip-hint button{
-  background:none; border:none; color:var(--textm);
-  font-family:var(--font); font-size:13px; cursor:pointer;
-  text-decoration:underline; text-underline-offset:3px;
-}
-
-/* ─────────────────────────────────────
-   SLIDE 6 — ESPERIENZA
-───────────────────────────────────── */
-.vchip-list{ display:flex; flex-direction:column; gap:10px; flex:1; }
-.vchip{
-  display:flex; align-items:center; gap:14px;
-  background:var(--bg2); border:2px solid var(--border);
-  border-radius:16px; padding:15px 16px; cursor:pointer;
-  transition:all .2s;
-}
-.vchip.sel{ border-color:var(--a1); background:rgba(var(--a1-rgb),.04); }
-.vchip-ic{ font-size:22px; flex-shrink:0; }
-.vchip-txt{ flex:1; }
-.vchip-name{ font-size:15px; font-weight:600; color:var(--text); }
-.vchip-sub{ font-size:12px; color:var(--textm); margin-top:2px; }
-.vchip-dot{
-  width:20px; height:20px; border-radius:50%;
-  border:2px solid var(--border); flex-shrink:0;
-  transition:all .2s; position:relative;
-}
-.vchip.sel .vchip-dot{ background:var(--a1); border-color:var(--a1); }
-.vchip.sel .vchip-dot::after{
-  content:'✓'; position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-51%); font-size:10px; color:#fff; font-weight:700;
-}
-
-/* ─────────────────────────────────────
-   SLIDE 7 — FREQUENZA
-───────────────────────────────────── */
 .freq-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
 }
 .freq-opt{
   background:var(--bg2); border:2px solid var(--border);
@@ -317,132 +225,55 @@ body::before{
   position:relative; overflow:hidden;
 }
 .freq-opt.sel{
-  border-color:var(--a1);
-  transform:scale(1.03);
-  box-shadow:0 6px 20px rgba(var(--a1-rgb),.15);
-}
-.freq-opt::after{
-  content:''; position:absolute; inset:0;
   background:linear-gradient(135deg,var(--a1),var(--a2));
-  opacity:0; transition:opacity .2s; border-radius:16px;
+  border-color:transparent;
+  transform:scale(1.035);
+  box-shadow:0 8px 24px rgba(var(--a1-rgb),.38);
+  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
 }
-.freq-opt.sel::after{ opacity:.06; }
 .freq-num{
   font-size:34px; font-weight:700; color:var(--a2);
-  font-family:var(--mono); line-height:1;
-  position:relative; z-index:1;
+  font-family:var(--mono); line-height:1; position:relative; z-index:1;
 }
 .freq-lbl{
   font-size:13px; color:var(--textm); margin-top:6px;
   position:relative; z-index:1;
 }
-.freq-opt.sel .freq-lbl{ color:var(--a1); }
+.freq-opt.sel .freq-num{ color:#fff; }
+.freq-opt.sel .freq-lbl{ color:rgba(255,255,255,.8); }
 
-/* ─────────────────────────────────────
-   SLIDE 8 — GIORNI
-───────────────────────────────────── */
-.day-row{
-  display:flex; gap:8px; justify-content:space-between;
-  margin-top:8px;
-}
-.day-btn{
-  flex:1; aspect-ratio:1; max-width:48px;
-  border-radius:50%; border:2px solid var(--border);
-  background:var(--bg2); color:var(--textm);
-  font-size:13px; font-weight:600; font-family:var(--font);
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  transition:all .2s cubic-bezier(.34,1.56,.64,1);
-}
-.day-btn.sel{
-  background:var(--a1); border-color:var(--a1);
-  color:#fff;
-  transform:scale(1.08);
-  box-shadow:0 4px 14px rgba(var(--a1-rgb),.35);
-}
-.days-sub{
-  font-size:12px; color:var(--textm); margin-top:14px;
-  text-align:center;
-}
-.days-count{
-  font-size:13px; font-weight:600; color:var(--a1);
-}
-
-/* ─────────────────────────────────────
-   SLIDE 9 — DOVE + TIPO
-───────────────────────────────────── */
-.loc-grid{
-  display:grid; grid-template-columns:1fr 1fr;
-  gap:10px; margin-bottom:24px;
-}
-.loc-opt{
-  background:var(--bg2); border:2px solid var(--border);
-  border-radius:16px; padding:18px 12px;
-  cursor:pointer; text-align:center;
-  display:flex; flex-direction:column;
-  align-items:center; gap:8px;
-  transition:all .2s cubic-bezier(.34,1.56,.64,1);
-}
-.loc-opt.sel{
-  border-color:var(--a1);
-  transform:scale(1.03);
-  box-shadow:0 4px 16px rgba(var(--a1-rgb),.15);
-  background:rgba(var(--a1-rgb),.04);
-}
-.loc-ic{ font-size:26px; }
-.loc-lbl{ font-size:13px; font-weight:600; color:var(--text); }
-.loc-opt.sel .loc-lbl{ color:var(--a2); }
-.type-chips{
-  display:flex; flex-wrap:wrap; gap:8px;
-}
-.type-chip{
-  background:var(--bg2); border:2px solid var(--border);
-  border-radius:99px; padding:9px 18px;
-  font-size:14px; font-weight:500; color:var(--textm);
-  cursor:pointer; transition:all .15s;
-  display:flex; align-items:center; gap:6px;
-}
-.type-chip.sel{
-  border-color:var(--a1); color:var(--a1);
-  background:rgba(var(--a1-rgb),.06);
-}
-
-/* ─────────────────────────────────────
-   SLIDE 10 — NOTIFICHE
-───────────────────────────────────── */
 .notif-card{
   background:var(--bg2); border:2px solid var(--border);
-  border-radius:20px; padding:18px 20px; cursor:pointer;
+  border-radius:18px; padding:16px 18px; cursor:pointer;
   display:flex; align-items:center; gap:14px;
   transition:border-color .2s, background .2s;
+  margin-top:4px;
 }
 .notif-card.on{ border-color:var(--a1); background:rgba(var(--a1-rgb),.04); }
 .notif-left{ display:flex; align-items:center; gap:14px; flex:1; }
-.notif-icon{ font-size:30px; }
+.notif-icon{ font-size:28px; }
 .notif-name{ font-size:15px; font-weight:600; color:var(--text); }
 .notif-sub{ font-size:12px; color:var(--textm); margin-top:2px; }
 .ntoggle{
-  width:50px; height:28px; border-radius:14px;
+  width:48px; height:26px; border-radius:14px;
   background:var(--border); position:relative;
   transition:background .25s; flex-shrink:0;
 }
 .ntoggle::after{
   content:''; position:absolute; top:3px; left:3px;
-  width:22px; height:22px; border-radius:50%;
+  width:20px; height:20px; border-radius:50%;
   background:#fff; transition:transform .25s;
   box-shadow:0 1px 4px rgba(0,0,0,.3);
 }
 .notif-card.on .ntoggle{ background:var(--a1); }
 .notif-card.on .ntoggle::after{ transform:translateX(22px); }
 .notif-time-wrap{
-  margin-top:20px;
+  margin-top:14px;
   opacity:0; transform:translateY(8px);
   transition:opacity .25s, transform .25s;
   pointer-events:none;
 }
-.notif-time-wrap.visible{
-  opacity:1; transform:translateY(0);
-  pointer-events:all;
-}
+.notif-time-wrap.visible{ opacity:1; transform:translateY(0); pointer-events:all; }
 .notif-time-lbl{
   font-size:11px; color:var(--textm);
   text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px;
@@ -450,28 +281,24 @@ body::before{
 .time-chip-row{ display:flex; gap:8px; }
 .time-chip{
   flex:1; background:var(--bg2); border:2px solid var(--border);
-  border-radius:14px; padding:14px 8px; text-align:center;
+  border-radius:14px; padding:12px 8px; text-align:center;
   cursor:pointer; font-size:13px; color:var(--text); font-weight:500;
   transition:all .2s; line-height:1.5;
 }
-.time-chip span{
-  display:block; font-size:11px; color:var(--textm);
-  font-family:var(--mono); margin-top:2px;
-}
+.time-chip span{ display:block; font-size:11px; color:var(--textm); font-family:var(--mono); margin-top:2px; }
 .time-chip.sel{
-  border-color:var(--a1); color:var(--a1);
-  background:rgba(var(--a1-rgb),.06);
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border-color:transparent; color:#fff;
+  box-shadow:0 4px 14px rgba(var(--a1-rgb),.28);
+  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
 }
-.time-chip.sel span{ color:var(--a1); }
+.time-chip.sel span{ color:rgba(255,255,255,.8); }
 .notif-skip{
-  text-align:center; margin-top:24px;
-  font-size:13px; color:var(--textm);
+  text-align:center; margin-top:16px;
+  font-size:12px; color:var(--textm); opacity:.7;
 }
-.notif-skip span{ opacity:.6; }
 
-/* ─────────────────────────────────────
-   BOTTOM CTA
-───────────────────────────────────── */
+/* ── BOTTOM CTA ── */
 .bottom-cta{
   flex-shrink:0; position:relative; z-index:10;
   padding:14px 28px calc(env(safe-area-inset-bottom,0px) + 28px);
@@ -487,10 +314,7 @@ body::before{
   position:relative; overflow:hidden;
   letter-spacing:-.2px;
 }
-.cta-btn:disabled{
-  opacity:.35; cursor:default;
-  box-shadow:none; transform:none !important;
-}
+.cta-btn:disabled{ opacity:.35; cursor:default; box-shadow:none; transform:none !important; }
 .cta-btn:not(:disabled):active{
   transform:scale(.98);
   box-shadow:0 3px 14px rgba(var(--a1-rgb),.2);
@@ -513,113 +337,29 @@ html.theme-light{
 }
 html.theme-light body{ background:var(--bg); }
 html.theme-light body::before{ display:none; }
-html.theme-light .streak-preview{
-  box-shadow:0 2px 16px rgba(0,102,221,.08);
-}
-html.theme-light .cta-btn{
-  box-shadow:0 6px 24px rgba(0,102,221,.25);
-}
-html.theme-light .day-btn.sel{
-  box-shadow:0 4px 14px rgba(0,102,221,.3);
-}
-html.theme-light .goal-card.sel{
-  box-shadow:0 6px 24px rgba(0,102,221,.2);
-}
+html.theme-light .streak-preview{ box-shadow:0 2px 16px rgba(0,102,221,.08); }
+html.theme-light .cta-btn{ box-shadow:0 6px 24px rgba(0,102,221,.25); }
 
-/* ══════════════════════════════════════════
-   SELEZIONE — tutto il rettangolo diventa blu
-══════════════════════════════════════════ */
 @keyframes selPop{
   0%  { transform:scale(1); }
   55% { transform:scale(1.08); }
   100%{ transform:scale(1.035); }
 }
-@keyframes selPopFlat{          /* per elementi senza transform di base */
+@keyframes selPopFlat{
   0%  { transform:scale(1); }
   55% { transform:scale(1.06); }
   100%{ transform:scale(1.02); }
 }
-
-/* goal cards (slide 3) */
-.goal-card.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent;
-  transform:scale(1.035);
-  box-shadow:0 8px 28px rgba(var(--a1-rgb),.4);
-  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-.goal-card.sel::after{ display:none; }
-.goal-card.sel .goal-name{ color:#fff; }
-.goal-card.sel .goal-emoji{ transform:scale(1.2); filter:drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
-
-/* gender buttons (slide 4) */
-.gender-btn.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent; color:#fff;
-  transform:scale(1.03);
-  box-shadow:0 6px 20px rgba(var(--a1-rgb),.35);
-  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-
-/* frequenza (slide 7) */
-.freq-opt.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent;
-  transform:scale(1.035);
-  box-shadow:0 8px 24px rgba(var(--a1-rgb),.38);
-  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-.freq-opt.sel::after{ display:none; }
-.freq-opt.sel .freq-num{ color:#fff; }
-.freq-opt.sel .freq-lbl{ color:rgba(255,255,255,.8); }
-
-/* vchip — esperienza (slide 6) */
-.vchip.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent;
-  box-shadow:0 6px 22px rgba(var(--a1-rgb),.32);
-  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-.vchip.sel .vchip-name{ color:#fff; }
-.vchip.sel .vchip-sub{ color:rgba(255,255,255,.75); }
-.vchip.sel .vchip-dot{ background:#fff; border-color:rgba(255,255,255,.5); }
-.vchip.sel .vchip-dot::after{ color:var(--a1); }
-
-/* location opts (slide 9) */
-.loc-opt.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent;
-  transform:scale(1.03);
-  box-shadow:0 6px 20px rgba(var(--a1-rgb),.32);
-  animation:selPop .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-.loc-opt.sel .loc-lbl{ color:#fff; }
-
-/* type chips (slide 9) */
-.type-chip.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent; color:#fff;
-  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-
-/* time chips (slide 10) */
-.time-chip.sel{
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  border-color:transparent; color:#fff;
-  box-shadow:0 4px 14px rgba(var(--a1-rgb),.28);
-  animation:selPopFlat .28s cubic-bezier(.34,1.56,.64,1) both;
-}
-.time-chip.sel span{ color:rgba(255,255,255,.8); }
 @media (prefers-reduced-motion: reduce) {
-  .ob-icon { animation: none; }
-  .next-btn::after { animation: none; }
-  .time-chip.sel { animation: none; }
+  .s1-emoji { animation: none; }
+  .cta-btn::after { animation: none; }
+  .time-chip.sel, .freq-opt.sel, .goal-card.sel, .gender-btn.sel { animation: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- LINEA PERCORSO — una curva per slide, i punti di giunzione coincidono -->
+<!-- LINEA PERCORSO — 3 slide = 2 curve di transizione -->
 <svg id="journeyPath"
   style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"
   viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"
@@ -635,89 +375,25 @@ html.theme-light .goal-card.sel{
     </filter>
   </defs>
 
-  <!--
-    Waypoints (punti di giunzione tra slide):
-    WP0  195, 40   — ingresso slide 0
-    WP1  340,165   — fine slide 0 / inizio slide 1
-    WP2   55,295   — fine slide 1 / inizio slide 2
-    WP3  345,415   — fine slide 2 / inizio slide 3
-    WP4   65,535   — fine slide 3 / inizio slide 4
-    WP5  335,645   — fine slide 4 / inizio slide 5
-    WP6   75,750   — fine slide 5 / inizio slide 6
-    WP7  345,858   — fine slide 6 / inizio slide 7
-    WP8  110,960   — fine slide 7 / inizio slide 8 (sotto viewport)
-    WP9  315,1045  — fine slide 8 / inizio slide 9 (sotto viewport)
-    WP10 185,1110  — uscita slide 9 (sotto viewport)
-  -->
-
-  <!-- slide 0  WP0→WP1 -->
+  <!-- slide 0: centro-alto → destra -->
   <g class="jp-slide" data-slide="0" opacity="1" style="transition:opacity .4s ease;">
-    <path d="M 195,40  C 280,38  420,110  340,165" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 195,40  C 280,38  420,110  340,165" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 195,40  C 280,38  420,110  340,165" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+    <path d="M 195,50  C 290,48  420,140  330,210" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 195,50  C 290,48  420,140  330,210" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 195,50  C 290,48  420,140  330,210" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
   </g>
 
-  <!-- slide 1  WP1→WP2 -->
+  <!-- slide 1: destra → sinistra -->
   <g class="jp-slide" data-slide="1" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M 340,165 C 430,220  -20,230   55,295" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 340,165 C 430,220  -20,230   55,295" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 340,165 C 430,220  -20,230   55,295" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+    <path d="M 330,210 C 430,290  -30,360   60,430" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M 330,210 C 430,290  -30,360   60,430" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M 330,210 C 430,290  -30,360   60,430" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
   </g>
 
-  <!-- slide 2  WP2→WP3 -->
+  <!-- slide 2: sinistra → centro-basso (uscita) -->
   <g class="jp-slide" data-slide="2" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M  55,295 C -30,360  430,360  345,415" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M  55,295 C -30,360  430,360  345,415" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M  55,295 C -30,360  430,360  345,415" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 3  WP3→WP4 -->
-  <g class="jp-slide" data-slide="3" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M 345,415 C 440,475  -20,490   65,535" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 345,415 C 440,475  -20,490   65,535" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 345,415 C 440,475  -20,490   65,535" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 4  WP4→WP5 -->
-  <g class="jp-slide" data-slide="4" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M  65,535 C -20,590  420,595  335,645" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M  65,535 C -20,590  420,595  335,645" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M  65,535 C -20,590  420,595  335,645" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 5  WP5→WP6 -->
-  <g class="jp-slide" data-slide="5" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M 335,645 C 430,695    0,705   75,750" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 335,645 C 430,695    0,705   75,750" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 335,645 C 430,695    0,705   75,750" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 6  WP6→WP7 -->
-  <g class="jp-slide" data-slide="6" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M  75,750 C  -5,800  440,810  345,858" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M  75,750 C  -5,800  440,810  345,858" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M  75,750 C  -5,800  440,810  345,858" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 7  WP7→WP8 -->
-  <g class="jp-slide" data-slide="7" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M 345,858 C 440,900   20,930  110,960" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 345,858 C 440,900   20,930  110,960" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 345,858 C 440,900   20,930  110,960" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 8  WP8→WP9 -->
-  <g class="jp-slide" data-slide="8" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M 110,960 C  20,1005  430,1010 315,1045" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 110,960 C  20,1005  430,1010 315,1045" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 110,960 C  20,1005  430,1010 315,1045" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
-  </g>
-
-  <!-- slide 9  WP9→WP10 -->
-  <g class="jp-slide" data-slide="9" opacity="0" style="transition:opacity .4s ease;">
-    <path d="M 315,1045 C 410,1065  50,1090  185,1110" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
-    <path d="M 315,1045 C 410,1065  50,1090  185,1110" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
-    <path d="M 315,1045 C 410,1065  50,1090  185,1110" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
+    <path d="M  60,430 C -30,510  430,560  195,700" stroke="#0055cc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.07" filter="url(#jpGlow)"/>
+    <path d="M  60,430 C -30,510  430,560  195,700" stroke="#0088ff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+    <path d="M  60,430 C -30,510  430,560  195,700" stroke="#66ccff" stroke-width="1"   fill="none" stroke-linecap="round" opacity="0.4"/>
   </g>
 </svg>
 
@@ -758,25 +434,19 @@ html.theme-light .goal-card.sel{
       </div>
     </div>
 
-    <!-- ── SLIDE 2: NOME ── -->
+    <!-- ── SLIDE 2: CHI SEI ── -->
     <div class="slide">
       <div class="s2-body">
-        <div class="slide-q">Come ti<br><em>chiami?</em></div>
+        <div class="slide-q" style="margin-top:8px;">Come ti<br><em>chiami?</em></div>
         <div class="slide-hint">Ti chiamerò così nell'app 👋</div>
         <input
           class="big-input" id="nameInput"
           type="text" placeholder="Il tuo nome"
           maxlength="30" autocomplete="given-name" autocapitalize="words"
-          oninput="onNameInput()"
+          oninput="updateCta()"
         />
-      </div>
-    </div>
 
-    <!-- ── SLIDE 3: OBIETTIVO ── -->
-    <div class="slide">
-      <div class="s3-body">
-        <div class="slide-q">Qual è il tuo<br><em>obiettivo?</em></div>
-        <div class="slide-hint">Puoi cambiarlo quando vuoi dalle impostazioni.</div>
+        <div class="slide-sec">Il tuo obiettivo</div>
         <div class="goal-grid">
           <div class="goal-card" data-goal="dimagrire" onclick="selectGoal(this)">
             <div class="goal-emoji">🔥</div>
@@ -795,20 +465,12 @@ html.theme-light .goal-card.sel{
             <div class="goal-name">Salute</div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ── SLIDE 4: DATI FISICI ── -->
-    <div class="slide">
-      <div class="s4-body">
-        <div class="slide-q">Quanti anni<br><em>hai?</em></div>
-        <div class="slide-hint">Ho bisogno anche di sesso, peso e altezza per calcolare le calorie bruciate.</div>
-        <div class="slide-sec">Sesso</div>
-        <div class="gender-row" style="margin-bottom:24px;">
+        <div class="slide-sec">Dati fisici</div>
+        <div class="gender-row" style="margin-bottom:12px;">
           <div class="gender-btn" data-val="m" onclick="selectGender(this)">♂ Maschio</div>
           <div class="gender-btn" data-val="f" onclick="selectGender(this)">♀ Femmina</div>
         </div>
-        <div class="slide-sec">Misure</div>
         <div class="stat-grid">
           <div class="stat-field">
             <div class="stat-lbl">Età</div>
@@ -835,69 +497,10 @@ html.theme-light .goal-card.sel{
       </div>
     </div>
 
-    <!-- ── SLIDE 5: PESO TARGET ── -->
+    <!-- ── SLIDE 3: COME TI ALLENI ── -->
     <div class="slide">
-      <div class="s5-body">
-        <div class="opt-badge">Facoltativo</div>
-        <div class="slide-q">Peso<br><em>obiettivo?</em></div>
-        <div class="slide-hint">Ti creo subito una sfida personalizzata.</div>
-        <div class="target-input-wrap">
-          <input class="target-input" type="number" id="targetWeightInput"
-            placeholder="65" min="30" max="300" step="0.1" inputmode="decimal">
-          <span class="target-unit">kg</span>
-        </div>
-        <div class="skip-hint">
-          <button onclick="goToSlide(cur+1)">Salta questo passaggio →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── SLIDE 6: ESPERIENZA ── -->
-    <div class="slide">
-      <div class="s6-body">
-        <div class="slide-q">Da quanto<br><em>ti alleni?</em></div>
-        <div class="slide-hint">Adatto i consigli e i workout al tuo livello.</div>
-        <div class="vchip-list">
-          <div class="vchip" data-val="mai" onclick="selectExp(this)">
-            <div class="vchip-ic">🌱</div>
-            <div class="vchip-txt">
-              <div class="vchip-name">Non mi sono mai allenato</div>
-              <div class="vchip-sub">Partiamo dall'inizio</div>
-            </div>
-            <div class="vchip-dot"></div>
-          </div>
-          <div class="vchip" data-val="principiante" onclick="selectExp(this)">
-            <div class="vchip-ic">🔵</div>
-            <div class="vchip-txt">
-              <div class="vchip-name">Principiante</div>
-              <div class="vchip-sub">Meno di 1 anno di esperienza</div>
-            </div>
-            <div class="vchip-dot"></div>
-          </div>
-          <div class="vchip" data-val="intermedio" onclick="selectExp(this)">
-            <div class="vchip-ic">⚡</div>
-            <div class="vchip-txt">
-              <div class="vchip-name">Intermedio</div>
-              <div class="vchip-sub">1-3 anni, conosco le basi</div>
-            </div>
-            <div class="vchip-dot"></div>
-          </div>
-          <div class="vchip" data-val="esperto" onclick="selectExp(this)">
-            <div class="vchip-ic">🔥</div>
-            <div class="vchip-txt">
-              <div class="vchip-name">Esperto</div>
-              <div class="vchip-sub">Allenamento avanzato e strutturato</div>
-            </div>
-            <div class="vchip-dot"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── SLIDE 7: FREQUENZA ── -->
-    <div class="slide">
-      <div class="s7-body">
-        <div class="slide-q">Quante volte<br><em>a settimana?</em></div>
+      <div class="s3-body">
+        <div class="slide-q" style="margin-top:8px;">Quante volte<br><em>a settimana?</em></div>
         <div class="slide-hint">Scegli la frequenza che riesci a mantenere.</div>
         <div class="freq-grid">
           <div class="freq-opt" data-val="1x" onclick="selectFreq(this)">
@@ -917,71 +520,14 @@ html.theme-light .goal-card.sel{
             <div class="freq-lbl">ogni giorno</div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ── SLIDE 8: GIORNI ── -->
-    <div class="slide">
-      <div class="s8-body">
-        <div class="slide-q">Quali<br><em>giorni?</em></div>
-        <div class="slide-hint">Li ho pre-selezionati in base alla tua frequenza. Puoi cambiarli.</div>
-        <div class="day-row" id="dayRow">
-          <button class="day-btn" data-day="0" onclick="toggleDay(this)">L</button>
-          <button class="day-btn" data-day="1" onclick="toggleDay(this)">M</button>
-          <button class="day-btn" data-day="2" onclick="toggleDay(this)">M</button>
-          <button class="day-btn" data-day="3" onclick="toggleDay(this)">G</button>
-          <button class="day-btn" data-day="4" onclick="toggleDay(this)">V</button>
-          <button class="day-btn" data-day="5" onclick="toggleDay(this)">S</button>
-          <button class="day-btn" data-day="6" onclick="toggleDay(this)">D</button>
-        </div>
-        <div class="days-sub" id="daysSub"></div>
-      </div>
-    </div>
-
-    <!-- ── SLIDE 9: DOVE + TIPO ── -->
-    <div class="slide">
-      <div class="s9-body">
-        <div class="slide-q">Come ti<br><em>alleni?</em></div>
-        <div class="slide-sec" style="margin-bottom:10px;">Dove</div>
-        <div class="loc-grid">
-          <div class="loc-opt" data-val="palestra" onclick="selectLocation(this)">
-            <div class="loc-ic">🏋️</div>
-            <div class="loc-lbl">Palestra</div>
-          </div>
-          <div class="loc-opt" data-val="casa" onclick="selectLocation(this)">
-            <div class="loc-ic">🏠</div>
-            <div class="loc-lbl">Casa</div>
-          </div>
-          <div class="loc-opt" data-val="entrambi" onclick="selectLocation(this)">
-            <div class="loc-ic">🔄</div>
-            <div class="loc-lbl">Entrambi</div>
-          </div>
-          <div class="loc-opt" data-val="outdoor" onclick="selectLocation(this)">
-            <div class="loc-ic">🌳</div>
-            <div class="loc-lbl">All'aperto</div>
-          </div>
-        </div>
-        <div class="slide-sec" style="margin-bottom:10px;">Tipo di attività</div>
-        <div class="type-chips">
-          <div class="type-chip" data-val="pesi" onclick="toggleType(this)">🏋️ Pesi</div>
-          <div class="type-chip" data-val="corsa" onclick="toggleType(this)">🏃 Corsa</div>
-          <div class="type-chip" data-val="bici" onclick="toggleType(this)">🚴 Ciclismo</div>
-          <div class="type-chip" data-val="misto" onclick="toggleType(this)">💪 Misto</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── SLIDE 10: NOTIFICHE ── -->
-    <div class="slide">
-      <div class="s10-body">
-        <div class="slide-q">Ti mando un<br><em>promemoria?</em></div>
-        <div class="slide-hint">Nessun problema se dici no. Puoi attivarlo quando vuoi dalle impostazioni.</div>
+        <div class="slide-sec">Promemoria</div>
         <div class="notif-card" id="notifCard" onclick="toggleNotif()">
           <div class="notif-left">
             <div class="notif-icon">🔔</div>
             <div>
               <div class="notif-name">Attiva notifiche</div>
-              <div class="notif-sub">Ricorda il tuo allenamento</div>
+              <div class="notif-sub">Ricordati di allenarti ogni giorno</div>
             </div>
           </div>
           <div class="ntoggle" id="nToggle"></div>
@@ -994,7 +540,7 @@ html.theme-light .goal-card.sel{
             <div class="time-chip" data-time="20:00" onclick="selectNotifTime(this)">🌙 Sera<span>20:00</span></div>
           </div>
         </div>
-        <div class="notif-skip"><span>Puoi attivarlo dopo da Impostazioni</span></div>
+        <div class="notif-skip">Puoi attivarlo dopo da Impostazioni</div>
       </div>
     </div>
 
@@ -1008,40 +554,28 @@ html.theme-light .goal-card.sel{
 
 <script>
 const KEY   = 'fittrack_v4';
-const TOTAL = 10;
+const TOTAL = 3;
 let cur = 0;
 
-/* stato selezioni */
-let selectedGoal     = null;
-let selectedGender   = null;
-let selectedExp      = null;
-let selectedFreq     = null;
-let selectedDays     = new Set();
-let selectedLocation = null;
-let selectedTypes    = new Set();
-let notifOn          = false;
+let selectedGoal  = null;
+let selectedGender = null;
+let selectedFreq  = null;
+let notifOn       = false;
 let selectedNotifTime = null;
 
 const track    = document.getElementById('track');
 const progFill = document.getElementById('progFill');
 const ctaBtn   = document.getElementById('ctaBtn');
 
-/* ── Navigazione ── */
 function goToSlide(n){
   cur = Math.max(0, Math.min(TOTAL - 1, n));
   track.style.transform = `translateX(${-cur * (100 / TOTAL)}%)`;
   progFill.style.width  = `${((cur + 1) / TOTAL) * 100}%`;
-
-  /* pre-popola giorni quando si entra nella slide 8 (cur=7) */
-  if(cur === 7){ preselectDays(); renderDayBtns(); }
-
   updateCta();
   updateJourneyPath(cur);
   if(cur === 1) setTimeout(()=>{ document.getElementById('nameInput').focus(); }, 420);
-  if(cur === 4) setTimeout(()=>{ document.getElementById('targetWeightInput').focus(); }, 420);
 }
 
-/* ── CTA dinamico ── */
 function updateCta(){
   switch(cur){
     case 0:
@@ -1050,61 +584,26 @@ function updateCta(){
       break;
     case 1: {
       const name = document.getElementById('nameInput').value.trim();
-      ctaBtn.disabled    = !name;
-      ctaBtn.textContent = name ? `Avanti, ${name} →` : 'Scrivi il tuo nome';
-      break;
-    }
-    case 2:
-      ctaBtn.disabled    = !selectedGoal;
-      ctaBtn.textContent = selectedGoal ? 'Avanti →' : 'Scegli un obiettivo';
-      break;
-    case 3: {
-      const ok = selectedGender
+      const physOk = selectedGender
         && document.getElementById('ageInput').value
         && document.getElementById('weightInput').value
         && document.getElementById('heightInput').value;
+      const ok = name && selectedGoal && physOk;
       ctaBtn.disabled    = !ok;
-      ctaBtn.textContent = ok ? 'Avanti →' : 'Compila tutti i campi';
+      if(!name)           ctaBtn.textContent = 'Scrivi il tuo nome';
+      else if(!selectedGoal) ctaBtn.textContent = 'Scegli un obiettivo';
+      else if(!physOk)    ctaBtn.textContent = 'Completa i dati fisici';
+      else                ctaBtn.textContent = `Quasi fatto, ${name} →`;
       break;
     }
-    case 4:
-      ctaBtn.disabled    = false;
-      ctaBtn.textContent = 'Avanti →';
-      break;
-    case 5:
-      ctaBtn.disabled    = !selectedExp;
-      ctaBtn.textContent = selectedExp ? 'Avanti →' : 'Scegli il tuo livello';
-      break;
-    case 6:
+    case 2:
       ctaBtn.disabled    = !selectedFreq;
-      ctaBtn.textContent = selectedFreq ? 'Avanti →' : 'Quante volte a settimana?';
-      break;
-    case 7: {
-      const ok = selectedDays.size > 0;
-      ctaBtn.disabled    = !ok;
-      ctaBtn.textContent = ok ? 'Avanti →' : 'Seleziona almeno un giorno';
-      break;
-    }
-    case 8: {
-      const ok = selectedLocation && selectedTypes.size > 0;
-      ctaBtn.disabled    = !ok;
-      ctaBtn.textContent = ok ? 'Avanti →' : 'Completa la selezione';
-      break;
-    }
-    case 9:
-      ctaBtn.disabled    = false;
-      ctaBtn.textContent = '🚀 Entra in FiitTrack™';
+      ctaBtn.textContent = selectedFreq ? '🚀 Entra in FiitTrack™' : 'Quante volte a settimana?';
       break;
   }
 }
 
-/* ── Slide 2: Nome ── */
-function onNameInput(){
-  updateCta();
-  document.getElementById('nameInput').style.borderColor = '';
-}
-
-/* ── Slide 3: Obiettivo ── */
+/* ── Slide 2 ── */
 function selectGoal(el){
   document.querySelectorAll('.goal-card').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
@@ -1112,7 +611,6 @@ function selectGoal(el){
   updateCta();
 }
 
-/* ── Slide 4: Sesso ── */
 function selectGender(el){
   document.querySelectorAll('.gender-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
@@ -1120,15 +618,7 @@ function selectGender(el){
   updateCta();
 }
 
-/* ── Slide 6: Esperienza ── */
-function selectExp(el){
-  document.querySelectorAll('.vchip').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  selectedExp = el.dataset.val;
-  updateCta();
-}
-
-/* ── Slide 7: Frequenza ── */
+/* ── Slide 3 ── */
 function selectFreq(el){
   document.querySelectorAll('.freq-opt').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
@@ -1136,72 +626,11 @@ function selectFreq(el){
   updateCta();
 }
 
-/* ── Slide 8: Giorni ── */
-const DAY_NAMES = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
-const FREQ_PRESETS = {
-  '1x':   [5],
-  '2-3x': [0,2,4],
-  '4-5x': [0,1,3,4],
-  'daily':[0,1,2,3,4,5,6]
-};
-
-function preselectDays(){
-  selectedDays.clear();
-  const preset = FREQ_PRESETS[selectedFreq] || [0,2,4];
-  preset.forEach(d=>selectedDays.add(d));
-}
-
-function renderDayBtns(){
-  document.querySelectorAll('.day-btn').forEach(btn=>{
-    const day = parseInt(btn.dataset.day);
-    btn.classList.toggle('sel', selectedDays.has(day));
-  });
-  updateDaysSub();
-}
-
-function toggleDay(btn){
-  const day = parseInt(btn.dataset.day);
-  if(selectedDays.has(day)){
-    if(selectedDays.size > 1) selectedDays.delete(day); /* almeno 1 giorno */
-  } else {
-    selectedDays.add(day);
-  }
-  btn.classList.toggle('sel', selectedDays.has(day));
-  updateDaysSub();
-  updateCta();
-}
-
-function updateDaysSub(){
-  const sub = document.getElementById('daysSub');
-  const n = selectedDays.size;
-  const names = [...selectedDays].sort((a,b)=>a-b).map(d=>DAY_NAMES[d].slice(0,3)).join(', ');
-  sub.innerHTML = `<span class="days-count">${n} giorn${n===1?'o':'i'}</span> — ${names}`;
-}
-
-/* ── Slide 9: Dove + Tipo ── */
-function selectLocation(el){
-  document.querySelectorAll('.loc-opt').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  selectedLocation = el.dataset.val;
-  updateCta();
-}
-
-function toggleType(el){
-  el.classList.toggle('sel');
-  const v = el.dataset.val;
-  if(selectedTypes.has(v)) selectedTypes.delete(v);
-  else selectedTypes.add(v);
-  updateCta();
-}
-
-/* ── Slide 10: Notifiche ── */
 function toggleNotif(){
   notifOn = !notifOn;
   document.getElementById('notifCard').classList.toggle('on', notifOn);
-  const tw = document.getElementById('notifTimeWrap');
-  tw.classList.toggle('visible', notifOn);
+  document.getElementById('notifTimeWrap').classList.toggle('visible', notifOn);
   if(notifOn && !selectedNotifTime){
-    /* pre-seleziona Sera */
     const sera = document.querySelector('.time-chip[data-time="20:00"]');
     if(sera) selectNotifTime(sera);
   }
@@ -1224,13 +653,19 @@ function onCta(){
 }
 
 /* ── Salva e vai alla home ── */
+const FREQ_PRESETS = {
+  '1x':   [4],
+  '2-3x': [0,2,4],
+  '4-5x': [0,1,3,4],
+  'daily':[0,1,2,3,4,5,6]
+};
+
 function completeOnboarding(){
-  const name    = document.getElementById('nameInput').value.trim() || 'Atleta';
-  const targetW = parseFloat(document.getElementById('targetWeightInput').value) || null;
-  const age     = parseInt(document.getElementById('ageInput').value)   || null;
-  const weight  = parseFloat(document.getElementById('weightInput').value) || null;
-  const height  = parseInt(document.getElementById('heightInput').value) || null;
-  const days    = [...selectedDays].sort((a,b)=>a-b);
+  const name   = document.getElementById('nameInput').value.trim() || 'Atleta';
+  const age    = parseInt(document.getElementById('ageInput').value)    || null;
+  const weight = parseFloat(document.getElementById('weightInput').value) || null;
+  const height = parseInt(document.getElementById('heightInput').value) || null;
+  const days   = FREQ_PRESETS[selectedFreq] || [0,2,4];
 
   let data = {};
   try{ data = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){}
@@ -1242,17 +677,11 @@ function completeOnboarding(){
   if(!data.profile) data.profile = {};
   Object.assign(data.profile, {
     name,
-    goalType:     selectedGoal,
-    targetWeight: targetW,
-    gender:       selectedGender,
-    age,
-    weight,
-    height,
-    experience:   selectedExp,
-    weekFreq:     selectedFreq,
-    weekDays:     days,
-    location:     selectedLocation,
-    workoutTypes: [...selectedTypes]
+    goalType:  selectedGoal,
+    gender:    selectedGender,
+    age, weight, height,
+    weekFreq:  selectedFreq,
+    weekDays:  days
   });
 
   /* prima misurazione peso */
@@ -1263,31 +692,14 @@ function completeOnboarding(){
     }
   }
 
-  /* sfida peso obiettivo */
-  if(targetW && weight && targetW !== weight){
-    if(!data.challenges) data.challenges = [];
-    const hasW = data.challenges.some(c=>c.type==='peso');
-    if(!hasW){
-      data.challenges.push({
-        id: Date.now(), type:'peso',
-        title: 'Raggiungi il peso obiettivo',
-        target: targetW, current: weight,
-        startDate: new Date().toISOString().split('T')[0],
-        active: true
-      });
-    }
-  }
-
   /* workout di default + piano settimanale */
-  if(days.length > 0){
-    const wos = _buildDefaultWorkouts([...selectedTypes], selectedLocation);
-    if(!data.workouts || !data.workouts.length){
-      data.workouts = wos;
-      if(!data.assignment) data.assignment = {};
-      days.forEach((d,i)=>{
-        data.assignment[String(d)] = wos[i % wos.length].id;
-      });
-    }
+  const wos = _buildDefaultWorkouts();
+  if(!data.workouts || !data.workouts.length){
+    data.workouts = wos;
+    if(!data.assignment) data.assignment = {};
+    days.forEach((d,i)=>{
+      data.assignment[String(d)] = wos[i % wos.length].id;
+    });
   }
 
   /* notifiche */
@@ -1296,7 +708,6 @@ function completeOnboarding(){
 
   try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){}
 
-  /* richiedi permesso notifiche */
   if(notifOn && 'Notification' in window){
     Notification.requestPermission().then(p=>{
       if(p === 'granted' && 'serviceWorker' in navigator){
@@ -1312,57 +723,24 @@ function completeOnboarding(){
     });
   }
 
-  /* Avvia tutorial prima di andare alla home */
   startTutorial();
-
   document.body.style.transition = 'opacity .3s';
   document.body.style.opacity    = '0';
   setTimeout(()=>{ location.href = 'home.html'; }, 300);
 }
 
-/* ── Costruisce 1-2 workout di default in base a tipo e location ── */
-function _buildDefaultWorkouts(types, location){
-  const ts  = new Set(types);
+function _buildDefaultWorkouts(){
   const now = Date.now();
-  const wos = [];
-
-  if(ts.has('pesi') || ts.has('misto') || (!ts.has('corsa') && !ts.has('bici'))){
-    wos.push({
-      id:   'wo_gym_' + now,
-      name: 'Il mio allenamento',
-      type: 'gym',
-      exs: [
-        {id:'e1_'+now, name:'Squat',       sets:3, reps:10, rec:90,  weight:null},
-        {id:'e2_'+now, name:'Panca Piana',  sets:3, reps:10, rec:90,  weight:null},
-        {id:'e3_'+now, name:'Rematore',     sets:3, reps:10, rec:90,  weight:null},
-      ]
-    });
-  }
-  if(ts.has('corsa')){
-    wos.push({
-      id:   'wo_run_' + now,
-      name: 'Corsa',
-      type: 'run',
-      exs: [{id:'erun_'+now, name:'Corsa', sets:1, reps:1, rec:0}]
-    });
-  }
-  if(ts.has('bici')){
-    wos.push({
-      id:   'wo_bike_' + now,
-      name: 'Ciclismo',
-      type: 'bike',
-      exs: [{id:'ebike_'+now, name:'Ciclismo', sets:1, reps:1, rec:0}]
-    });
-  }
-  if(!wos.length){
-    wos.push({
-      id:   'wo_default_' + now,
-      name: 'Il mio allenamento',
-      type: 'other',
-      exs: [{id:'edef_'+now, name:'Esercizio', sets:3, reps:10, rec:60, weight:null}]
-    });
-  }
-  return wos;
+  return [{
+    id:   'wo_gym_' + now,
+    name: 'Il mio allenamento',
+    type: 'gym',
+    exs: [
+      {id:'e1_'+now, name:'Squat',       sets:3, reps:10, rec:90, weight:null},
+      {id:'e2_'+now, name:'Panca Piana',  sets:3, reps:10, rec:90, weight:null},
+      {id:'e3_'+now, name:'Rematore',     sets:3, reps:10, rec:90, weight:null},
+    ]
+  }];
 }
 
 /* ── Swipe orizzontale ── */
@@ -1380,16 +758,10 @@ document.addEventListener('touchend', e=>{
   }
 }, { passive:true });
 
-/* Enter su input testo */
 document.getElementById('nameInput').addEventListener('keydown', e=>{
   if(e.key === 'Enter' && !ctaBtn.disabled) onCta();
 });
-document.getElementById('targetWeightInput').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') onCta();
-});
 
-
-/* ── LINEA PERCORSO: una curva per slide ── */
 function updateJourneyPath(slideIdx){
   document.querySelectorAll('.jp-slide').forEach(g => {
     g.style.opacity = (parseInt(g.dataset.slide) === slideIdx) ? '1' : '0';

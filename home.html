@@ -19,6 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
 <script src="ft-animate.js"></script>
+<script src="haptics.js"></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"></noscript>
@@ -45,41 +46,97 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .hero-dot{ width:6px; height:6px; border-radius:50%; background:var(--textm); transition:all 0.3s; }
 .hero-dot.active{ background:var(--a2); width:18px; border-radius:3px; }
 
-/* streak */
-.streak-hero{ background:linear-gradient(135deg,#030e1a,#060d1a); border:1px solid rgba(0,0,0,.2); border-radius:18px; padding:18px; position:relative; overflow:hidden; }
-.streak-hero::before{ content:''; position:absolute; top:-30px; right:-30px; width:130px; height:130px; border-radius:50%; background:radial-gradient(circle,rgba(var(--a1-rgb),.15),transparent 70%); pointer-events:none; }
-.streak-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
-.streak-num{ font-size:44px; font-weight:600; color:var(--a2); line-height:1; letter-spacing:-2px; }
-.streak-lbl{ font-size:11px; color:var(--textm); margin-top:2px; }
-.streak-dots{ display:flex; gap:5px; margin-top:10px; }
-.sdot-wrap{ text-align:center; }
-.sdot{ width:24px; height:4px; border-radius:3px; background:var(--bg3); margin-bottom:3px; }
-.sdot.active{ background:linear-gradient(90deg,var(--a1),var(--a2)); }
-.sdot.rest{ background:linear-gradient(90deg,#3344aa,#5566cc); }
-.sdot.skipped{ background:#e53935; opacity:.75; }
-.sdot.today{ background:transparent; border:1.5px solid var(--a1); }
-.sdot-lbl{ font-family:var(--mono); font-size:10px; color:var(--textm); }
-.sdot-lbl.oggi{ color:var(--a2); }
-.streak-legend{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-.sl-item{ display:flex; align-items:center; gap:5px; font-size:10px; color:var(--textm); font-family:var(--mono); }
-.sl-dot{ width:14px; height:4px; border-radius:3px; flex-shrink:0; }
-.sl-dot.active{ background:linear-gradient(90deg,var(--a1),var(--a2)); }
-.sl-dot.rest{ background:linear-gradient(90deg,#3344aa,#5566cc); }
-.sl-dot.skipped{ background:#e53935; opacity:.75; }
-.sl-dot.today{ background:transparent; border:1.5px solid var(--a1); width:12px; }
-.goal-nums{ font-size:17px; font-weight:600; color:var(--green); line-height:1; }
-.goal-lbl{ font-size:10px; color:var(--textm); margin-top:3px; }
-.goal-ring-outer{ position:relative; width:72px; height:72px; flex-shrink:0; }
-.goal-ring-svg{ width:72px; height:72px; transform:rotate(-90deg); display:block; }
-.goal-ring-bg-c{ fill:none; stroke:var(--bg3); stroke-width:5; }
-.goal-ring-fill-c{ fill:none; stroke-width:5; stroke-linecap:round; stroke-dasharray:188.5; stroke-dashoffset:188.5; transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
-.goal-ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-@keyframes goalPulseRed{
-  0%,100%{ stroke:rgba(229,57,53,.15); }
-  50%    { stroke:rgba(229,57,53,.50); }
-}
-.goal-ring-zero .goal-ring-bg-c{ animation:goalPulseRed 2.8s ease-in-out infinite; }
-.goal-ring-zero .goal-nums{ color:#e05555; }
+/* ══ STREAK WIDGET v2 ══ */
+.streak-widget{width:100%;background:var(--bg2);border-radius:20px;padding:14px 18px 14px;position:relative;overflow:hidden;isolation:isolate;border:1px solid rgba(255,255,255,0.04);transition:box-shadow .6s ease,background .6s ease}
+.streak-widget[data-state="3"]{box-shadow:0 0 0 1px rgba(255,196,0,.10),0 16px 40px -20px rgba(255,140,0,.35)}
+.streak-widget[data-state="4"]{background:linear-gradient(150deg,#0d1a2e 0%,#11183a 100%);box-shadow:0 0 0 1px rgba(255,196,0,.18),0 20px 50px -20px rgba(124,79,255,.45)}
+.streak-widget[data-state="4"]::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0%,rgba(79,127,255,.10) 35%,rgba(124,79,255,.10) 50%,transparent 75%);background-size:220% 220%;animation:shimmerBg 7s linear infinite;pointer-events:none;z-index:0}
+.streak-widget[data-state="5"]{animation:dangerPulse 2s ease-in-out infinite}
+@keyframes shimmerBg{0%{background-position:120% 0}100%{background-position:-120% 0}}
+@keyframes dangerPulse{0%,100%{box-shadow:inset 0 0 0 0 rgba(224,85,85,0)}50%{box-shadow:inset 0 0 0 2px rgba(224,85,85,.55),0 0 24px -8px rgba(224,85,85,.55)}}
+.streak-widget .head{display:flex;align-items:baseline;gap:10px;position:relative;z-index:2}
+.streak-widget .head .icon{width:26px;height:26px;flex:none;align-self:center;display:flex;align-items:center;justify-content:center}
+.streak-widget .head .icon svg{width:22px;height:22px;display:block}
+.streak-widget .head .num{font-family:'DM Mono',ui-monospace,monospace;font-weight:500;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em;background:linear-gradient(180deg,#fff 0%,#ffd99a 60%,#ff9d4d 100%);-webkit-background-clip:text;background-clip:text;color:transparent;transition:font-size .25s ease}
+.streak-widget[data-size="lg"] .num{font-size:52px}
+.streak-widget[data-size="md"] .num{font-size:44px}
+.streak-widget[data-size="sm"] .num{font-size:34px}
+.streak-widget[data-state="0"] .num{background:linear-gradient(180deg,#5a6a82,#3a4761);-webkit-background-clip:text;background-clip:text}
+.streak-widget[data-state="5"] .num{background:linear-gradient(180deg,#fff 0%,#ffd1a1 50%,#ff8a6a 100%);-webkit-background-clip:text;background-clip:text}
+.streak-widget .head .label{display:flex;flex-direction:column;gap:2px;padding-bottom:4px}
+.streak-widget .head .label .t1{font-size:13px;color:#bcd0ea;font-weight:500;letter-spacing:.01em}
+.streak-widget .head .label .t2{font-size:11px;color:var(--textm);letter-spacing:.02em}
+.streak-widget .stage{position:relative;height:64px;margin:-14px 0 2px;display:flex;align-items:flex-end;justify-content:center;z-index:1}
+.streak-widget .flame-wrap{position:relative;width:64px;height:64px;display:flex;align-items:flex-end;justify-content:center}
+.streak-widget .flame{position:absolute;bottom:0;left:0;width:100%}
+.streak-widget .flame svg{display:block;overflow:visible;margin:0 auto}
+.flame-outer,.flame-mid,.flame-core,.flame-tip{transform-box:fill-box;transform-origin:50% 100%}
+.flame-outer{animation:flameOuter 1.4s ease-in-out infinite alternate}
+.flame-mid{animation:flameMid 1.05s ease-in-out infinite alternate;animation-delay:-.3s}
+.flame-core{animation:flameCore .82s ease-in-out infinite alternate;animation-delay:-.55s}
+.flame-tip{animation:flameTip .6s ease-in-out infinite alternate}
+@keyframes flameOuter{0%{transform:scale(1,1) skewX(-2deg)}50%{transform:scale(1.05,.96) skewX(1deg)}100%{transform:scale(.97,1.04) skewX(-1deg)}}
+@keyframes flameMid{0%{transform:scale(1,1) skewX(2deg)}100%{transform:scale(1.04,.94) skewX(-2deg)}}
+@keyframes flameCore{0%{transform:scale(1.02,.96) skewX(-3deg)}100%{transform:scale(.95,1.08) skewX(2deg)}}
+@keyframes flameTip{0%{transform:scale(1,1)}100%{transform:scale(.85,1.18)}}
+.streak-widget[data-state="1"] .flame{animation:tremor .14s steps(2) infinite}
+@keyframes tremor{0%{margin-left:0}50%{margin-left:.6px}100%{margin-left:-.6px}}
+.streak-widget[data-state="5"] .flame-wrap{animation:wind 2.4s ease-in-out infinite}
+@keyframes wind{0%,100%{transform:rotate(-4deg) translateX(-1px)}50%{transform:rotate(3deg) translateX(2px)}}
+.streak-widget .halo{position:absolute;left:50%;bottom:0;width:96px;height:96px;transform:translateX(-50%);border-radius:50%;pointer-events:none;filter:blur(18px);opacity:0;transition:opacity .6s ease}
+.streak-widget[data-state="2"] .halo{opacity:.45;background:radial-gradient(circle,rgba(255,140,40,.6),transparent 65%)}
+.streak-widget[data-state="3"] .halo{opacity:.7;background:radial-gradient(circle,rgba(255,160,40,.75),transparent 65%)}
+.streak-widget[data-state="4"] .halo{opacity:.85;background:radial-gradient(circle,rgba(120,190,255,.6),rgba(255,180,60,.45) 40%,transparent 70%)}
+.streak-widget[data-state="5"] .halo{opacity:.4;background:radial-gradient(circle,rgba(255,120,80,.6),transparent 65%)}
+.streak-widget .aura-ring{position:absolute;left:50%;top:50%;width:96px;height:96px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(255,210,120,.55);opacity:0;animation:auraSpin 8s linear infinite;pointer-events:none}
+.streak-widget .aura-ring::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(180,210,255,.18)}
+.streak-widget[data-state="4"] .aura-ring{opacity:1}
+@keyframes auraSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.streak-widget .spark{position:absolute;width:4px;height:4px;border-radius:50%;background:#ffd089;box-shadow:0 0 6px #ff9d4d;bottom:8px;left:50%;pointer-events:none;opacity:0}
+.streak-widget .spark.s-yellow{background:#fff4c2;box-shadow:0 0 8px #ffd96b}
+.streak-widget .spark.s-white{background:#fff;box-shadow:0 0 10px #cfe4ff}
+@keyframes sparkRise{0%{opacity:0;transform:translate(0,0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0),var(--dy,-70px)) scale(.2)}}
+.streak-widget .smoke{position:absolute;bottom:8px;left:50%;width:24px;height:36px;transform:translateX(-50%);opacity:0;animation:smokeRise 4.5s linear infinite}
+.streak-widget .smoke.s2{animation-delay:1.5s;left:calc(50% - 8px)}
+.streak-widget .smoke.s3{animation-delay:3s;left:calc(50% + 6px)}
+@keyframes smokeRise{0%{opacity:0;transform:translate(-50%,0) scale(.6,.6)}20%{opacity:.45}100%{opacity:0;transform:translate(calc(-50% + 6px),-80px) scale(1.4,1.6)}}
+.streak-widget .hourglass{position:absolute;right:12px;bottom:8px;display:none;align-items:center;gap:6px;font-size:11px;color:#e05555;font-weight:500;z-index:3}
+.streak-widget[data-state="5"] .hourglass{display:flex}
+.streak-widget .hourglass svg{animation:hourTurn 3s ease-in-out infinite}
+@keyframes hourTurn{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(180deg)}}
+.streak-widget .milestone{position:absolute;top:10px;right:12px;display:flex;align-items:center;gap:6px;padding:5px 9px 5px 7px;border-radius:999px;background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.45);color:#ffc400;font-size:11px;font-weight:600;letter-spacing:.04em;z-index:3;transform:scale(0);transform-origin:100% 50%;pointer-events:none}
+.streak-widget .milestone.show{animation:milestonePop .4s cubic-bezier(0.34,1.56,0.64,1) forwards}
+.streak-widget .milestone.show.persist{animation:milestonePop .4s cubic-bezier(0.34,1.56,0.64,1) forwards,msHover 3s ease-in-out 1s infinite}
+@keyframes milestonePop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes msHover{0%,100%{box-shadow:0 0 0 0 rgba(255,196,0,0)}50%{box-shadow:0 0 0 4px rgba(255,196,0,.12)}}
+.streak-widget .milestone .ms-dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.streak-widget .milestone[data-tier="7"]{color:#ffc400;background:rgba(255,196,0,.12);border-color:rgba(255,196,0,.45)}
+.streak-widget .milestone[data-tier="14"]{color:#ff9800;background:rgba(255,152,0,.12);border-color:rgba(255,152,0,.45)}
+.streak-widget .milestone[data-tier="30"]{color:#f44336;background:rgba(244,67,54,.12);border-color:rgba(244,67,54,.45)}
+.streak-widget .milestone[data-tier="60"]{color:#e040fb;background:rgba(224,64,251,.12);border-color:rgba(224,64,251,.45)}
+.streak-widget .milestone[data-tier="100"]{color:#00bcd4;background:rgba(0,188,212,.12);border-color:rgba(0,188,212,.45)}
+.streak-widget .burst{position:absolute;inset:0;pointer-events:none;z-index:4}
+.streak-widget .burst span{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:#ffc400;box-shadow:0 0 8px #ffc400;opacity:0}
+.streak-widget .burst.fire span{animation:burstOut 1s ease-out forwards}
+@keyframes burstOut{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--bx),var(--by)) scale(.2)}}
+.streak-widget .legend-banner{position:absolute;top:10px;left:12px;font-size:10px;font-weight:700;letter-spacing:.18em;color:#ffc400;background:linear-gradient(90deg,rgba(255,196,0,.18),rgba(124,79,255,.18));border:1px solid rgba(255,196,0,.4);padding:5px 8px;border-radius:6px;display:none;z-index:3}
+.streak-widget[data-state="4"] .legend-banner{display:block}
+.streak-widget .weekbar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px;position:relative;z-index:2}
+.streak-widget .day{display:flex;flex-direction:column;align-items:center;gap:4px}
+.streak-widget .day .dn{font-size:9px;color:var(--textm);letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+.streak-widget .day .dot{width:18px;height:18px;border-radius:50%;background:transparent;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .3s ease}
+.streak-widget .day.done .dot{background:linear-gradient(135deg,var(--a1),var(--a2));border-color:transparent;box-shadow:0 0 10px -2px rgba(124,79,255,.55)}
+.streak-widget .day.done .dot::after{content:"";width:8px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:translateY(-1px) rotate(-45deg)}
+.streak-widget .day.today .dot{border-color:rgba(255,196,0,.7);animation:todayPulse 1.6s ease-in-out infinite}
+.streak-widget .day.today.done .dot{animation:none}
+.streak-widget .day.future .dot{opacity:.35}
+.streak-widget .day.future .dn{opacity:.5}
+@keyframes todayPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,196,0,.45)}50%{box-shadow:0 0 0 5px rgba(255,196,0,0)}}
+.streak-widget .motiv{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.04);font-size:11.5px;color:var(--textm);letter-spacing:.005em;line-height:1.35;position:relative;z-index:2}
+.streak-widget[data-state="5"] .motiv{color:#e8a4a4}
+.streak-widget[data-state="0"] .motiv{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.streak-widget .cta-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;font-size:11px;font-weight:600;letter-spacing:.02em;cursor:pointer;border:none;animation:ctaPulse 2.2s ease-in-out infinite;flex:none}
+@keyframes ctaPulse{0%,100%{box-shadow:0 0 0 0 rgba(124,79,255,.45)}50%{box-shadow:0 0 0 6px rgba(124,79,255,0)}}
 
 /* sfide card nel carousel */
 .sfide-hero{ background:linear-gradient(135deg,#030e1a,#060d1a); border:1px solid rgba(0,0,0,.2); border-radius:18px; padding:18px; position:relative; overflow:hidden; min-height:120px; display:flex; flex-direction:column; justify-content:center; }
@@ -328,18 +385,6 @@ html.theme-light body::before{
     radial-gradient(ellipse 50% 35% at 95% 90%, rgba(0,153,255,.05), transparent) !important;
 }
 
-/* ── streak hero: gradiente blu ── */
-html.theme-light .streak-hero{
-  background:linear-gradient(135deg,#dbeeff 0%,#c5deff 100%) !important;
-  border:1.5px solid rgba(0,102,221,.3) !important;
-  box-shadow:0 6px 24px rgba(0,102,221,.14) !important;
-  animation:none;
-}
-html.theme-light .streak-hero::before{
-  display:block !important;
-  background:radial-gradient(circle,rgba(0,102,221,.12),transparent 70%) !important;
-}
-
 /* ── sfide hero: blu più leggero ── */
 html.theme-light .sfide-hero{
   background:linear-gradient(135deg,#e8f3ff 0%,#dbeeff 100%) !important;
@@ -519,6 +564,41 @@ html.theme-light .plan-card{
   border-left:none !important; border-right:none !important; border-bottom:none !important;
 }
 /* ════ fine OPEN LAYOUT ════ */
+
+/* ══ CTA OGGI ══ */
+.today-cta-block{
+  border-top:1px solid var(--border); padding:18px 0 14px; margin-bottom:4px;
+}
+.cta-period{
+  font-family:var(--mono); font-size:10px; color:var(--textm);
+  letter-spacing:1.8px; text-transform:uppercase; margin-bottom:6px;
+}
+.cta-wo-name{ font-size:20px; font-weight:700; color:var(--text); }
+.cta-wo-meta{ font-size:12px; color:var(--textm); margin:2px 0 14px; }
+.cta-start-btn{
+  width:100%; padding:15px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:14px; color:#fff;
+  font-size:15px; font-weight:600; cursor:pointer;
+  font-family:var(--font); letter-spacing:.3px;
+  box-shadow:0 4px 20px rgba(0,0,0,.18);
+  transition:opacity .15s;
+}
+.cta-start-btn:active{ opacity:.85; }
+
+/* ══ CONFRONTO SETTIMANE ══ */
+.week-cmp{
+  padding-top:14px; border-top:1px solid var(--border); margin-top:14px;
+}
+.cmp-row{ display:flex; gap:12px; align-items:flex-start; }
+.cmp-col{ flex:1; }
+.cmp-period{
+  font-size:10px; color:var(--textm); font-family:var(--mono);
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;
+}
+.cmp-val{ font-size:13px; color:var(--text); font-weight:500; font-family:var(--mono); }
+.cmp-divider{ width:1px; background:var(--border); align-self:stretch; }
+.cmp-delta{ font-size:13px; font-weight:700; font-family:var(--mono); margin-top:10px; }
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
@@ -663,39 +743,83 @@ html.theme-light .plan-card{
     <div id="wgt-carousel"><div class="hero-carousel" id="heroCarousel">
       <div class="hero-track" id="heroTrack">
 
-        <!-- Card 0 — Streak -->
+        <!-- Card 0 — Streak widget v2 -->
         <div class="hero-card" onclick="location.href='registra.html'">
-          <div class="streak-hero">
-            <div class="streak-top">
-              <div>
-                <div class="streak-num">12</div>
-                <div class="streak-lbl">settimane streak 🔥</div>
-                <div class="streak-dots" id="streakDots"></div>
-                <div class="streak-legend">
-                  <span class="sl-item"><span class="sl-dot active"></span>Allenato</span>
-                  <span class="sl-item"><span class="sl-dot rest"></span>Riposo</span>
-                  <span class="sl-item"><span class="sl-dot skipped"></span>Saltato</span>
-                  <span class="sl-item"><span class="sl-dot today"></span>Oggi</span>
-                </div>
-              </div>
-              <div class="goal-ring-outer">
-                <svg class="goal-ring-svg" viewBox="0 0 72 72">
-                  <defs>
-                    <linearGradient id="goalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stop-color="var(--a1)"/>
-                      <stop offset="100%" stop-color="var(--green)"/>
-                    </linearGradient>
-                  </defs>
-                  <circle class="goal-ring-bg-c" cx="36" cy="36" r="30"/>
-                  <circle class="goal-ring-fill-c" id="goalBarFill" cx="36" cy="36" r="30" stroke="url(#goalGrad)"/>
-                </svg>
-                <div class="goal-ring-center">
-                  <span class="goal-nums" id="goalNums">3/5</span>
-                  <span class="goal-lbl">obiettivo</span>
-                </div>
+          <article class="streak-widget" id="widget" data-state="3" data-size="lg">
+            <div class="legend-banner">LEGGENDARIO</div>
+            <div class="milestone" id="milestone" data-tier="7">
+              <span class="ms-dot"></span><span id="msText">7 GIORNI</span>
+            </div>
+            <div class="head">
+              <div class="icon" id="headIcon"></div>
+              <div class="num" id="num">0</div>
+              <div class="label">
+                <div class="t1" id="lbl1">giorni di fila</div>
+                <div class="t2" id="lbl2">record: —</div>
               </div>
             </div>
-          </div>
+            <div class="stage" id="stage">
+              <div class="halo"></div>
+              <div class="aura-ring"></div>
+              <div class="flame-wrap" id="flameWrap">
+                <svg class="flame" width="64" height="64" viewBox="0 0 80 96" preserveAspectRatio="xMidYMax meet" id="flameSvg">
+                  <defs>
+                    <linearGradient id="gOuter" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#ff6a1a" stop-opacity="0"/>
+                      <stop offset="40%" stop-color="#ff7a26" stop-opacity=".85"/>
+                      <stop offset="100%" stop-color="#c1340a"/>
+                    </linearGradient>
+                    <linearGradient id="gMid" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#ffd089" stop-opacity=".2"/>
+                      <stop offset="55%" stop-color="#ffa647"/>
+                      <stop offset="100%" stop-color="#ff5b1a"/>
+                    </linearGradient>
+                    <linearGradient id="gCore" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#fff8d4"/>
+                      <stop offset="60%" stop-color="#ffd766"/>
+                      <stop offset="100%" stop-color="#ff8a2e"/>
+                    </linearGradient>
+                    <linearGradient id="gTip" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#bfe6ff"/>
+                      <stop offset="50%" stop-color="#fff"/>
+                      <stop offset="100%" stop-color="#fff5c2"/>
+                    </linearGradient>
+                    <linearGradient id="gAsh" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#5a6a82" stop-opacity="0"/>
+                      <stop offset="100%" stop-color="#2c374a"/>
+                    </linearGradient>
+                  </defs>
+                  <path id="ashPath" d="M22 92 Q40 84 58 92 Q56 96 40 96 Q24 96 22 92Z" fill="url(#gAsh)" style="display:none"/>
+                  <path class="flame-outer" fill="url(#gOuter)" d="M40 96 C18 92 14 70 22 54 C26 44 30 38 30 28 C36 36 40 32 38 22 C44 28 52 36 54 50 C60 64 58 80 50 90 C46 94 44 96 40 96 Z"/>
+                  <path class="flame-mid" fill="url(#gMid)" d="M40 96 C26 92 24 76 30 62 C32 56 34 50 34 42 C38 48 42 44 40 34 C46 40 50 48 50 60 C52 76 48 90 44 94 C42 96 41 96 40 96 Z"/>
+                  <path class="flame-core" fill="url(#gCore)" d="M40 94 C32 90 32 76 36 66 C38 60 39 54 40 48 C42 56 44 52 44 44 C48 52 48 64 46 76 C45 86 43 92 41 94 Z"/>
+                  <path class="flame-tip" id="tipPath" fill="url(#gTip)" d="M40 70 C36 64 38 54 40 48 C42 54 44 64 40 70 Z" style="display:none"/>
+                </svg>
+                <svg class="smoke" id="smoke1" viewBox="0 0 24 36" style="display:none">
+                  <path d="M12 34 Q6 26 12 18 Q18 10 12 2" stroke="#5a6a82" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
+                </svg>
+                <svg class="smoke s2" id="smoke2" viewBox="0 0 24 36" style="display:none">
+                  <path d="M12 34 Q18 26 12 18 Q6 10 12 2" stroke="#475670" stroke-width="2" fill="none" stroke-linecap="round" opacity=".4"/>
+                </svg>
+                <svg class="smoke s3" id="smoke3" viewBox="0 0 24 36" style="display:none">
+                  <path d="M12 34 Q6 24 12 16 Q16 8 12 2" stroke="#5a6a82" stroke-width="2" fill="none" stroke-linecap="round" opacity=".4"/>
+                </svg>
+              </div>
+              <div class="spark-layer" id="sparks" style="position:absolute;inset:0;pointer-events:none"></div>
+              <div class="burst" id="burst"></div>
+              <div class="hourglass">
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+                  <path d="M1 1H9M1 11H9M1 1C1 4 9 4 9 1M1 11C1 8 9 8 9 11" stroke="#e05555" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                <span>Hai ancora oggi</span>
+              </div>
+            </div>
+            <div class="weekbar" id="week"></div>
+            <div class="motiv" id="motiv">
+              <span id="motivText">Caricamento...</span>
+              <button class="cta-chip" id="ctaChip" style="display:none" onclick="event.stopPropagation();location.href='scegli.html'">Allenati ora →</button>
+            </div>
+          </article>
         </div>
 
         <!-- Card 1 — Sfide & Obiettivi -->
@@ -742,14 +866,12 @@ html.theme-light .plan-card{
       </div>
     </div></div>
 
-    <div class="recap-card" id="wgt-recap">
-      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Recap settimana</div>
-      <div class="recap-stats">
-        <div class="rstat"><div class="rstat-val" style="color:var(--a2)">1.840</div><div class="rstat-lbl">kcal</div></div>
-        <div class="rstat"><div class="rstat-val" style="color:var(--green)">3</div><div class="rstat-lbl">sessioni</div></div>
-        <div class="rstat"><div class="rstat-val" style="color:var(--a1)">10.4</div><div class="rstat-lbl">km</div></div>
-      </div>
-      <div class="week-bars" id="weekBars"></div>
+    <!-- CTA Inizia allenamento oggi -->
+    <div class="today-cta-block" id="todayCTA" style="display:none">
+      <div class="cta-period">Oggi</div>
+      <div class="cta-wo-name" id="ctaWoName"></div>
+      <div class="cta-wo-meta" id="ctaWoMeta"></div>
+      <button class="cta-start-btn" onclick="location.href='scegli.html'">▶ Inizia allenamento</button>
     </div>
 
     <div class="plan-card" id="wgt-plan">
@@ -759,6 +881,32 @@ html.theme-light .plan-card{
         trascina verso destra
       </div>
       <div id="weekPlan"></div>
+    </div>
+
+    <div class="recap-card" id="wgt-recap">
+      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Recap settimana</div>
+      <div class="recap-stats">
+        <div class="rstat"><div class="rstat-val" style="color:var(--a2)">1.840</div><div class="rstat-lbl">kcal</div></div>
+        <div class="rstat"><div class="rstat-val" style="color:var(--green)">3</div><div class="rstat-lbl">sessioni</div></div>
+        <div class="rstat"><div class="rstat-val" style="color:var(--a1)">10.4</div><div class="rstat-lbl">km</div></div>
+      </div>
+      <div class="week-bars" id="weekBars"></div>
+
+      <!-- Confronto settimana vs settimana scorsa -->
+      <div class="week-cmp" id="weekCmp" style="display:none">
+        <div class="cmp-row">
+          <div class="cmp-col">
+            <div class="cmp-period">Questa settimana</div>
+            <div class="cmp-val"><span id="cmpCurrSess">0</span> sess · <span id="cmpCurrTon">0</span> kg</div>
+          </div>
+          <div class="cmp-divider"></div>
+          <div class="cmp-col">
+            <div class="cmp-period">Settimana scorsa</div>
+            <div class="cmp-val"><span id="cmpPrevSess">0</span> sess · <span id="cmpPrevTon">0</span> kg</div>
+          </div>
+        </div>
+        <div class="cmp-delta" id="cmpDelta"></div>
+      </div>
     </div>
     </div>
   </div>
@@ -917,16 +1065,151 @@ function getDayStatus(i){
   return 'arrivo';                         // futuro
 }
 
-// ── Streak dots dinamici ──
-document.getElementById('streakDots').innerHTML = WD.map((d,i)=>{
-  const st = getDayStatus(i);
-  const dotCls = st==='fatto'?'sdot active'
-               : st==='riposo'?'sdot rest'
-               : st==='saltato'?'sdot skipped'
-               : st==='oggi'?'sdot today'
-               : 'sdot';
-  return `<div class="sdot-wrap"><div class="${dotCls}"></div><div class="sdot-lbl${i===TODAY?' oggi':''}">${d}</div></div>`;
-}).join('');
+// ══ STREAK WIDGET v2 ══
+(function(){
+  const widget   = document.getElementById('widget');
+  if(!widget) return;
+  const numEl    = document.getElementById('num');
+  const lbl1El   = document.getElementById('lbl1');
+  const lbl2El   = document.getElementById('lbl2');
+  const headIcon = document.getElementById('headIcon');
+  const motivT   = document.getElementById('motivText');
+  const ctaChip  = document.getElementById('ctaChip');
+  const weekEl   = document.getElementById('week');
+  const ms       = document.getElementById('milestone');
+  const msText   = document.getElementById('msText');
+  const burst    = document.getElementById('burst');
+  const sparks   = document.getElementById('sparks');
+  const tipPath  = document.getElementById('tipPath');
+  const ashPath  = document.getElementById('ashPath');
+  const flameSvg = document.getElementById('flameSvg');
+  const smokes   = ['smoke1','smoke2','smoke3'].map(id=>document.getElementById(id));
+  const DN7 = ['L','M','M','G','V','S','D'];
+
+  function swClassify(d){
+    if(d.currentStreak===0) return 0;
+    if(d.currentStreak>=2 && !d.trainedToday) return 5;
+    if(d.currentStreak===1) return 1;
+    if(d.currentStreak<=6) return 2;
+    if(d.currentStreak<=29) return 3;
+    return 4;
+  }
+  const flameIcon = c=>`<svg viewBox="0 0 24 24" fill="none"><path d="M12 22c4.4 0 7-3 7-6.5 0-3-2-5-3-7-1.4 2-2 3-3 3 .4-3-1-5-3-7 0 4-4 6-4 11 0 3.6 2.6 6.5 6 6.5Z" fill="${c}"/></svg>`;
+  const ashIcon = `<svg viewBox="0 0 24 24" fill="none"><path d="M7 18h10M8 14c1-1 2-1 4-1s3 0 4 1M9 10c1-1 2-1 3-1s2 0 3 1" stroke="#5a6a82" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+
+  function swRender(d){
+    const state = swClassify(d);
+    widget.dataset.state = state;
+    widget.dataset.size = d.currentStreak>=100?'sm':d.currentStreak>=10?'md':'lg';
+    swCountUp(numEl, d.currentStreak, 800);
+    lbl1El.textContent = d.currentStreak===1?'giorno di fila':'giorni di fila';
+    lbl2El.textContent = d.longestStreak?`record: ${d.longestStreak}`:' ';
+    let color='#ff8a2e';
+    if(state===0) color='#5a6a82';
+    else if(state===1) color='#ff9d4d';
+    else if(state===4) color='#ffd089';
+    else if(state===5) color='#ff7a6a';
+    headIcon.innerHTML = state===0?ashIcon:flameIcon(color);
+    flameSvg.style.display = state===0?'none':'block';
+    ashPath.style.display  = state===0?'block':'none';
+    tipPath.style.display  = state===4?'block':'none';
+    const scaleMap=[0,.55,.8,1,1.15,.92];
+    flameSvg.style.transform=`scale(${scaleMap[state]||1})`;
+    flameSvg.style.transformOrigin='50% 100%';
+    smokes.forEach(s=>s.style.display=state===0?'block':'none');
+    const tier=swMilestoneTier(d.currentStreak);
+    if(tier&&state!==5&&d.trainedToday){
+      ms.dataset.tier=tier; msText.textContent=swLabelForTier(tier);
+      ms.classList.add('show','persist');
+    } else { ms.classList.remove('show','persist'); }
+    swRenderWeek(d);
+    const msgs={0:'Ogni leggenda inizia con un primo passo.',1:'Giorno 1. Il più coraggioso.',2:'Stai costruendo qualcosa di solido.',3:'Una settimana di fuoco. Continua così.',4:'Sei nel 1% delle persone che arrivano qui.',5:'Non lasciare che si spenga oggi.'};
+    motivT.textContent=msgs[state];
+    ctaChip.style.display=state===0?'inline-flex':'none';
+  }
+
+  function swRenderWeek(d){
+    weekEl.innerHTML='';
+    d.weekDays.forEach((done,i)=>{
+      const el=document.createElement('div');
+      el.className='day';
+      if(done) el.classList.add('done');
+      if(i===TODAY) el.classList.add('today');
+      if(i>TODAY) el.classList.add('future');
+      el.innerHTML=`<span class="dn">${DN7[i]}</span><span class="dot"></span>`;
+      weekEl.appendChild(el);
+    });
+  }
+
+  function swMilestoneTier(n){ return n>=100?100:n>=60?60:n>=30?30:n>=14?14:n>=7?7:null; }
+  function swLabelForTier(t){ return t===100?'100 GIORNI':t===60?'60 GIORNI':t===30?'30 GIORNI':t===14?'14 GIORNI':'7 GIORNI'; }
+
+  function swCountUp(el,target,dur){
+    if(target===0){el.textContent='0';return;}
+    const start=performance.now();
+    (function step(t){
+      const k=Math.min(1,(t-start)/dur);
+      el.textContent=Math.round(target*(1-Math.pow(1-k,3)));
+      if(k<1) requestAnimationFrame(step);
+    })(start);
+  }
+
+  let _activeSparks=0;
+  function swSpawnSpark(){
+    const state=+widget.dataset.state;
+    if(state===0||state===1||_activeSparks>=8) return;
+    const s=document.createElement('span');
+    s.className='spark';
+    if(state===4) s.classList.add(Math.random()<.5?'s-white':'s-yellow');
+    else if(state===3&&Math.random()<.3) s.classList.add('s-yellow');
+    s.style.setProperty('--dx',(Math.random()*40-20)+'px');
+    s.style.setProperty('--dy',-(40+Math.random()*40)+'px');
+    s.style.left=`calc(50% + ${(Math.random()*16-8)}px)`;
+    s.style.bottom=(20+Math.random()*20)+'px';
+    const dur=1.1+Math.random()*.9;
+    s.style.animation=`sparkRise ${dur}s ease-out forwards`;
+    sparks.appendChild(s); _activeSparks++;
+    setTimeout(()=>{s.remove();_activeSparks--;},dur*1000+50);
+  }
+  setInterval(()=>{
+    const st=+widget.dataset.state;
+    const rate=st===4?2:st===3||st===2?1:0;
+    for(let i=0;i<rate;i++) swSpawnSpark();
+  },220);
+
+  function swFireBurst(color){
+    burst.innerHTML=''; burst.classList.remove('fire'); void burst.offsetWidth;
+    for(let i=0;i<20;i++){
+      const s=document.createElement('span');
+      const ang=(i/20)*Math.PI*2+Math.random()*.2, dist=60+Math.random()*30;
+      s.style.setProperty('--bx',Math.cos(ang)*dist+'px');
+      s.style.setProperty('--by',Math.sin(ang)*dist+'px');
+      s.style.background=color; s.style.boxShadow=`0 0 8px ${color}`;
+      s.style.animationDelay=(Math.random()*.1)+'s';
+      burst.appendChild(s);
+    }
+    burst.classList.add('fire');
+  }
+
+  window.swPopMilestone=function(forceTier){
+    const d=window._swData||{currentStreak:0};
+    const tier=forceTier||swMilestoneTier(d.currentStreak)||7;
+    const color=tier===100?'#00bcd4':tier===60?'#e040fb':tier===30?'#f44336':tier===14?'#ff9800':'#ffc400';
+    ms.dataset.tier=tier; msText.textContent=swLabelForTier(tier);
+    ms.classList.remove('show','persist'); void ms.offsetWidth;
+    ms.classList.add('show','persist');
+    swFireBurst(color);
+  };
+
+  // Mappa i dati reali dell'app nel formato del widget
+  window._swData = {
+    currentStreak : _appData.streak || 0,
+    longestStreak : _appData.bestStreak || 0,
+    trainedToday  : dayDone[TODAY],
+    weekDays      : [...dayDone]
+  };
+  swRender(window._swData);
+})();
 
 // ── Render piano con status reale ──
 const bMap={oggi:'b-oggi OGGI', fatto:'b-fatto FATTO', saltato:'b-saltato SALTATO', arrivo:'b-arr IN ARRIVO', riposo:'b-riposo RIPOSO'};
@@ -957,18 +1240,9 @@ PIANO.forEach((d,i)=>{ if(d.type!=='rest') attachSwipe(i, getDayStatus(i)==='ogg
 // ── Stats e barre settimanali ──
 (function(){
   try{
-    const streak = _appData.streak || 0;
-    animateCount(document.querySelector('.streak-num'), streak);
-
-    const goal = _appData.goalSessions || 5;
     const cnt  = _weekSessions.length;
     const kcal = _weekSessions.reduce((a,s)=>a+(s.kcal||0),0);
     const km   = _weekSessions.reduce((a,s)=>a+(s.km||0),0);
-    const pct2 = Math.min(100, Math.round(cnt/goal*100));
-
-    document.getElementById('goalNums').textContent = cnt+'/'+goal;
-    animateRing(document.getElementById('goalBarFill'), +(188.5 * (1 - pct2/100)).toFixed(2), 188.5);
-    document.querySelector('.goal-ring-outer').classList.toggle('goal-ring-zero', cnt === 0);
 
     const vals = document.querySelectorAll('.rstat-val');
     if(vals[0]) animateCount(vals[0], kcal || 0);
@@ -1307,6 +1581,7 @@ const PAGE_INDEX = 0; // home.html = indice 0
 
 function navigateTo(url, toIndex){
   if(toIndex === PAGE_INDEX) return;
+  try{ window.FtHaptic && FtHaptic.navTap(); }catch(e){}
   const sa = document.querySelector('.scroll-area');
   sessionStorage.setItem('ft_from_tab', PAGE_INDEX);
   const cls = toIndex > PAGE_INDEX ? 'slide-out-left' : 'slide-out-right';
@@ -1545,6 +1820,77 @@ function startTodayWorkout(){
   sp.style.opacity    = '0';
   sp.style.visibility = 'hidden';
   setTimeout(()=>{ if(sp.parentNode) sp.parentNode.removeChild(sp); }, 380);
+})();
+
+/* ══ CTA Inizia allenamento oggi ══ */
+(function renderTodayCTA(){
+  try{
+    const d     = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    const today = new Date().toLocaleDateString('it-IT',{weekday:'long'}).toLowerCase();
+    const map   = { lunedì:0, martedì:1, mercoledì:2, giovedì:3, venerdì:4, sabato:5, domenica:6 };
+    const idx   = map[today] ?? -1;
+    const woId  = (d.assignment || {})[idx];
+    const wo    = Array.isArray(d.workouts) ? d.workouts.find(w => w.id === woId) : null;
+
+    /* non mostrare se riposo o già allenato oggi */
+    const _n = new Date();
+    const oggi = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
+    const allenato = (d.sessions||[]).some(s => s.date === oggi);
+    const block   = document.getElementById('todayCTA');
+    if(!wo || allenato || !block){ return; }
+
+    const typeLabel = { gym:'Palestra', run:'Corsa', bike:'Bici', other:'Allenamento' };
+    document.getElementById('ctaWoName').textContent = wo.name;
+    document.getElementById('ctaWoMeta').textContent =
+      `${(wo.exs||[]).length} esercizi · ${typeLabel[wo.type] || 'Allenamento'}`;
+    block.style.display = 'block';
+  } catch(e){}
+})();
+
+/* ══ Confronto settimana vs settimana scorsa ══ */
+(function renderWeekComparison(){
+  try{
+    const d        = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    const sessions = d.sessions || [];
+    const now      = new Date();
+
+    function weekBounds(offsetWeeks){
+      const mon = new Date(now);
+      mon.setDate(now.getDate() - ((now.getDay()+6)%7) + offsetWeeks * 7);
+      mon.setHours(0,0,0,0);
+      const sun = new Date(mon); sun.setDate(mon.getDate() + 7);
+      return { from: mon, to: sun };
+    }
+
+    function weekStats(from, to){
+      const ss = sessions.filter(s => { const d = new Date(s.date+'T12:00'); return d >= from && d < to; });
+      const ton = ss.reduce((a, s) => a + ((s.tonnellaggio)||
+        (s.exsCompleted||[]).reduce((a2,ex)=>
+          a2+(ex.sets_data||[]).reduce((a3,set)=>a3+((set.kg||0)*(set.reps||0)),0),0)), 0);
+      return { count: ss.length, tonnellaggio: Math.round(ton) };
+    }
+
+    const curr = weekStats(weekBounds(0).from, weekBounds(0).to);
+    const prev = weekStats(weekBounds(-1).from, weekBounds(-1).to);
+
+    if(!curr.count && !prev.count) return;
+
+    const block = document.getElementById('weekCmp');
+    if(!block) return;
+    block.style.display = 'block';
+
+    document.getElementById('cmpCurrSess').textContent = curr.count;
+    document.getElementById('cmpCurrTon').textContent  = curr.tonnellaggio.toLocaleString('it-IT');
+    document.getElementById('cmpPrevSess').textContent = prev.count;
+    document.getElementById('cmpPrevTon').textContent  = prev.tonnellaggio.toLocaleString('it-IT');
+
+    const pct    = prev.tonnellaggio > 0 ? Math.round((curr.tonnellaggio - prev.tonnellaggio) / prev.tonnellaggio * 100) : null;
+    const delta  = document.getElementById('cmpDelta');
+    if(pct === null){ delta.textContent = ''; }
+    else if(pct > 0){ delta.textContent = `↑ ${pct}% volume`; delta.style.color = 'var(--green)'; }
+    else if(pct < 0){ delta.textContent = `↓ ${Math.abs(pct)}% volume`; delta.style.color = '#e05555'; }
+    else             { delta.textContent = 'Volume invariato'; delta.style.color = 'var(--textm)'; }
+  } catch(e){}
 })();
 </script>
 <script src="tutorial.js"></script>

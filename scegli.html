@@ -495,17 +495,20 @@ function buildUI(){
   /* sezione "tutti gli allenamenti" */
   html += '<div class="section-lbl">Tutti gli allenamenti</div>';
   if(WORKOUTS.length === 0){
-    html += `<div style="text-align:center;padding:28px 0 8px;color:var(--textm);font-size:13px;line-height:1.8;">
-      Nessun allenamento ancora.<br>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
-        <button onclick="location.href='impostazioni.html?openPreset=1'"
-          style="padding:11px 18px;border-radius:12px;background:linear-gradient(135deg,var(--a1),var(--a2));border:none;color:#fff;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);">
-          📋 Aggiungi da modello
-        </button>
-        <button onclick="location.href='impostazioni.html'"
-          style="padding:11px 18px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--textm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);">
-          + Crea il tuo
-        </button>
+    html += `<div class="ft-empty">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+        <rect x="14" y="20" width="44" height="36" rx="8" stroke="var(--a1)" stroke-width="2"/>
+        <path d="M26 20v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4" stroke="var(--a1)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M23 34h6M23 42h6" stroke="var(--a2)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M36 34h13M36 42h8" stroke="var(--border)" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="26" cy="34" r="1.5" fill="var(--a2)"/>
+        <circle cx="26" cy="42" r="1.5" fill="var(--a2)"/>
+      </svg>
+      <div class="ft-empty-title">Nessun allenamento ancora</div>
+      <div class="ft-empty-sub">Crea il tuo primo workout o scegli uno dei nostri modelli pronti.</div>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button class="ft-empty-cta" onclick="location.href='impostazioni.html?openPreset=1'">📋 Da modello</button>
+        <button class="ft-empty-cta" style="background:var(--bg3);border:1px solid var(--border);color:var(--textm);" onclick="location.href='impostazioni.html'">+ Crea</button>
       </div>
     </div>`;
   } else {

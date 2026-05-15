@@ -528,10 +528,13 @@ function renderAll(){
   const completedSection = document.getElementById('completedSection');
 
   if(active.length === 0){
-    activeList.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🏆</div>
-      <div class="empty-title">Nessuna sfida attiva</div>
-      <div class="empty-sub">Tocca ＋ in alto per creare la tua prima sfida e inizia a raggiungere i tuoi obiettivi.</div>
+    activeList.innerHTML = `<div class="ft-empty">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <path d="M32 8l4.9 9.9 10.9 1.6-7.9 7.7 1.9 10.8L32 33l-9.8 5.1 1.9-10.8-7.9-7.7 10.9-1.6z" stroke="var(--a1)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M32 38v18M24 56h16" stroke="var(--a2)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="ft-empty-title">Nessuna sfida attiva</div>
+      <div class="ft-empty-sub">Crea la tua prima sfida e inizia a tracciare i tuoi obiettivi.</div>
     </div>`;
   } else {
     // Ordina per urgenza

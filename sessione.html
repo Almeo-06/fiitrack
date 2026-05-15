@@ -20,6 +20,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 <script src="analytics.js"></script>
 <script src="ft-icons.js"></script>
+<script src="haptics.js"></script>
 <style>
 body{ background:var(--bg); color:var(--text); font-family:var(--font); max-width:480px; margin:0 auto; height:100vh; height:100dvh; min-height:-webkit-fill-available; position:relative; overflow:hidden; overscroll-behavior:none; }
 
@@ -230,7 +231,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 @keyframes sfPop{ from{opacity:0;transform:scale(.7) translateY(8px);} to{opacity:1;transform:scale(1) translateY(0);} }
 
 /* ── Toast ── */
-#sessToast{ position:fixed; bottom:calc(90px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(16px); background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:10px 18px; font-size:13px; color:var(--text); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; z-index:500; box-shadow:0 4px 20px rgba(0,0,0,.3); }
+#sessToast{ position:fixed; bottom:calc(90px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(20px); background:rgba(18,24,38,.92); border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:12px 22px; font-size:13px; font-weight:500; color:var(--text); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .25s,transform .25s cubic-bezier(.34,1.56,.64,1); z-index:500; box-shadow:0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
 #sessToast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 .end-footer{ padding:0 20px max(40px, calc(16px + env(safe-area-inset-bottom, 0px))); flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
 .home-btn{ width:100%; padding:15px; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:500; cursor:pointer; font-family:var(--font); box-shadow:0 4px 20px rgba(0,0,0,.2); }
@@ -348,14 +349,18 @@ body::before{
 
 /* ══ BANNER NUOVO RECORD ══ */
 .pr-banner{
-  position:fixed; top:0; left:50%; transform:translateX(-50%) translateY(-100%);
-  max-width:480px; width:100%; z-index:100;
-  background:linear-gradient(135deg,rgba(255,170,0,.18),rgba(255,100,0,.12));
-  border-bottom:2px solid rgba(255,170,0,.5);
+  position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); left:50%;
+  transform:translateX(-50%) translateY(calc(-100% - 20px));
+  width:calc(100% - 32px); max-width:380px; z-index:100;
+  background:rgba(30,20,5,.92);
+  border:1px solid rgba(255,170,0,.4);
+  border-radius:20px;
   padding:14px 20px;
   display:flex; align-items:center; justify-content:center; gap:10px;
   font-size:15px; font-weight:600; color:#ffcc00;
-  text-shadow:0 0 20px rgba(255,200,0,.5);
+  text-shadow:0 0 20px rgba(255,200,0,.4);
+  box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(255,170,0,.08), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
   transition:transform .4s cubic-bezier(.34,1.56,.64,1);
   pointer-events:none;
 }
@@ -365,9 +370,10 @@ body::before{
 /* riepilogo PR badge */
 .pr-badge{
   display:inline-flex; align-items:center; gap:4px;
-  background:rgba(255,170,0,.12); border:1px solid rgba(255,170,0,.3);
-  border-radius:6px; padding:2px 7px; font-size:10px; color:#ffaa00;
-  font-weight:500; margin-left:6px; vertical-align:middle;
+  background:rgba(255,170,0,.14); border:1px solid rgba(255,170,0,.35);
+  border-radius:10px; padding:3px 9px; font-size:10px; color:#ffaa00;
+  font-weight:600; margin-left:6px; vertical-align:middle;
+  box-shadow:0 2px 8px rgba(255,170,0,.15);
 }
 
 /* ══ CONFETTI ══ */
@@ -419,6 +425,120 @@ body::before{
 .fa-icon{ font-size:28px; margin-bottom:8px; }
 .fa-title{ font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
 .fa-text{ font-size:12px; color:var(--textm); line-height:1.6; }
+/* ══ SHARE BANNER AUTO ══ */
+.share-banner{
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(0,204,255,.07); border:1px solid rgba(0,204,255,.18);
+  border-radius:12px; padding:11px 14px; margin-bottom:12px;
+  opacity:0; transform:translateY(10px);
+  transition:opacity .4s ease, transform .4s ease;
+  pointer-events:none;
+}
+.share-banner.visible{ opacity:1; transform:translateY(0); pointer-events:auto; }
+.share-banner span{ font-size:13px; color:var(--text); }
+.share-banner button{
+  background:none; border:none; color:var(--a2);
+  font-size:13px; font-weight:700; cursor:pointer; font-family:var(--font); padding:0;
+}
+
+/* ══ PESO RAPIDO POST-SESSIONE ══ */
+.qw-wrap{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:14px; padding:14px 16px; margin-bottom:16px;
+  animation:slideUp .4s ease both;
+}
+.qw-label{
+  font-size:10px; color:var(--textm); margin-bottom:10px;
+  font-family:var(--mono); letter-spacing:1.5px; text-transform:uppercase;
+}
+.qw-row{ display:flex; align-items:center; gap:8px; }
+.qw-input{
+  flex:1; background:var(--bg3); border:1px solid var(--border);
+  border-radius:10px; color:var(--text); font-size:20px; padding:8px 12px;
+  font-family:var(--mono); text-align:center; outline:none;
+  transition:border-color .15s;
+}
+.qw-input:focus{ border-color:var(--a1); }
+.qw-unit{ font-size:14px; color:var(--textm); flex-shrink:0; font-family:var(--mono); }
+.qw-btn{
+  padding:9px 18px; background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; border-radius:10px; color:#fff; font-size:13px; font-weight:600;
+  cursor:pointer; font-family:var(--font); flex-shrink:0;
+}
+
+/* ══ 1RM SHEET ══ */
+.rm-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500;
+  display:flex; align-items:flex-end;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+.rm-overlay.open{ opacity:1; pointer-events:auto; }
+.rm-sheet{
+  width:100%; background:var(--bg2);
+  border-radius:20px 20px 0 0; padding:20px 20px 0;
+  transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
+  max-height:85vh; overflow-y:auto;
+}
+.rm-overlay.open .rm-sheet{ transform:translateY(0); }
+.rm-handle{
+  width:36px; height:4px; background:var(--border);
+  border-radius:2px; margin:0 auto 16px;
+}
+.rm-title{ font-size:16px; font-weight:600; color:var(--text); text-align:center; margin-bottom:4px; }
+.rm-result{
+  font-size:52px; font-weight:700; color:var(--a1);
+  text-align:center; margin:10px 0 4px; font-family:var(--mono); line-height:1;
+}
+.rm-formula{ font-size:11px; color:var(--textm); text-align:center; margin-bottom:18px; }
+.rm-pct-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:24px; }
+.rm-pct-row{
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--bg3); border-radius:9px; padding:9px 12px;
+}
+.rm-pct-label{ font-size:12px; color:var(--textm); font-family:var(--mono); }
+.rm-pct-val{ font-size:13px; font-weight:600; color:var(--text); font-family:var(--mono); }
+.rm-pct-rep{ font-size:11px; color:var(--textm); font-family:var(--mono); }
+.rm-open-btn{
+  background:none; border:1px solid rgba(var(--a1-rgb),.25);
+  border-radius:8px; color:var(--a2); font-size:11px; font-weight:600;
+  padding:4px 10px; cursor:pointer; font-family:var(--mono); margin-left:auto;
+  display:block; margin-top:6px;
+}
+
+/* ══ PLATE CALCULATOR ══ */
+.plate-calc-wrap{
+  width:100%; margin-top:14px; padding:12px 14px;
+  background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+}
+.plate-calc-lbl{
+  font-size:10px; color:var(--textm); text-transform:uppercase;
+  letter-spacing:1.5px; font-family:var(--mono); margin-bottom:12px;
+}
+.plate-bar-row{
+  display:flex; align-items:center; gap:4px; margin-bottom:8px;
+}
+.plate-bar-center{
+  width:44px; height:8px; background:var(--textm); border-radius:4px; flex-shrink:0;
+}
+.plate-chips-wrap{ display:flex; gap:3px; align-items:center; flex-wrap:wrap; }
+.plate-chip{
+  height:38px; width:var(--pw,18px); background:var(--pc,#888);
+  border-radius:3px; display:flex; align-items:center; justify-content:center;
+  font-size:9px; font-weight:700; color:#000; writing-mode:vertical-rl;
+  flex-shrink:0; transition:opacity .3s;
+}
+.plate-note{ font-size:10px; color:var(--textm); text-align:center; }
+.plate-empty{ font-size:12px; color:var(--textm); text-align:center; padding:4px 0; }
+
+/* ══ BOTTONE INSTAGRAM STORIES ══ */
+.sp-btn-ig{
+  flex:1; padding:14px 10px;
+  background:linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  border:none; border-radius:13px; color:#fff; font-size:13px; font-weight:600;
+  cursor:pointer; font-family:var(--font); display:flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+
 /* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
 html.theme-light #screenEx,
@@ -751,6 +871,70 @@ html.theme-light .close-btn{
   .ex-slide-in { animation: none; }
 }
 
+/* ══ MOMENTUM BAR ══ */
+.momentum-bar-wrap{
+  height:3px; background:rgba(255,255,255,.04);
+  overflow:hidden; flex-shrink:0;
+}
+.momentum-bar{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--a1),var(--a2),var(--green));
+  transition:width .5s cubic-bezier(.25,1,.3,1);
+  box-shadow:0 0 10px var(--a1);
+}
+
+/* ══ VICTORY SCREEN ══ */
+#victoryOverlay{
+  position:fixed; inset:0; z-index:200;
+  background:linear-gradient(150deg,#020810 0%,#050d1a 60%,#070b20 100%);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .4s ease;
+}
+#victoryOverlay.visible{ opacity:1; pointer-events:all; }
+.victory-inner{
+  text-align:center; padding:40px 28px;
+  animation:none;
+}
+#victoryOverlay.visible .victory-inner{
+  animation:victoryIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes victoryIn{
+  0%{ transform:scale(.72); opacity:0; }
+  60%{ transform:scale(1.04); }
+  100%{ transform:scale(1); opacity:1; }
+}
+.victory-emoji{ font-size:60px; margin-bottom:14px; display:block; }
+.victory-headline{ font-size:22px; font-weight:600; color:var(--text); margin-bottom:6px; letter-spacing:-.3px; }
+.victory-metric-row{ display:flex; align-items:baseline; justify-content:center; gap:8px; margin:20px 0 8px; }
+.vm-num{
+  font-family:var(--mono); font-size:76px; font-weight:600; line-height:1;
+  background:linear-gradient(180deg,#fff 0%,var(--a2) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.vm-unit{ font-size:20px; color:var(--textm); }
+.victory-delta{ font-size:14px; font-weight:500; margin-bottom:16px; min-height:20px; }
+.victory-delta.pos{ color:var(--green); }
+.victory-delta.neg{ color:var(--textm); }
+.victory-prs{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:28px; min-height:0; }
+.victory-pr-pill{
+  background:rgba(255,196,0,.12); border:1px solid rgba(255,196,0,.4);
+  color:#ffc400; border-radius:999px; padding:5px 13px;
+  font-size:12px; font-weight:600; letter-spacing:.02em;
+}
+.victory-tap{ font-size:11px; color:var(--textm); letter-spacing:1.5px; text-transform:uppercase; }
+@keyframes victoryTapPulse{
+  0%,100%{ opacity:.4; } 50%{ opacity:.9; }
+}
+.victory-tap{ animation:victoryTapPulse 1.8s ease-in-out infinite; }
+
+/* ── glassmorphism sul share preview sheet ── */
+#sharePreviewOverlay{ backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.sp-sheet{ background:rgba(6,13,26,.92) !important; border-top:1px solid rgba(255,255,255,.08) !important; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+
+/* ── glassmorphism sul rest screen ── */
+#screenRec{ background:rgba(2,8,16,.88) !important; backdrop-filter:blur(22px) saturate(1.3); -webkit-backdrop-filter:blur(22px) saturate(1.3); }
+
 /* ── Modale permesso notifiche ── */
 #notifPermOverlay{
   position:fixed; inset:0; z-index:999;
@@ -777,11 +961,12 @@ html.theme-light .close-btn{
 /* ── Toast amico ── */
 .friend-toast{
   position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); left:50%;
-  transform:translateX(-50%) translateY(-80px);
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:14px; padding:12px 16px;
-  display:flex; align-items:center; gap:10px;
-  box-shadow:0 8px 32px rgba(0,0,0,.3);
+  transform:translateX(-50%) translateY(-90px);
+  background:rgba(18,24,38,.92); border:1px solid rgba(255,255,255,.1);
+  border-radius:20px; padding:14px 18px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
   z-index:998; max-width:340px; width:calc(100% - 32px);
   transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   pointer-events:none;
@@ -982,6 +1167,7 @@ html.theme-light .close-btn{
       </div>
       <div class="prog-lbl" id="exProgLbl"></div>
     </div>
+    <div class="momentum-bar-wrap"><div class="momentum-bar" id="momentumBar"></div></div>
   </div>
   <div class="ex-body-wrap" id="exBodyWrap">
     <div id="circuitBadge" class="circuit-badge">⚡ CIRCUITO · Esercizio <span id="circuitPos"></span></div>
@@ -1010,6 +1196,7 @@ html.theme-light .close-btn{
 
     <!-- Suggerimento peso carico -->
     <div id="weightHint" class="weight-hint"></div>
+    <button class="rm-open-btn" id="rmOpenBtn" onclick="open1RMSheet()" style="display:none">📊 Calcola 1RM</button>
 
     <!-- Matita note esercizio -->
     <div class="notes-row">
@@ -1109,6 +1296,27 @@ html.theme-light .close-btn{
       </div>
     </div>
     <div class="rnc" id="rncCard"></div>
+
+    <!-- Plate calculator -->
+    <div class="plate-calc-wrap" id="plateCalcWrap" style="display:none">
+      <div class="plate-calc-lbl">🏋️ Carica sul bilanciere</div>
+      <div class="plate-bar-row">
+        <div class="plate-bar-center"></div>
+        <div class="plate-chips-wrap" id="plateChips"></div>
+      </div>
+      <div class="plate-note" id="plateNote">Per lato · bilanciere 20 kg</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 1RM SHEET ══ -->
+<div class="rm-overlay" id="rmOverlay" onclick="_rmClose(event)">
+  <div class="rm-sheet" id="rmSheet">
+    <div class="rm-handle"></div>
+    <div class="rm-title">1RM stimato</div>
+    <div class="rm-result" id="rmResult">0 kg</div>
+    <div class="rm-formula">Formula Epley · per lato</div>
+    <div class="rm-pct-list" id="rmPctList"></div>
   </div>
 </div>
 
@@ -1161,6 +1369,17 @@ html.theme-light .close-btn{
       <img id="stravaPreview" class="strava-preview" style="display:none" alt="Foto Strava">
     </div>
 
+    <!-- Peso rapido post-sessione -->
+    <div class="qw-wrap" id="quickWeightWrap">
+      <div class="qw-label">⚖️ Registra peso di oggi (facoltativo)</div>
+      <div class="qw-row">
+        <input type="number" id="qwInput" class="qw-input"
+               placeholder="es. 78.5" step="0.1" min="20" max="300">
+        <span class="qw-unit">kg</span>
+        <button class="qw-btn" onclick="saveQuickWeight()">Salva</button>
+      </div>
+    </div>
+
     <!-- Nota generale sessione -->
     <div class="session-note-wrap">
       <div class="session-note-lbl">🖊️ Come è andata?</div>
@@ -1176,6 +1395,12 @@ html.theme-light .close-btn{
     <div id="endExList"></div>
   </div>
   <div class="end-footer">
+    <!-- Banner auto share -->
+    <div class="share-banner" id="shareBanner">
+      <span>📤 Condividi il tuo allenamento</span>
+      <button onclick="shareSession();document.getElementById('shareBanner').classList.remove('visible')">Condividi →</button>
+    </div>
+
     <button class="share-btn" id="shareBtn" onclick="shareSession()">📤 Condividi allenamento</button>
 
     <!-- Toggle pubblica nel feed — default ON, visibile solo se loggato -->
@@ -1194,6 +1419,21 @@ html.theme-light .close-btn{
   </div>
 </div>
 
+<!-- ══ VICTORY SCREEN ══ -->
+<div id="victoryOverlay" onclick="_dismissVictory()">
+  <div class="victory-inner">
+    <span class="victory-emoji" id="victoryEmoji">💪</span>
+    <div class="victory-headline" id="victoryHeadline">Sessione completata!</div>
+    <div class="victory-metric-row">
+      <span class="vm-num" id="vmNum">0</span>
+      <span class="vm-unit" id="vmUnit">serie</span>
+    </div>
+    <div class="victory-delta" id="victoryDelta"></div>
+    <div class="victory-prs" id="victoryPrs"></div>
+    <div class="victory-tap">Tocca per continuare</div>
+  </div>
+</div>
+
 <div id="sessToast"></div>
 
 <!-- ══ SHARE CARD PREVIEW ══ -->
@@ -1206,6 +1446,10 @@ html.theme-light .close-btn{
     </div>
     <div class="sp-actions">
       <button class="sp-btn-share" onclick="_spShare()">↗ Condividi</button>
+      <button class="sp-btn-ig"    onclick="shareInstagram()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg>
+        Stories
+      </button>
       <button class="sp-btn-save"  onclick="_spSave()">↓ Salva</button>
     </div>
   </div>
@@ -1539,8 +1783,24 @@ function launchConfetti(count){
   setTimeout(()=>{ particles.forEach(p=>p.remove()); }, 3000);
 }
 
-/* ── Haptic feedback ── */
+/* ── Haptic feedback — alias verso FtHaptic ── */
 function haptic(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+
+/* ══ MOMENTUM BAR ══ */
+let _momentumDone = 0;
+let _momentumTotal = 1;
+function _initMomentum(){
+  _momentumDone = 0;
+  _momentumTotal = (WORKOUT.exs||[]).reduce((a,ex)=>a+(ex.sets||1), 0) || 1;
+  const bar = document.getElementById('momentumBar');
+  if(bar) bar.style.width = '0%';
+}
+function _tickMomentum(){
+  _momentumDone = Math.min(_momentumDone + 1, _momentumTotal);
+  const pct = (_momentumDone / _momentumTotal) * 100;
+  const bar = document.getElementById('momentumBar');
+  if(bar) bar.style.width = pct.toFixed(1) + '%';
+}
 
 /* ── Animated counter (da 0 a `to` in `dur` ms) ── */
 function animateCount(el, to, dur, fmt){
@@ -1796,7 +2056,8 @@ function renderEx(){
 
 /* ── Fine serie ── */
 function onFineSerie(){
-  haptic([30]);               /* 8. vibrazione breve — serie completata */
+  haptic([30]);               /* vibrazione breve — serie completata */
+  _tickMomentum();            /* avanza la momentum bar */
   clearInterval(timedExInt);  /* ferma timer a tempo se attivo */
   lastCompletedEx = curEx;    /* salva PRIMA di qualsiasi routing */
   const ex = WORKOUT.exs[curEx];
@@ -1949,6 +2210,10 @@ function endSession(){
 
   /* 1. Confetti — sempre al completamento, più abbondante su nuovo record */
   setTimeout(()=>launchConfetti(isRecord ? 72 : 36), 300);
+  /* auto share banner dopo 1.8s */
+  setTimeout(_autoShareBanner, 1800);
+  /* peso rapido: mostra solo se non già registrato oggi */
+  renderQuickWeight();
   /* 3. Streak badge pulse */
   setTimeout(()=>{
     const _sb = document.querySelector('#streakBadge .streak-badge');
@@ -2034,7 +2299,64 @@ function endSession(){
     setTimeout(()=>fl.remove(), 2100);
   })();
 
-  show('screenEnd');
+  /* ══ VICTORY SCREEN ══ */
+  (function(){
+    const totalSets = doneSets();
+    const prs = getPRs();
+
+    /* PR raggiunti in questa sessione */
+    const prList = (WORKOUT.exs||[]).filter((ex,i)=>{
+      const d2 = exData[i];
+      const ws = d2 ? d2.weights.filter(w=>w!==null&&!isNaN(w)) : [];
+      const maxW = ws.length ? Math.max(...ws) : null;
+      const pr = prs[ex.name];
+      return pr && maxW !== null && maxW >= pr.maxWeight && pr.date === localDateStr();
+    });
+
+    /* Confronto serie settimana precedente */
+    let deltaHTML = '';
+    try{
+      const _raw2 = localStorage.getItem('fittrack_v4');
+      if(_raw2){
+        const _d2 = JSON.parse(_raw2);
+        const _now2 = new Date();
+        const _wkAgo = new Date(_now2); _wkAgo.setDate(_now2.getDate()-14);
+        const _wkEnd = new Date(_now2); _wkEnd.setDate(_now2.getDate()-7);
+        const _prevSets = (_d2.sessions||[])
+          .filter(s=>{ const sd2=new Date(s.date+'T12:00'); return sd2>=_wkAgo&&sd2<_wkEnd; })
+          .reduce((a,s)=>a+(s.sets||0),0);
+        if(_prevSets>0){
+          const delta=Math.round(((totalSets-_prevSets)/_prevSets)*100);
+          const cl = delta>=0?'pos':'neg';
+          const sign = delta>=0?'+':'';
+          deltaHTML = `<div class="victory-delta ${cl}">${sign}${delta}% rispetto alla settimana scorsa</div>`;
+        }
+      }
+    }catch(e){}
+
+    /* Popola overlay */
+    document.getElementById('vmNum').textContent = totalSets;
+    document.getElementById('vmUnit').textContent = totalSets===1?'serie':'serie';
+    document.getElementById('victoryDelta').outerHTML = deltaHTML || '<div class="victory-delta" id="victoryDelta"></div>';
+    document.getElementById('victoryPrs').innerHTML = prList.map(ex=>`<span class="victory-pr-pill">🏆 PR ${ex.name}</span>`).join('');
+
+    /* Emoji dinamica */
+    const streakN = result.newStreak||0;
+    const emoji = prList.length>0?'🏆':streakN>=30?'🔥':streakN>=7?'💪':'✅';
+    document.getElementById('victoryEmoji').textContent = emoji;
+
+    /* Mostra overlay, poi passa a screenEnd */
+    const ov = document.getElementById('victoryOverlay');
+    ov.classList.add('visible');
+    window._dismissVictory = function(){
+      ov.classList.remove('visible');
+      show('screenEnd');
+      window._dismissVictory = null;
+    };
+    /* Auto-dismiss dopo 2.8s */
+    setTimeout(()=>{ if(window._dismissVictory) window._dismissVictory(); }, 2800);
+  })();
+  /* show('screenEnd') viene chiamato dentro _dismissVictory */
 }
 
 function confirmEnd(){
@@ -2250,17 +2572,17 @@ async function shareSession(){
   const ctx = cv.getContext('2d');
   ctx.scale(2, 2);
 
-  /* Colori tema */
-  const BG      = isRun ? '#0a1a12' : '#0f0f14';
-  const ACCENT  = isRun ? '#34d399' : '#a78bfa';
-  const ATYPE   = isRun ? '#059669' : '#7c3aed';
-  const PILL_BG = isRun ? 'rgba(52,211,153,0.15)' : 'rgba(167,139,250,0.15)';
-  const PILL_C  = isRun ? '#6ee7b7'  : '#c4b5fd';
-  const LBL_C   = isRun ? 'rgba(52,211,153,0.6)' : 'rgba(167,139,250,0.6)';
-  const AV_BG   = isRun ? '#064e3b' : '#4c1d95';
-  const AV_C    = isRun ? '#6ee7b7' : '#c4b5fd';
-  const FADE_BG = isRun ? 'rgba(10,26,18,1)' : 'rgba(15,15,20,1)';
-  const GLOW_X  = isRun ? CW + 40 : -40;
+  /* Colori tema — brand FiitTracker */
+  const ACCENT  = '#00ccff';                        /* app --a2   */
+  const ATYPE   = isRun ? '#00e676' : '#0088ff';    /* label tipo */
+  const PILL_BG = 'rgba(0,136,255,0.18)';
+  const PILL_C  = '#00ccff';
+  const LBL_C   = 'rgba(0,204,255,0.55)';
+  const AV_BG   = 'rgba(0,136,255,0.22)';
+  const AV_C    = '#00ccff';
+  const FADE_BG = 'rgba(2,8,16,1)';                /* app --bg   */
+  /* accent sottile per differenziare tipo attività (mix con brand blue) */
+  const ACT_CLR = isRun ? 'rgba(0,230,118,0.10)' : 'rgba(80,0,255,0.07)';
 
   /* Helper roundRect */
   function rr(x,y,w,h,r){
@@ -2273,16 +2595,60 @@ async function shareSession(){
     ctx.closePath();
   }
 
-  /* ── 1. Sfondo ── */
-  ctx.fillStyle = BG;
+  /* ── 1. Base scura brand ── */
+  ctx.fillStyle = '#020810';
   ctx.fillRect(0, 0, CW, CH);
 
-  /* ── 2. Glow radiale ── */
-  const glowR = ctx.createRadialGradient(GLOW_X, -60, 0, GLOW_X, -60, 240);
-  glowR.addColorStop(0, isRun ? 'rgba(16,185,129,0.22)' : 'rgba(109,40,217,0.28)');
-  glowR.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = glowR;
-  ctx.fillRect(0, 0, CW, CH);
+  /* ── 2. Mesh gradient — 3 punti luce ── */
+  /* punto A: top-right, blu brand primario */
+  const gA = ctx.createRadialGradient(CW + 30, -40, 0, CW + 30, -40, 340);
+  gA.addColorStop(0, 'rgba(0,136,255,0.32)');
+  gA.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gA; ctx.fillRect(0, 0, CW, CH);
+
+  /* punto B: bottom-left, cyan più chiaro */
+  const gB = ctx.createRadialGradient(-20, CH + 20, 0, -20, CH + 20, 300);
+  gB.addColorStop(0, 'rgba(0,204,255,0.18)');
+  gB.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gB; ctx.fillRect(0, 0, CW, CH);
+
+  /* punto C: center-top, colore attività (run=verde, gym=viola leggero) */
+  const gC = ctx.createRadialGradient(CW * 0.35, 80, 0, CW * 0.35, 80, 220);
+  gC.addColorStop(0, ACT_CLR);
+  gC.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gC; ctx.fillRect(0, 0, CW, CH);
+
+  /* ── 3. Linee diagonali decorative (texture leggera) ── */
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,204,255,0.028)';
+  ctx.lineWidth = 0.7;
+  for(let x = -CH; x < CW + CH; x += 28){
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + CH * 0.55, CH * 0.5);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  /* ── 4. Noise film grain ── */
+  const _seed = Date.now();
+  ctx.save();
+  for(let i = 0; i < 1800; i++){
+    const nx = (((_seed * i * 9301 + 49297) % 233280) / 233280) * CW;
+    const ny = (((_seed * i * 6971 + 43391) % 233280) / 233280) * CH;
+    ctx.fillStyle = `rgba(255,255,255,${0.012 + (i % 3) * 0.008})`;
+    ctx.fillRect(nx, ny, 0.7, 0.7);
+  }
+  ctx.restore();
+
+  /* ── 5. Top-edge highlight (striscia luminosa in cima) ── */
+  const edgeG = ctx.createLinearGradient(0, 0, CW, 0);
+  edgeG.addColorStop(0,    'rgba(0,204,255,0)');
+  edgeG.addColorStop(0.25, 'rgba(0,204,255,0.45)');
+  edgeG.addColorStop(0.6,  'rgba(0,136,255,0.30)');
+  edgeG.addColorStop(1,    'rgba(0,136,255,0)');
+  ctx.fillStyle = edgeG;
+  ctx.fillRect(0, 0, CW, 1.5);
 
   /* ── 3. Top bar (y=20..42) ── */
   // Brand
@@ -2515,6 +2881,7 @@ window.addEventListener('pagehide', ()=>{
 
 /* ── START ── */
 if(!_isGpsMode){
+  _initMomentum();
   startSessTimer();
   renderEx();
 }
@@ -3033,6 +3400,155 @@ function _syncFeedToggle(inp){
     track.style.background = 'var(--bg3)';
     track.style.borderColor = 'var(--border)';
   }
+}
+
+/* ══════════════════════════════════════════════
+   FEATURE NUOVE
+══════════════════════════════════════════════ */
+
+/* ── #3 Share banner auto ── */
+function _autoShareBanner(){
+  if(WORKOUT?._tutorial) return;
+  const b = document.getElementById('shareBanner');
+  if(b){ b.classList.add('visible'); setTimeout(()=>b.classList.remove('visible'), 9000); }
+}
+
+/* ── #4 1RM Calculator ── */
+const _RM_PCT   = [100,95,90,85,80,75,70];
+const _RM_REPS  = ['1','2–3','4–5','5–6','7–8','9–10','11–12'];
+
+function calc1RM(kg, reps){
+  if(reps <= 0) return 0;
+  if(reps === 1) return kg;
+  return Math.round(kg * (1 + reps / 30));
+}
+
+function open1RMSheet(){
+  const kg   = parseFloat(document.getElementById('inputWeight').value);
+  const reps = parseInt(document.getElementById('inputReps').value);
+  if(!kg || !reps || reps < 1) return;
+  const rm = calc1RM(kg, reps);
+  document.getElementById('rmResult').textContent = rm + ' kg';
+  document.getElementById('rmPctList').innerHTML = _RM_PCT.map((pct, i) =>
+    `<div class="rm-pct-row">
+       <span class="rm-pct-label">${pct}%</span>
+       <span class="rm-pct-val">${Math.round(rm * pct / 100)} kg</span>
+       <span class="rm-pct-rep">≈ ${_RM_REPS[i]} rep</span>
+     </div>`
+  ).join('');
+  document.getElementById('rmOverlay').classList.add('open');
+}
+
+function _rmClose(e){
+  if(e.target === document.getElementById('rmOverlay'))
+    document.getElementById('rmOverlay').classList.remove('open');
+}
+
+/* Mostra bottone 1RM quando ci sono sia peso che reps */
+(function _watchInputsFor1RM(){
+  const wEl = document.getElementById('inputWeight');
+  const rEl = document.getElementById('inputReps');
+  const btn = document.getElementById('rmOpenBtn');
+  if(!wEl || !rEl || !btn) return;
+  function _check(){ btn.style.display = (parseFloat(wEl.value) > 0 && parseInt(rEl.value) > 1) ? 'block' : 'none'; }
+  wEl.addEventListener('input', _check);
+  rEl.addEventListener('input', _check);
+})();
+
+/* ── #8 Plate Calculator ── */
+const _PLATES     = [25, 20, 15, 10, 5, 2.5, 1.25];
+const _PLATE_W    = { 25:22, 20:19, 15:17, 10:15, 5:13, 2.5:11, 1.25:9 }; /* px larghezza chip */
+const _PLATE_CLR  = { 25:'#e63946', 20:'#457b9d', 15:'#f4a261', 10:'#2d6a4f', 5:'#f1faee', 2.5:'#adb5bd', 1.25:'#ced4da' };
+
+function calcPlates(targetKg, barKg = 20){
+  let rem = (targetKg - barKg) / 2;
+  if(rem < 0) return null;
+  const result = [];
+  for(const p of _PLATES){
+    const n = Math.floor(rem / p + 0.001);
+    if(n > 0){ result.push({ kg: p, n }); rem -= n * p; }
+  }
+  return result;
+}
+
+function renderPlateCalc(targetKg){
+  const wrap  = document.getElementById('plateCalcWrap');
+  const chips = document.getElementById('plateChips');
+  const note  = document.getElementById('plateNote');
+  if(!wrap || !chips) return;
+  if(!targetKg || targetKg <= 0){ wrap.style.display = 'none'; return; }
+  const plates = calcPlates(targetKg);
+  if(!plates){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  if(!plates.length){
+    chips.innerHTML = '<span class="plate-empty">Solo bilanciere 20 kg</span>';
+    note.textContent = '';
+    return;
+  }
+  chips.innerHTML = plates.map(p =>
+    `<div class="plate-chip" style="--pw:${_PLATE_W[p.kg]||12}px;--pc:${_PLATE_CLR[p.kg]||'#888'}"
+          title="${p.kg} kg × ${p.n}">${p.kg}×${p.n}</div>`
+  ).join('');
+  const tot = plates.reduce((a,p) => a + p.kg * p.n * 2, 20);
+  note.textContent = `Per lato · totale ${tot.toFixed(2).replace(/\.00$/,'')} kg`;
+}
+
+/* aggancia plate calc all'input peso della sessione */
+(function _watchWeightForPlate(){
+  const wEl = document.getElementById('inputWeight');
+  if(!wEl) return;
+  wEl.addEventListener('input', () => renderPlateCalc(parseFloat(wEl.value)));
+})();
+
+/* ── #10 Peso rapido post-sessione ── */
+function renderQuickWeight(){
+  try{
+    const d     = JSON.parse(localStorage.getItem(KEY) || '{}');
+    const log   = d.weight_log || [];
+    const oggi  = new Date().toLocaleDateString('it-IT');
+    const wrap  = document.getElementById('quickWeightWrap');
+    if(!wrap) return;
+    if(log.some(e => e.date === oggi)){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    const last = log.slice(-1)[0];
+    if(last) document.getElementById('qwInput').value = last.kg;
+  } catch(e){}
+}
+
+function saveQuickWeight(){
+  const kg   = parseFloat(document.getElementById('qwInput').value);
+  const wrap = document.getElementById('quickWeightWrap');
+  if(!kg || kg < 20 || kg > 300){ return; }
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+    if(!d.weight_log) d.weight_log = [];
+    d.weight_log.push({ date: new Date().toLocaleDateString('it-IT'), kg });
+    localStorage.setItem(KEY, JSON.stringify(d));
+  } catch(e){}
+  if(wrap) wrap.style.display = 'none';
+  /* toast riuso quello esistente di sessione */
+  const t = document.getElementById('sessToast');
+  if(t){ t.textContent = `⚖️ ${kg} kg salvato`; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2200); }
+}
+
+/* ── #16 Share Instagram Stories ── */
+async function shareInstagram(){
+  const canvas = window._shareCardCanvas;
+  if(!canvas){ /* genera prima la card se non è ancora stata generata */ await shareSession(); return; }
+  canvas.toBlob(async blob => {
+    const file = new File([blob], 'fiittracker.png', { type:'image/png' });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      try{ await navigator.share({ files:[file], title:'Il mio allenamento — FiitTracker™' }); return; }
+      catch(e){}
+    }
+    /* Fallback: scarica + toast istruzioni */
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url; a.download = 'fiittracker.png'; a.click();
+    URL.revokeObjectURL(url);
+    const t = document.getElementById('sessToast');
+    if(t){ t.textContent = '📱 Immagine salvata — aprila in Instagram Stories'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3500); }
+  }, 'image/png');
 }
 </script>
 </body>

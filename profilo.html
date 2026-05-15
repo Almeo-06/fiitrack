@@ -23,8 +23,9 @@ html,body{ height:100%; }
 body{
   background:var(--bg); color:var(--text); font-family:var(--font);
   max-width:480px; margin:0 auto;
-  min-height:100vh; min-height:100dvh; overscroll-behavior:none;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:80px;
+  height:100dvh; display:flex; flex-direction:column;
+  overscroll-behavior:none;
+  padding-top:env(safe-area-inset-top,0px);
 }
 
 /* sfondo */
@@ -36,10 +37,13 @@ body::before{
 }
 
 .scroll-area{
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
   padding:20px 16px calc(80px + env(safe-area-inset-bottom, 0px));
   position:relative; z-index:1;
   animation:pageIn .35s ease both;
 }
+.scroll-area::-webkit-scrollbar{ display:none; }
 @keyframes pageIn{ from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
 
 /* ── HEADER ── */
@@ -254,12 +258,15 @@ body::before{
 
 /* toast feedback */
 .toast{
-  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:var(--bg2); border:1px solid var(--green);
-  color:var(--green); padding:10px 20px;
-  border-radius:99px; font-size:13px; font-weight:500;
-  opacity:0; transition:all .3s; pointer-events:none; z-index:100;
-  white-space:nowrap;
+  position:fixed; bottom:calc(100px + env(safe-area-inset-bottom,0px)); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(0,230,118,.1); border:1px solid rgba(0,230,118,.35);
+  color:var(--green); padding:12px 22px;
+  border-radius:18px; font-size:13px; font-weight:500;
+  opacity:0; transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none; z-index:100; white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.35), 0 0 0 1px rgba(0,230,118,.08);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -317,6 +324,30 @@ html.theme-light .form-card{
   border-left:none !important; border-right:none !important; border-bottom:none !important;
 }
 /* ════ fine OPEN LAYOUT ════ */
+
+/* ══ BADGE ACHIEVEMENT ══ */
+.ach-section{
+  border-top:1px solid var(--border); padding:18px 0;
+}
+.ach-header{
+  font-family:var(--mono); font-size:10px; color:var(--textm);
+  letter-spacing:1.8px; text-transform:uppercase; margin-bottom:14px;
+}
+.ach-grid{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+}
+.ach-card{
+  text-align:center; padding:14px 8px; border-radius:14px;
+  border:1px solid var(--border); background:var(--bg2);
+  transition:border-color .2s, background .2s;
+}
+.ach-card.unlocked{
+  border-color:rgba(0,204,255,.25); background:rgba(0,204,255,.05);
+}
+.ach-card.locked{ opacity:.3; filter:grayscale(.8); }
+.ach-icon{ font-size:26px; margin-bottom:5px; }
+.ach-nome{ font-size:11px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.ach-desc{ font-size:10px; color:var(--textm); line-height:1.3; }
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
@@ -463,6 +494,12 @@ html.theme-light .form-card{
 
   <!-- Bottone salva principale -->
   <button class="save-btn-main" onclick="saveProfilo()">💾 Salva profilo</button>
+
+  <!-- Badge Achievement -->
+  <div class="ach-section">
+    <div class="ach-header">Traguardi</div>
+    <div class="ach-grid" id="achievementsGrid"></div>
+  </div>
 
   </div><!-- /wgt-container -->
 
@@ -655,6 +692,38 @@ function saveProfilo(){
   toast.classList.add('show');
   setTimeout(()=> toast.classList.remove('show'), 2200);
 }
+
+/* ══ Badge Achievement ══ */
+(function renderAchievements(){
+  const ACHIEVEMENTS = [
+    { id:'first_session',    icon:'🏋️', nome:'Prima fatica',     desc:'Completa il tuo primo allenamento',              check: d => (d.sessions||[]).length >= 1 },
+    { id:'sessions_5',      icon:'📅', nome:'5 sessioni',        desc:'Raggiungi 5 sessioni totali',                    check: d => (d.sessions||[]).length >= 5 },
+    { id:'sessions_30',     icon:'💎', nome:'Mese da campione',  desc:'30 sessioni completate',                         check: d => (d.sessions||[]).length >= 30 },
+    { id:'streak_7',        icon:'🔥', nome:'7 giorni di fuoco', desc:'Streak di 7 giorni consecutivi',                 check: d => (d.streak||0) >= 7 },
+    { id:'streak_30',       icon:'🌟', nome:'Mese di fuoco',     desc:'Streak di 30 giorni consecutivi',                check: d => (d.streak||0) >= 30 },
+    { id:'pr_first',        icon:'🏆', nome:'Primo record!',     desc:'Ottieni il tuo primo PR',                        check: d => Object.keys(d.personalRecords||{}).length >= 1 },
+    { id:'pr_5',            icon:'🥇', nome:'5 record',          desc:'5 PR diversi in libreria',                       check: d => Object.keys(d.personalRecords||{}).length >= 5 },
+    { id:'tonnellaggio_1k', icon:'⚡', nome:'Una tonnellata',    desc:'Solleva 1.000 kg in una sessione',               check: d => (d.sessions||[]).some(s=>(s.tonnellaggio||0)>=1000) },
+    { id:'weight_logged',   icon:'⚖️', nome:'Sulla bilancia',    desc:'Registra il tuo peso per la prima volta',        check: d => (d.weight_log||[]).length >= 1 },
+    { id:'shared_once',     icon:'📤', nome:'Mostralo al mondo', desc:'Condividi il tuo primo allenamento',             check: d => !!d.sharedOnce },
+    { id:'challenge_done',  icon:'🎯', nome:'Prima sfida',       desc:'Completa la tua prima sfida',                    check: d => (d.sfide||[]).some(s=>s.done) },
+    { id:'gps_first',       icon:'📍', nome:'Prima uscita GPS',  desc:'Completa una sessione con tracciamento GPS',     check: d => (d.sessions||[]).some(s=>(s.km||0)>0) },
+  ];
+
+  try{
+    const d   = JSON.parse(localStorage.getItem(KEY) || '{}');
+    const el  = document.getElementById('achievementsGrid');
+    if(!el) return;
+    el.innerHTML = ACHIEVEMENTS.map(a => {
+      const ok = a.check(d);
+      return `<div class="ach-card ${ok?'unlocked':'locked'}" title="${ok?a.desc:'???'}">
+        <div class="ach-icon">${a.icon}</div>
+        <div class="ach-nome">${a.nome}</div>
+        <div class="ach-desc">${ok ? a.desc : '???'}</div>
+      </div>`;
+    }).join('');
+  } catch(e){}
+})();
 </script>
 <script src="widgetLayout.js"></script>
 </body>

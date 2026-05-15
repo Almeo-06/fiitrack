@@ -74,6 +74,28 @@ html.theme-light .tab-item.on{ color:var(--a1); }
   padding-bottom: calc(var(--tab-bar-h, calc(88px + var(--safe-b, env(safe-area-inset-bottom, 0px)))) + 24px) !important;
 }
 
+/* ── Glassmorphism sugli sheet ── */
+.glass-sheet{
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(6,13,26,0.84) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+}
+html.theme-light .glass-sheet{
+  background: rgba(240,247,255,0.84) !important;
+  border: 1px solid rgba(0,102,221,0.15) !important;
+}
+
+/* ── Illustrazione empty state globale ── */
+.ft-empty{
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  padding:28px 20px; text-align:center;
+}
+.ft-empty svg{ opacity:.55; }
+.ft-empty-title{ font-size:14px; font-weight:500; color:var(--text); }
+.ft-empty-sub{ font-size:12px; color:var(--textm); line-height:1.55; max-width:240px; }
+.ft-empty-cta{ display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:9px 18px; border-radius:999px; background:linear-gradient(135deg,var(--a1),var(--a2)); color:#fff; font-size:12px; font-weight:600; border:none; cursor:pointer; font-family:var(--font); }
+
 /* ── prefers-reduced-motion — base ── */
 @media (prefers-reduced-motion: reduce) {
   .tab-item.on::after{ transition: none; }

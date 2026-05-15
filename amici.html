@@ -395,63 +395,167 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 }
 
 /* ── FEED CARD ── */
+/* ════════════════════════════════════════════
+   FEED CARD v2 — premium gradient banner
+════════════════════════════════════════════ */
 .feed-card{
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:16px; padding:14px 16px; margin-bottom:10px;
+  background:var(--bg2);
+  border:1px solid rgba(0,136,255,.18);
+  border-radius:20px; overflow:hidden; margin-bottom:12px;
+  box-shadow:0 4px 24px rgba(0,0,0,.4), 0 0 0 1px rgba(0,136,255,.05);
 }
-.feed-card-top{
-  display:flex; align-items:center; gap:10px; margin-bottom:12px;
+/* ── Banner con mesh gradient ── */
+.fc-banner{
+  position:relative; padding:14px 16px 16px; overflow:hidden;
+  background:
+    radial-gradient(ellipse 90% 120% at 110% -10%, rgba(0,136,255,.26) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 80%  at -10% 110%, rgba(0,204,255,.13) 0%, transparent 60%),
+    var(--bg2);
 }
-.feed-av{
-  width:36px; height:36px; border-radius:50%;
-  background:rgba(var(--a1-rgb),.15); border:1.5px solid rgba(var(--a1-rgb),.3);
+.feed-card.type-run .fc-banner{
+  background:
+    radial-gradient(ellipse 90% 120% at 110% -10%, rgba(0,136,255,.20) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 80%  at -10% 110%, rgba(0,204,255,.11) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60%  at  50% 80%,  rgba(0,230,118,.08) 0%, transparent 55%),
+    var(--bg2);
+}
+.feed-card.type-bike .fc-banner{
+  background:
+    radial-gradient(ellipse 90% 120% at 110% -10%, rgba(0,136,255,.20) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 80%  at -10% 110%, rgba(0,204,255,.11) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60%  at  50% 80%,  rgba(255,140,0,.06) 0%, transparent 55%),
+    var(--bg2);
+}
+/* linee diagonali decorative */
+.fc-banner::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(
+    -48deg,
+    transparent 0px, transparent 22px,
+    rgba(0,204,255,.022) 22px, rgba(0,204,255,.022) 23px
+  );
+}
+/* top edge highlight */
+.fc-banner::after{
+  content:''; position:absolute; top:0; left:15%; right:15%; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(0,204,255,.48), transparent);
+  pointer-events:none;
+}
+/* header row */
+.fc-header{
+  display:flex; align-items:center; gap:10px; margin-bottom:14px;
+  position:relative; z-index:1;
+}
+.fc-av{
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  background:rgba(0,136,255,.22); border:1.5px solid rgba(0,204,255,.35);
   display:flex; align-items:center; justify-content:center;
-  font-size:15px; font-weight:600; color:var(--a2); flex-shrink:0;
+  font-size:13px; font-weight:700; color:var(--a2); overflow:hidden;
 }
-.feed-name{ font-size:13px; font-weight:600; color:var(--text); }
+.fc-av img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.fc-meta{ flex:1; min-width:0; }
+.feed-name{ font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:5px; }
 .feed-time{ font-size:10px; color:var(--textm); font-family:var(--mono); margin-top:1px; }
-.feed-wo-name{
-  font-size:15px; font-weight:600; color:var(--text); margin-bottom:8px;
+.fc-header-right{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.fc-type-badge{
+  font-size:10px; font-weight:500; color:rgba(0,204,255,.75);
+  font-family:var(--mono); letter-spacing:.5px; text-transform:uppercase;
 }
-.feed-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
-.feed-chip{
-  background:var(--bg3); border:1px solid var(--border);
-  border-radius:99px; padding:4px 10px;
-  font-size:11px; color:var(--textm); font-family:var(--mono);
+.feed-card.type-run  .fc-type-badge{ color:rgba(0,230,118,.85); }
+.feed-card.type-bike .fc-type-badge{ color:rgba(255,160,60,.85); }
+.fc-streak-pill{
+  display:flex; align-items:center; gap:3px;
+  background:rgba(0,136,255,.14); border:1px solid rgba(0,136,255,.25);
+  border-radius:99px; padding:2px 7px;
+  font-size:10px; color:var(--a2); font-family:var(--mono);
 }
-.feed-pr-row{
+/* nome workout */
+.fc-wo-name{
+  font-size:17px; font-weight:600; color:#eaf6ff;
+  position:relative; z-index:1; line-height:1.25;
+}
+/* ── Stats strip ── */
+.fc-stats{
+  display:flex; align-items:stretch;
+  border-top:1px solid rgba(255,255,255,.055);
+  border-bottom:1px solid rgba(255,255,255,.055);
+  background:rgba(255,255,255,.022);
+}
+.fc-stat{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:10px 6px; gap:2px; min-width:0;
+}
+.fc-stat-val{ font-size:15px; font-weight:600; color:var(--text); line-height:1; white-space:nowrap; }
+.fc-stat-lbl{ font-size:9px; color:var(--textm); font-family:var(--mono); text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+.fc-stat-div{ width:1px; background:rgba(255,255,255,.07); align-self:stretch; flex-shrink:0; }
+/* ── PR row ── */
+.fc-pr{
   display:flex; align-items:center; gap:6px;
-  background:rgba(255,170,0,.07); border:1px solid rgba(255,170,0,.2);
-  border-radius:8px; padding:7px 10px; margin-top:8px;
-  font-size:11px; color:#ffaa00;
+  background:rgba(255,170,0,.06); border-top:1px solid rgba(255,170,0,.15);
+  padding:9px 16px; font-size:11px; color:#ffaa00; font-weight:500;
 }
+/* ── Actions ── */
+.fc-actions{
+  display:flex; align-items:center; gap:6px;
+  padding:9px 12px 9px 10px;
+}
+/* ── Empty state ── */
 .feed-empty{
   text-align:center; padding:40px 20px;
   color:var(--textm); font-size:13px; line-height:1.8;
 }
-.feed-av img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.feed-actions{
-  display:flex; align-items:center; gap:8px; margin-top:10px;
-  padding-top:10px; border-top:1px solid var(--border);
+/* ── Me badge ── */
+.fc-me-badge{
+  font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.8px;
+  background:rgba(0,136,255,.2); border:1px solid rgba(0,136,255,.3);
+  color:var(--a2); border-radius:4px; padding:1px 5px; line-height:1.4;
 }
 /* ── LIKE AVATARS ── */
 .like-avatars{
-  display:flex; align-items:center; margin-left:auto;
-  cursor:pointer; padding:4px 2px;
+  display:flex; align-items:center; cursor:pointer; padding:3px 4px;
+  border-radius:99px; transition:background .15s;
 }
+.like-avatars:hover{ background:rgba(255,255,255,.05); }
 .like-av{
   width:22px; height:22px; border-radius:50%;
   border:2px solid var(--bg2); margin-left:-6px;
   overflow:hidden; background:rgba(var(--a1-rgb),.2);
   display:flex; align-items:center; justify-content:center;
-  font-size:10px; font-weight:700; color:var(--a2); flex-shrink:0;
+  font-size:9px; font-weight:700; color:var(--a2); flex-shrink:0;
 }
 .like-av:first-child{ margin-left:0; }
 .like-av img{ width:100%; height:100%; object-fit:cover; }
-.like-av-more{
-  background:var(--bg3); color:var(--textm);
-  font-size:10px; font-family:var(--mono);
+.like-av-more{ background:var(--bg3); color:var(--textm); font-size:9px; font-family:var(--mono); }
+/* like button */
+.feed-like-btn{
+  display:flex; align-items:center; gap:5px;
+  background:none; border:none; padding:5px 8px; border-radius:99px;
+  cursor:pointer; font-family:var(--font); transition:background .15s, transform .1s;
 }
+.feed-like-btn:active{ transform:scale(.9); background:rgba(255,85,119,.07); }
+.feed-like-btn .like-svg path{
+  fill:none; stroke:var(--textm); stroke-width:1.8;
+  stroke-linejoin:round; stroke-linecap:round; transition:fill .15s, stroke .15s;
+}
+.feed-like-btn.liked .like-svg path{ fill:#ff5577; stroke:#ff5577; }
+.like-count{ font-size:12px; color:var(--textm); font-family:var(--mono); transition:color .15s; }
+.feed-like-btn.liked .like-count{ color:var(--text); }
+/* delete button */
+.feed-del-btn{
+  margin-left:auto; background:none; border:none; cursor:pointer;
+  padding:6px; border-radius:8px; opacity:.3; transition:opacity .15s, background .15s;
+  display:flex; align-items:center;
+}
+.feed-del-btn:hover{ opacity:.65; background:rgba(255,68,85,.08); }
+.feed-del-btn:active{ opacity:1; }
+.feed-del-btn .del-svg path,.feed-del-btn .del-svg polyline,.feed-del-btn .del-svg line{
+  fill:none; stroke:var(--text); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+}
+.feed-del-btn[data-confirm="1"]{ opacity:1; background:rgba(255,68,85,.12); }
+.feed-del-btn[data-confirm="1"] .del-svg path,
+.feed-del-btn[data-confirm="1"] .del-svg polyline,
+.feed-del-btn[data-confirm="1"] .del-svg line{ stroke:#ff4455; }
 /* ── LIKES MODAL ── */
 .likes-overlay{
   position:fixed; inset:0; z-index:80;
@@ -542,10 +646,14 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 
 /* toast */
 .toast{
-  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
-  background:rgba(10,20,40,.95); border:1px solid var(--border);
-  border-radius:10px; padding:10px 18px; font-size:13px; color:var(--text);
-  opacity:0; transition:all .3s; pointer-events:none; z-index:100; white-space:nowrap;
+  position:fixed; bottom:calc(90px + env(safe-area-inset-bottom,0px)); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(18,24,38,.92); border:1px solid rgba(255,255,255,.1);
+  border-radius:18px; padding:12px 22px; font-size:13px; font-weight:500; color:var(--text);
+  opacity:0; transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none; z-index:100; white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -626,10 +734,11 @@ html.theme-light body::before{ display:none; }
 .friend-toast{
   position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); left:50%;
   transform:translateX(-50%) translateY(-90px);
-  background:var(--bg2); border:1px solid var(--border);
-  border-radius:14px; padding:12px 16px;
-  display:flex; align-items:center; gap:10px;
-  box-shadow:0 8px 32px rgba(0,0,0,.35);
+  background:rgba(18,24,38,.92); border:1px solid rgba(255,255,255,.1);
+  border-radius:20px; padding:14px 18px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
   z-index:999; max-width:340px; width:calc(100% - 32px);
   transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   pointer-events:none;
@@ -2211,38 +2320,55 @@ function _fmtDur(sec){
 function _renderFeedCard(post){
   const myUid    = _auth.currentUser?.uid || '';
   const initials = (post.displayName||'?')[0].toUpperCase();
-  const prsHtml  = (post.prs||[]).map(pr =>
-    `<div class="feed-pr-row">🏆 Nuovo PR: ${pr.exName} — ${pr.weight}kg</div>`
-  ).join('');
-  const meBadge = post._isMe
-    ? `<span style="font-size:10px;font-family:var(--mono);color:var(--a2);background:rgba(var(--a1-rgb),.12);border:1px solid rgba(var(--a1-rgb),.25);border-radius:99px;padding:2px 8px;margin-left:6px;">Tu</span>`
+  const meBadge  = post._isMe
+    ? `<span class="fc-me-badge">Tu</span>`
     : '';
 
   const likes     = post.likes || [];
   const liked     = likes.includes(myUid);
   const likeCount = likes.length;
 
-  /* avatar autore (foto Firestore o Google, fallback iniziali) */
-  const authorCache = _userCache[post._ownerUid] || {};
-  const authorPhoto = authorCache.appPhotoDataUrl || authorCache.photoURL || post.photoURL;
+  /* tipo attività → classe CSS */
+  const typeClass = post.type === 'run' ? 'type-run' : post.type === 'bike' ? 'type-bike' : '';
+  const typeLabel = {gym:'GYM', run:'RUN', bike:'BIKE', other:'SPORT'}[post.type] || 'SPORT';
+
+  /* avatar autore */
+  const authorCache    = _userCache[post._ownerUid] || {};
+  const authorPhoto    = authorCache.appPhotoDataUrl || authorCache.photoURL || post.photoURL;
   const authorAvContent = authorPhoto
     ? `<img src="${authorPhoto}" alt="">`
     : initials;
 
+  /* stats da mostrare */
+  const stats = [];
+  if(post.duration)     stats.push({ val: _fmtDur(post.duration),          lbl: 'Durata' });
+  if(post.sets)         stats.push({ val: post.sets+'',                    lbl: 'Serie' });
+  if(post.tonnellaggio) stats.push({ val: post.tonnellaggio+'kg',          lbl: 'Volume' });
+  if(post.kcal)         stats.push({ val: post.kcal+'',                    lbl: 'kcal' });
+
+  const statsHtml = stats.map((s, i) => {
+    const div = i > 0 ? '<div class="fc-stat-div"></div>' : '';
+    return `${div}<div class="fc-stat"><div class="fc-stat-val">${s.val}</div><div class="fc-stat-lbl">${s.lbl}</div></div>`;
+  }).join('');
+
+  /* PR */
+  const prsHtml = (post.prs||[]).map(pr =>
+    `<div class="fc-pr">🏆 Nuovo PR: <strong>${pr.exName}</strong> — ${pr.weight}kg</div>`
+  ).join('');
+
   /* like avatars sovrapposti */
   let likeAvatarsHtml = '';
   if(likeCount > 0){
-    const visible = likes.slice(0, 4); /* mostra fino a 4 avatar */
-    const extra   = likeCount - visible.length;
+    const visible   = likes.slice(0, 4);
+    const extra     = likeCount - visible.length;
     const iconsHtml = visible.map(uid => {
-      const u = _userCache[uid] || {};
+      const u     = _userCache[uid] || {};
       const photo = u.appPhotoDataUrl || u.photoURL;
       return photo
         ? `<div class="like-av"><img src="${photo}" alt=""></div>`
         : `<div class="like-av">${(u.displayName||u.username||'?')[0].toUpperCase()}</div>`;
     }).join('');
     const extraHtml = extra > 0 ? `<div class="like-av like-av-more">+${extra}</div>` : '';
-    /* solo il proprietario del post può aprire il modal con i nomi */
     if(post._isMe){
       likeAvatarsHtml = `<div class="like-avatars" onclick="openLikesModal('${post.id}')" style="cursor:pointer">${iconsHtml}${extraHtml}</div>`;
     } else {
@@ -2252,7 +2378,7 @@ function _renderFeedCard(post){
 
   const delBtn = post._isMe
     ? `<button class="feed-del-btn" onclick="deletePost('${post._ownerUid}','${post.id}')" title="Elimina">
-        <svg class="del-svg" viewBox="0 0 24 24" width="16" height="16">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"/>
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
           <line x1="10" y1="11" x2="10" y2="17"/>
@@ -2262,28 +2388,27 @@ function _renderFeedCard(post){
        </button>`
     : '';
 
-  return `<div class="feed-card" id="fc-${post.id}">
-    <div class="feed-card-top">
-      <div class="feed-av">${authorAvContent}</div>
-      <div style="flex:1">
-        <div class="feed-name">${post.displayName||'Atleta'}${meBadge}</div>
-        <div class="feed-time">${_timeAgo(post.ts)}</div>
+  return `<div class="feed-card ${typeClass}" id="fc-${post.id}">
+    <div class="fc-banner">
+      <div class="fc-header">
+        <div class="fc-av">${authorAvContent}</div>
+        <div class="fc-meta">
+          <div class="feed-name">${post.displayName||'Atleta'}${meBadge}</div>
+          <div class="feed-time">${_timeAgo(post.ts)}</div>
+        </div>
+        <div class="fc-header-right">
+          <span class="fc-type-badge">${typeLabel}</span>
+        </div>
       </div>
+      <div class="fc-wo-name">${_typeIcon(post.type)} ${post.woName||'Allenamento'}</div>
     </div>
-    <div class="feed-wo-name">${_typeIcon(post.type)} ${post.woName||'Allenamento'}</div>
-    <div class="feed-chips">
-      ${post.duration     ? `<span class="feed-chip">⏱ ${_fmtDur(post.duration)}</span>` : ''}
-      ${post.sets         ? `<span class="feed-chip">📋 ${post.sets} serie</span>` : ''}
-      ${post.tonnellaggio ? `<span class="feed-chip">⚡ ${post.tonnellaggio}kg vol.</span>` : ''}
-      ${post.kcal         ? `<span class="feed-chip">🔥 ${post.kcal} kcal</span>` : ''}
-    </div>
+    ${statsHtml ? `<div class="fc-stats">${statsHtml}</div>` : ''}
     ${prsHtml}
-    <div class="feed-actions">
+    <div class="fc-actions">
       <button class="feed-like-btn${liked?' liked':''}"
         onclick="likePost('${post._ownerUid}','${post.id}',this)">
-        <svg class="like-svg" viewBox="0 0 24 24" width="18" height="18">
-          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-          <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+        <svg class="like-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
         ${likeCount > 0 ? `<span class="like-count">${likeCount}</span>` : ''}
       </button>

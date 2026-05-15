@@ -456,7 +456,7 @@ html.theme-light .streak-hero::before{ display:none; }
 .sheet-save-btn:active{ transform:scale(.97); }
 
 /* toast */
-.toast{ position:fixed; bottom:calc(80px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg3); border:1px solid rgba(var(--a1-rgb),.3); color:var(--text); padding:10px 20px; border-radius:10px; font-size:13px; font-weight:500; opacity:0; pointer-events:none; z-index:200; white-space:nowrap; transition:all .3s; }
+.toast{ position:fixed; bottom:calc(80px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(20px); background:rgba(18,24,38,.92); border:1px solid rgba(255,255,255,.1); color:var(--text); padding:12px 22px; border-radius:18px; font-size:13px; font-weight:500; opacity:0; pointer-events:none; z-index:200; white-space:nowrap; transition:opacity .25s, transform .25s cubic-bezier(.34,1.56,.64,1); box-shadow:0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
 /* giorno saltato cliccabile */
@@ -621,6 +621,22 @@ html.theme-light .month-stats{
   border-top:1px solid var(--border) !important;
 }
 /* ════ fine OPEN LAYOUT ════ */
+
+/* ══ VOLUME SETTIMANALE ══ */
+.week-vol-section{
+  border-top:1px solid var(--border); padding:18px 0 4px;
+}
+.wv-header{
+  font-family:var(--mono); font-size:10px; color:var(--textm);
+  letter-spacing:1.8px; text-transform:uppercase; margin-bottom:14px;
+}
+.wv-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.wv-cell{ text-align:center; }
+.wv-val{
+  font-size:20px; font-weight:700; color:var(--text);
+  font-family:var(--mono); line-height:1;
+}
+.wv-sub{ font-size:11px; color:var(--textm); margin-top:3px; }
 </style>
 <script>
 (function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
@@ -704,6 +720,25 @@ html.theme-light .month-stats{
     </div>
     <div id="storicoSessWrap" style="overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.4,0,.2,1);">
       <div style="padding-top:12px;" id="storicoSessList"></div>
+    </div>
+  </div>
+
+  <!-- Volume settimanale aggregato -->
+  <div class="week-vol-section" id="weekVolSection">
+    <div class="wv-header">Questa settimana</div>
+    <div class="wv-grid">
+      <div class="wv-cell">
+        <div class="wv-val" id="wvSess" style="color:var(--a2)">0</div>
+        <div class="wv-sub">sessioni</div>
+      </div>
+      <div class="wv-cell">
+        <div class="wv-val" id="wvTon" style="color:var(--a1)">0</div>
+        <div class="wv-sub">kg tonnellaggio</div>
+      </div>
+      <div class="wv-cell">
+        <div class="wv-val" id="wvDelta" style="color:var(--textm)">—</div>
+        <div class="wv-sub">vs sett. scorsa</div>
+      </div>
     </div>
   </div>
 
@@ -1319,7 +1354,16 @@ function renderStoricoSessioni() {
   el.innerHTML = '';
 
   if (!sessions.length) {
-    el.innerHTML = '<div class="storico-empty">Nessun allenamento ancora</div>';
+    el.innerHTML = `<div class="ft-empty">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <rect x="10" y="8" width="36" height="40" rx="6" stroke="var(--a1)" stroke-width="2"/>
+        <path d="M18 20h20M18 28h14M18 36h8" stroke="var(--a2)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M34 6v6M22 6v6" stroke="var(--border)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="ft-empty-title">Nessun allenamento ancora</div>
+      <div class="ft-empty-sub">Completa la tua prima sessione per vedere lo storico qui.</div>
+      <button class="ft-empty-cta" onclick="location.href='scegli.html'">Inizia ora →</button>
+    </div>`;
     refreshStoricoSessHeight();
     return;
   }
@@ -1958,6 +2002,52 @@ function renderPRChart(){
 
   area.innerHTML = `<div class="pr-chart-wrap">${cols}</div>`;
 }
+
+/* ══ Volume settimanale ══ */
+(function renderWeekVol(){
+  try{
+    const KEY   = 'fittrack_v4';
+    const d     = JSON.parse(localStorage.getItem(KEY) || '{}');
+    const sess  = d.sessions || [];
+    const now   = new Date();
+
+    function monOf(offsetWeeks){
+      const m = new Date(now);
+      m.setDate(now.getDate() - ((now.getDay()+6)%7) + offsetWeeks * 7);
+      m.setHours(0,0,0,0);
+      return m;
+    }
+
+    function stats(from, to){
+      const ss = sess.filter(s => { const dt = new Date(s.date+'T12:00'); return dt >= from && dt < to; });
+      const ton = ss.reduce((a, s) => {
+        const t = s.tonnellaggio || (s.exsCompleted||[]).reduce((a2,ex)=>
+          a2+(ex.sets_data||[]).reduce((a3,set)=>a3+((set.kg||0)*(set.reps||0)),0), 0);
+        return a + t;
+      }, 0);
+      return { count: ss.length, ton: Math.round(ton) };
+    }
+
+    const thisMon  = monOf(0);
+    const nextMon  = monOf(1);
+    const prevMon  = monOf(-1);
+    const curr     = stats(thisMon, nextMon);
+    const prev     = stats(prevMon, thisMon);
+
+    document.getElementById('wvSess').textContent = curr.count;
+    document.getElementById('wvTon').textContent  = curr.ton.toLocaleString('it-IT');
+
+    const dEl = document.getElementById('wvDelta');
+    if(prev.ton > 0){
+      const pct = Math.round((curr.ton - prev.ton) / prev.ton * 100);
+      dEl.textContent   = pct >= 0 ? `↑ ${pct}%` : `↓ ${Math.abs(pct)}%`;
+      dEl.style.color   = pct >= 0 ? 'var(--green)' : '#e05555';
+    } else {
+      dEl.textContent   = curr.ton > 0 ? '↑ nuovo' : '—';
+      dEl.style.color   = 'var(--textm)';
+    }
+  } catch(e){}
+})();
 </script>
 <script src="tutorial.js"></script>
 <script src="widgetLayout.js"></script>

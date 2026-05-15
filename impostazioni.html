@@ -51,17 +51,9 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .sec-icon{ font-size:18px; flex-shrink:0; }
 .sec-title{ font-size:14px; font-weight:500; color:var(--text); flex:1; }
 .sec-subtitle{ font-size:11px; color:var(--textm); margin-top:1px; }
-.sec-arrow{
-  font-size:14px; color:var(--textm);
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-  flex-shrink:0;
-}
-.sec-arrow.open{ transform:rotate(90deg); }
-.sec-body{
-  overflow:hidden;
-  max-height:0;
-  transition:max-height .35s cubic-bezier(.4,0,.2,1);
-}
+.sec-arrow{ display:none; }
+.sec-body{ overflow:visible; max-height:none; }
+.sec-header{ cursor:default; pointer-events:none; }
 .sec-inner{ padding:0 16px 16px; border-top:1px solid var(--border); padding-top:14px; }
 
 /* ── RIGHE IMPOSTAZIONE ── */
@@ -264,6 +256,16 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 /* ── TIME INPUT ── */
 .time-input{ background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:7px 11px; color:var(--text); font-family:var(--mono); font-size:13px; outline:none; cursor:pointer; transition:border-color .15s; }
 .time-input:focus{ border-color:var(--a1); }
+.workout-reminder-wrap{ width:100%; padding-left:36px; }
+.day-pills-row{ display:flex; gap:6px; flex-wrap:wrap; }
+.day-pill{
+  padding:5px 10px; border-radius:20px; border:1px solid var(--border);
+  background:var(--bg3); color:var(--textm); font-size:12px;
+  font-family:var(--font); cursor:pointer; transition:all .2s;
+}
+.day-pill.active{
+  border-color:var(--a1); background:rgba(0,204,255,.1); color:var(--a1);
+}
 /* Forza i colori del picker in dark mode su Chrome/Firefox */
 .time-input::-webkit-calendar-picker-indicator{ filter:invert(1) opacity(.5); cursor:pointer; }
 
@@ -338,7 +340,7 @@ body::before{
 /* tab bar */
 
 /* toast */
-.toast{ position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(0,230,118,.15); border:1px solid rgba(0,230,118,.3); border-radius:10px; padding:10px 18px; font-size:13px; color:var(--green); white-space:nowrap; z-index:30; display:none; }
+.toast{ position:fixed; bottom:calc(90px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(8px); background:rgba(0,230,118,.1); border:1px solid rgba(0,230,118,.35); border-radius:18px; padding:12px 22px; font-size:13px; font-weight:500; color:var(--green); white-space:nowrap; z-index:30; display:none; box-shadow:0 8px 32px rgba(0,0,0,.35), 0 0 0 1px rgba(0,230,118,.08); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
 
 /* ── PRESET SHEET ── */
 .preset-overlay{
@@ -588,42 +590,6 @@ html.theme-light .section{
     </div>
   </div>
 
-  <!-- ── 2. I MIEI ALLENAMENTI ── -->
-  <div class="section" id="sec1">
-    <div class="sec-header" onclick="toggleSec(1)">
-      <div class="sec-icon">🏋️</div>
-      <div>
-        <div class="sec-title">I miei allenamenti</div>
-        <div class="sec-subtitle" id="woSubtitle">0 allenamenti</div>
-      </div>
-      <div class="sec-arrow" id="arr1">›</div>
-    </div>
-    <div class="sec-body" id="body1">
-      <div class="sec-inner">
-        <div class="wo-list" id="woList"></div>
-        <div style="display:flex;gap:8px;">
-          <button class="add-wo-btn" style="flex:1;" onclick="openEditor(-1)">+ Nuovo</button>
-          <button class="add-wo-btn" style="flex:1;border-color:rgba(var(--a1-rgb),.3);color:var(--a1);" onclick="openPreset()">📋 Da modello</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 3. ASSEGNA AI GIORNI ── -->
-  <div class="section" id="sec2">
-    <div class="sec-header" onclick="toggleSec(2)">
-      <div class="sec-icon">📅</div>
-      <div>
-        <div class="sec-title">Assegna ai giorni</div>
-        <div class="sec-subtitle">Quale allenamento fare ogni giorno</div>
-      </div>
-      <div class="sec-arrow" id="arr2">›</div>
-    </div>
-    <div class="sec-body" id="body2">
-      <div class="sec-inner" id="assignInner"></div>
-    </div>
-  </div>
-
   <!-- ── 4. APP ── -->
   <div class="section" id="sec3">
     <div class="sec-header" onclick="toggleSec(3)">
@@ -648,6 +614,33 @@ html.theme-light .section{
             <button class="step-btn" onclick="stepReminder(1)">+</button>
           </div>
         </div>
+
+        <!-- Reminder allenamento per giorno e ora -->
+        <div class="set-row" style="flex-direction:column;align-items:flex-start;gap:12px;padding-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;width:100%">
+            <div class="set-row-icon">⏰</div>
+            <div class="set-row-info">
+              <div class="set-row-name">Reminder allenamento</div>
+              <div class="set-row-sub">Scegli i giorni e l'orario</div>
+            </div>
+          </div>
+          <div class="workout-reminder-wrap" id="workoutReminderWrap">
+            <div class="day-pills-row" id="dayPillsRow">
+              <button class="day-pill" data-day="0" onclick="toggleReminderDay(this)">Lun</button>
+              <button class="day-pill" data-day="1" onclick="toggleReminderDay(this)">Mar</button>
+              <button class="day-pill" data-day="2" onclick="toggleReminderDay(this)">Mer</button>
+              <button class="day-pill" data-day="3" onclick="toggleReminderDay(this)">Gio</button>
+              <button class="day-pill" data-day="4" onclick="toggleReminderDay(this)">Ven</button>
+              <button class="day-pill" data-day="5" onclick="toggleReminderDay(this)">Sab</button>
+              <button class="day-pill" data-day="6" onclick="toggleReminderDay(this)">Dom</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+              <span style="font-size:12px;color:var(--textm);font-family:var(--mono);">Ore</span>
+              <input type="time" id="workoutReminderTime" class="time-input" value="18:30"
+                     onchange="saveWorkoutReminder()">
+            </div>
+          </div>
+        </div>
         <div class="set-row" style="border-bottom:none;padding-bottom:4px;">
           <div class="set-row-icon">🎨</div>
           <div class="set-row-info">
@@ -669,31 +662,6 @@ html.theme-light .section{
             <span>Chiaro</span>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── 5. FEEDBACK ── -->
-  <div class="section" id="sec5">
-    <div class="sec-header" onclick="toggleSec(5)">
-      <div class="sec-icon">💬</div>
-      <div>
-        <div class="sec-title">Feedback</div>
-        <div class="sec-subtitle">Aiutaci a migliorare l'app</div>
-      </div>
-      <div class="sec-arrow" id="arr5">›</div>
-    </div>
-    <div class="sec-body" id="body5">
-      <div class="sec-inner">
-        <div style="font-size:12px;color:var(--textm);margin-bottom:14px;line-height:1.6;">
-          Hai trovato un bug o hai un suggerimento? Scrivici — leggiamo tutto.
-        </div>
-        <button class="fb-open-btn" onclick="openFeedback()">
-          ✏️ Scrivi un feedback
-        </button>
-        <button class="backup-btn" onclick="restartTutorial()" style="margin-top:10px;width:100%;justify-content:center;">
-          🎓 Ripristina tutorial
-        </button>
       </div>
     </div>
   </div>
@@ -896,13 +864,15 @@ html.theme-light .section{
     </div>
   </div>
 
-  <!-- ── LEGALE ── -->
-  <div style="text-align:center; padding:8px 0 4px; display:flex; justify-content:center; gap:20px;">
-    <a href="privacy.html" style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Privacy Policy</a>
-    <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini di utilizzo</a>
+  <!-- ── LINK PIÈ DI PAGINA ── -->
+  <div style="text-align:center; padding:16px 0 4px; display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+    <button onclick="openFeedback()" style="background:none;border:none;font-family:var(--mono);font-size:11px;color:var(--textm);cursor:pointer;letter-spacing:.5px;padding:0;">💬 Feedback</button>
+    <button onclick="restartTutorial()" style="background:none;border:none;font-family:var(--mono);font-size:11px;color:var(--textm);cursor:pointer;letter-spacing:.5px;padding:0;">🎓 Tutorial</button>
+    <a href="privacy.html" style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Privacy</a>
+    <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini</a>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.38</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.47</p>
 
 </div>
 
@@ -1046,7 +1016,7 @@ function toggleSec(i){
 function refreshHeight(i){
   if(openSecs.has(i)){
     const body = document.getElementById('body'+i);
-    body.style.maxHeight = body.scrollHeight + 'px';
+    if(body) body.style.maxHeight = body.scrollHeight + 'px';
   }
 }
 
@@ -1111,7 +1081,8 @@ function setTheme(name){
 function renderWoList(){
   const el = document.getElementById('woList');
   const sub = document.getElementById('woSubtitle');
-  sub.textContent = `${data.workouts.length} allenament${data.workouts.length===1?'o':'i'}`;
+  if(!el) return;
+  if(sub) sub.textContent = `${data.workouts.length} allenament${data.workouts.length===1?'o':'i'}`;
 
   if(!data.workouts.length){
     el.innerHTML = `<div style="background:rgba(var(--a1-rgb),.06);border:1px dashed rgba(var(--a1-rgb),.3);border-radius:12px;padding:16px 14px;margin-bottom:12px;text-align:center;">
@@ -1166,6 +1137,7 @@ function deleteWo(i){
 /* ══ ASSEGNAZIONE GIORNI ══ */
 function renderAssign(){
   const el = document.getElementById('assignInner');
+  if(!el) return;
   const opts = ['<option value="">— Riposo —</option>',
     ...data.workouts.map(w=>`<option value="${w.id}">${w.name}</option>`)].join('');
 
@@ -2190,6 +2162,80 @@ async function sendFeedback(){
     btn.disabled = false;
     btn.textContent = '📤 Invia feedback';
     showToast('Errore invio — riprova');
+  }
+}
+
+/* ══ Reminder allenamento per giorno e ora ══ */
+let _reminderDays = [];
+let _reminderTimers = [];
+
+(function initWorkoutReminder(){
+  try{
+    const d = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    _reminderDays = d.workoutReminderDays || [];
+    const time    = d.workoutReminderTime || '18:30';
+    document.getElementById('workoutReminderTime').value = time;
+    _reminderDays.forEach(dayIdx => {
+      const btn = document.querySelector(`.day-pill[data-day="${dayIdx}"]`);
+      if(btn) btn.classList.add('active');
+    });
+  } catch(e){}
+})();
+
+function toggleReminderDay(btn){
+  const dayIdx = parseInt(btn.dataset.day);
+  if(_reminderDays.includes(dayIdx)){
+    _reminderDays = _reminderDays.filter(d => d !== dayIdx);
+    btn.classList.remove('active');
+  } else {
+    _reminderDays.push(dayIdx);
+    btn.classList.add('active');
+  }
+  saveWorkoutReminder();
+}
+
+function saveWorkoutReminder(){
+  try{
+    const time = document.getElementById('workoutReminderTime').value || '18:30';
+    const d    = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    d.workoutReminderDays = _reminderDays;
+    d.workoutReminderTime = time;
+    localStorage.setItem('fittrack_v4', JSON.stringify(d));
+    scheduleWorkoutReminders(_reminderDays, time);
+    showToast('⏰ Reminder salvato');
+  } catch(e){}
+}
+
+function scheduleWorkoutReminders(days, time){
+  /* annulla timer precedenti */
+  _reminderTimers.forEach(clearTimeout);
+  _reminderTimers = [];
+  if(!days.length || !time) return;
+  if(Notification.permission !== 'granted') return;
+
+  const [hh, mm] = time.split(':').map(Number);
+  const now = new Date();
+
+  for(let delta = 1; delta <= 7; delta++){
+    const candidate = new Date(now);
+    candidate.setDate(now.getDate() + delta);
+    candidate.setHours(hh, mm, 0, 0);
+    /* 0=dom, 1=lun ... nel JS; le nostre pill: 0=lun..6=dom */
+    const jsDow = candidate.getDay(); // 0=dom
+    const ourDow = jsDow === 0 ? 6 : jsDow - 1; // converti: dom→6, lun→0
+    if(days.includes(ourDow) && candidate > now){
+      const ms = candidate - now;
+      const t  = setTimeout(() => {
+        new Notification('FiitTracker™', {
+          body: `È ora di allenarti! 💪`,
+          icon: 'icons/icon-192.png',
+          badge: 'icons/icon-192.png'
+        });
+        /* rischedula per la settimana prossima */
+        scheduleWorkoutReminders(days, time);
+      }, ms);
+      _reminderTimers.push(t);
+    }
   }
 }
 </script>
