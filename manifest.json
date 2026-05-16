@@ -2,7 +2,7 @@
   "name": "FiiTrack - Il Tuo Progresso",
   "short_name": "FiiTrack",
   "description": "Traccia i tuoi allenamenti quotidiani con streak e recap settimanale",
-  "start_url": "./home.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#020810",

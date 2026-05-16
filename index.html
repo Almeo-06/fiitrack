@@ -2,9 +2,287 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=home.html">
-<link rel="canonical" href="home.html">
-<title>FiiTrack™</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FiitTrack</title>
+<meta name="theme-color" content="#020810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FiitTrack">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html, body{
+  width:100%; height:100%; height:100dvh;
+  background:#020810;
+  overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;
+  user-select:none;
+}
+
+/* ── GLOW CENTRALE ── */
+body::before{
+  content:'';
+  position:fixed; inset:0;
+  background:radial-gradient(ellipse 60% 55% at 50% 50%, rgba(var(--a1-rgb),.13), transparent 70%);
+  pointer-events:none;
+  animation:glowPulse 1.8s ease-out both;
+}
+@keyframes glowPulse{
+  0%  { opacity:0; transform:scale(.6); }
+  40% { opacity:1; }
+  100%{ opacity:.7; transform:scale(1); }
+}
+
+/* ── CONTENITORE ── */
+.splash{
+  position:relative;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:18px;
+  animation:splashExit .5s cubic-bezier(.4,0,1,1) 2.1s both;
+}
+@keyframes splashExit{
+  from{ opacity:1; transform:scale(1); }
+  to  { opacity:0; transform:scale(1.07); }
+}
+
+/* ── ANELLI SONAR ── */
+.rings{
+  position:absolute;
+  width:1px; height:1px;
+  top:50%; left:50%;
+  pointer-events:none;
+}
+.ring{
+  position:absolute;
+  border-radius:50%;
+  border:1.5px solid rgba(var(--a1-rgb),.7);
+  transform:translate(-50%,-50%) scale(0);
+  opacity:0;
+}
+.ring:nth-child(1){ width:100px; height:100px; animation:ringBurst 1.8s cubic-bezier(0,.4,.4,1) .05s both; }
+.ring:nth-child(2){ width:160px; height:160px; animation:ringBurst 1.8s cubic-bezier(0,.4,.4,1) .28s both; border-color:rgba(var(--a1-rgb),.45); }
+.ring:nth-child(3){ width:230px; height:230px; animation:ringBurst 1.8s cubic-bezier(0,.4,.4,1) .52s both; border-color:rgba(var(--a1-rgb),.22); }
+
+@keyframes ringBurst{
+  0%  { transform:translate(-50%,-50%) scale(.15); opacity:.9; }
+  100%{ transform:translate(-50%,-50%) scale(2.6); opacity:0; }
+}
+
+/* ── ICONA ── */
+.icon-wrap{
+  position:relative; z-index:2;
+  width:74px; height:74px;
+  border-radius:20px;
+  background:linear-gradient(145deg, rgba(var(--a1-rgb),.18), rgba(var(--a1-rgb),.06));
+  border:1px solid rgba(var(--a1-rgb),.3);
+  display:flex; align-items:center; justify-content:center;
+  animation:iconIn .6s cubic-bezier(.34,1.56,.64,1) .12s both;
+  box-shadow:0 0 40px rgba(var(--a1-rgb),.2), inset 0 1px 0 rgba(255,255,255,.07);
+}
+@keyframes iconIn{
+  from{ transform:scale(.3) rotate(-12deg); opacity:0; }
+  to  { transform:scale(1)  rotate(0deg);  opacity:1; }
+}
+.icon-inner{
+  font-size:34px;
+  animation:iconPop .4s cubic-bezier(.34,1.56,.64,1) .5s both;
+}
+@keyframes iconPop{
+  from{ transform:scale(.5); opacity:0; }
+  to  { transform:scale(1);  opacity:1; }
+}
+
+/* ── LOGO TESTO ── */
+.logo-wrap{
+  position:relative; z-index:2;
+  text-align:center;
+  animation:logoSlideUp .55s cubic-bezier(.34,1.4,.64,1) .35s both;
+}
+@keyframes logoSlideUp{
+  from{ transform:translateY(20px); opacity:0; }
+  to  { transform:translateY(0);    opacity:1; }
+}
+.logo-text{
+  font-size:38px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:-1.5px;
+  line-height:1;
+}
+.logo-text .accent{
+  background:linear-gradient(90deg, var(--a1), var(--a2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.logo-tm{
+  font-size:9px;
+  font-weight:500;
+  color:rgba(255,255,255,.3);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-top:5px;
+}
+
+/* ── TAGLINE ── */
+.tagline{
+  position:relative; z-index:2;
+  display:flex; align-items:center; gap:8px;
+  animation:tagUp .5s cubic-bezier(.25,1,.3,1) .65s both;
+}
+@keyframes tagUp{
+  from{ transform:translateY(12px); opacity:0; }
+  to  { transform:translateY(0);    opacity:1; }
+}
+.tagline span{
+  font-size:12px;
+  color:rgba(255,255,255,.4);
+  font-weight:500;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.tagline .dot{
+  width:3px; height:3px; border-radius:50%;
+  background:var(--a1);
+  flex-shrink:0;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{
+  position:fixed;
+  bottom:calc(48px + env(safe-area-inset-bottom,0px));
+  left:50%; transform:translateX(-50%);
+  width:88px; height:2px;
+  background:rgba(255,255,255,.08);
+  border-radius:2px;
+  overflow:hidden;
+  animation:tagUp .4s ease .8s both;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--a1), var(--a2));
+  border-radius:2px;
+  animation:fillBar 1.4s cubic-bezier(.4,0,.15,1) .7s forwards;
+  width:0;
+}
+@keyframes fillBar{
+  from{ width:0%; }
+  to  { width:100%; }
+}
+
+/* ── PARTICELLE ── */
+.particles{ position:fixed; inset:0; pointer-events:none; z-index:0; }
+.p{
+  position:absolute;
+  border-radius:50%;
+  background:var(--a1);
+  animation:floatUp var(--dur) ease-in var(--del) both;
+  opacity:0;
+}
+@keyframes floatUp{
+  0%  { opacity:0;   transform:translateY(0)     scale(1); }
+  12% { opacity:.55; }
+  100%{ opacity:0;   transform:translateY(-220px) scale(.2); }
+}
+
+/* ── LINEE ENERGIA (decorative) ── */
+.energy-lines{
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  animation:tagUp .6s ease .1s both;
+}
+.energy-lines svg{ width:100%; height:100%; }
+</style>
 </head>
-<body></body>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<svg class="energy-lines" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <line x1="0" y1="200" x2="390" y2="160" stroke="rgba(0,136,255,.05)" stroke-width="1"/>
+  <line x1="0" y1="640" x2="390" y2="680" stroke="rgba(0,204,255,.04)" stroke-width="1"/>
+  <line x1="60"  y1="0" x2="100" y2="844" stroke="rgba(0,136,255,.04)" stroke-width="1"/>
+  <line x1="290" y1="0" x2="320" y2="844" stroke="rgba(0,136,255,.03)" stroke-width="1"/>
+</svg>
+
+<div class="splash">
+  <div class="rings">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="icon-inner">⚡</div>
+  </div>
+
+  <div class="logo-wrap">
+    <div class="logo-text">Fiit<span class="accent">Track</span></div>
+    <div class="logo-tm">FiitTracker™</div>
+  </div>
+
+  <div class="tagline">
+    <span>Track</span>
+    <div class="dot"></div>
+    <span>Push</span>
+    <div class="dot"></div>
+    <span>Improve</span>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-fill"></div>
+</div>
+
+<script>
+/* ── Applica tema salvato prima del render ── */
+(function(){
+  var themes = {
+    blue:   { a1:'#0088ff', a2:'#00ccff', rgb:'0,136,255'   },
+    purple: { a1:'#7c3aed', a2:'#a855f7', rgb:'124,58,237'  },
+    light:  { a1:'#0066dd', a2:'#0099ff', rgb:'0,102,221'   }
+  };
+  try{
+    var d  = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
+    var tn = (d && d.theme) || 'blue';
+    var t  = themes[tn] || themes.blue;
+    var r  = document.documentElement;
+    r.style.setProperty('--a1',     t.a1);
+    r.style.setProperty('--a2',     t.a2);
+    r.style.setProperty('--a1-rgb', t.rgb);
+  } catch(e){
+    document.documentElement.style.setProperty('--a1',     '#0088ff');
+    document.documentElement.style.setProperty('--a2',     '#00ccff');
+    document.documentElement.style.setProperty('--a1-rgb', '0,136,255');
+  }
+})();
+
+/* ── Particelle floating ── */
+(function(){
+  var wrap = document.getElementById('particles');
+  var cols = [12,22,34,46,56,65,74,82,90,38,60];
+  cols.forEach(function(x){
+    var p = document.createElement('div');
+    p.className = 'p';
+    var size = 2 + Math.random() * 2.5;
+    p.style.width  = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left   = x + '%';
+    p.style.bottom = (5 + Math.random() * 25) + '%';
+    p.style.setProperty('--dur', (1.3 + Math.random() * 1) + 's');
+    p.style.setProperty('--del', (Math.random() * 1.1)      + 's');
+    wrap.appendChild(p);
+  });
+})();
+
+/* ── Redirect dopo animazione ── */
+setTimeout(function(){
+  location.replace('home.html');
+}, 2600);
+</script>
+
+</body>
 </html>

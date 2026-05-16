@@ -70,7 +70,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .ring-wrap{ position:relative; width:200px; height:200px; margin-bottom:20px; }
 .ring-svg{ width:200px; height:200px; transform:rotate(-90deg); }
 .ring-bg{ fill:none; stroke:var(--bg3); stroke-width:8; }
-.ring-fill{ fill:none; stroke:url(#rg); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset .15s linear; }
+.ring-fill{ fill:none; stroke:url(#rg); stroke-width:8; stroke-linecap:round; }
 .ring-time{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .ring-num{ font-family:var(--mono); font-size:52px; font-weight:500; color:var(--text); letter-spacing:-2px; line-height:1.15; }
 .ring-sec{ font-size:11px; color:var(--textm); margin-top:4px; }
@@ -1056,6 +1056,96 @@ html.theme-light .close-btn{
   padding:3px 8px; font-size:10px; color:#fff;
   font-family:var(--mono); pointer-events:none;
 }
+
+/* ══ PULSANTE LISTA HEADER ══ */
+.list-btn{
+  width:28px; height:28px; border-radius:50%; background:var(--bg3);
+  border:none; color:var(--textm); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.list-btn svg{ width:14px; height:14px; }
+
+/* ══ WORKOUT OVERVIEW ══ */
+.wo-ov-overlay{
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+.wo-ov-overlay.open{ opacity:1; pointer-events:auto; }
+.wo-ov-sheet{
+  width:100%; max-width:480px;
+  background:var(--bg2); border-radius:22px 22px 0 0;
+  border-top:1px solid var(--border);
+  padding:0 0 calc(20px + env(safe-area-inset-bottom,0px));
+  max-height:80vh; display:flex; flex-direction:column;
+  transform:translateY(100%); transition:transform .32s cubic-bezier(.4,0,.2,1);
+}
+.wo-ov-overlay.open .wo-ov-sheet{ transform:translateY(0); }
+.wo-ov-handle{ width:36px; height:4px; border-radius:2px; background:var(--border); margin:12px auto 0; flex-shrink:0; }
+.wo-ov-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px 12px; flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+.wo-ov-title{ font-size:14px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.wo-ov-count{ font-family:var(--mono); font-size:11px; color:var(--textm); }
+.wo-ov-close{
+  width:28px; height:28px; border-radius:50%; background:var(--bg3);
+  border:none; color:var(--textm); font-size:13px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.wo-ov-list{ overflow-y:auto; padding:4px 0; flex:1; }
+.wo-ov-list::-webkit-scrollbar{ width:0; }
+.wo-ov-item{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 20px; border-bottom:1px solid rgba(255,255,255,.04);
+  cursor:pointer; transition:background .12s;
+}
+.wo-ov-item:active{ background:rgba(255,255,255,.03); }
+.wo-ov-item.ov-done{ cursor:default; }
+.wo-ov-item.ov-current{
+  background:rgba(var(--a1-rgb),.06);
+  border-left:3px solid var(--a1);
+  cursor:default;
+}
+.wo-ov-num{
+  width:20px; height:20px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:600;
+  background:var(--bg3); color:var(--textm);
+}
+.wo-ov-item.ov-done .wo-ov-num{ background:rgba(0,230,118,.12); color:var(--green); font-size:13px; }
+.wo-ov-item.ov-current .wo-ov-num{ background:rgba(var(--a1-rgb),.15); color:var(--a1); }
+.wo-ov-icon{
+  width:36px; height:36px; border-radius:10px;
+  background:var(--bg3); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.wo-ov-item.ov-current .wo-ov-icon{ border-color:rgba(var(--a1-rgb),.3); }
+.wo-ov-item.ov-done .wo-ov-icon{ opacity:.5; }
+.wo-ov-info{ flex:1; min-width:0; }
+.wo-ov-name{ font-size:13px; font-weight:500; color:var(--text); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wo-ov-item.ov-done .wo-ov-name{ color:var(--textm); }
+.wo-ov-sets{ font-size:11px; color:var(--textm); font-family:var(--mono); }
+.wo-ov-state{ flex-shrink:0; display:flex; align-items:center; gap:6px; }
+.wo-ov-check{ color:var(--green); font-size:15px; }
+.wo-ov-current-pill{
+  font-size:10px; font-weight:600; color:var(--a1);
+  background:rgba(var(--a1-rgb),.12); border:1px solid rgba(var(--a1-rgb),.2);
+  border-radius:6px; padding:2px 8px; font-family:var(--mono); letter-spacing:.5px;
+  white-space:nowrap;
+}
+.wo-ov-skip-btn{
+  font-size:10px; font-weight:500; color:var(--textm);
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:4px 10px; cursor:pointer;
+  font-family:var(--font); white-space:nowrap;
+  transition:color .15s, border-color .15s;
+}
+.wo-ov-skip-btn:active{ color:var(--a2); border-color:rgba(var(--a1-rgb),.35); }
 </style>
 <script>
 (function(){try{
@@ -1148,6 +1238,11 @@ html.theme-light .close-btn{
       <div class="hdr-title" id="exTitle"></div>
       <div class="hdr-right">
         <span class="sess-timer" id="sessTimer">00:00</span>
+        <button class="list-btn" onclick="openWorkoutOverview()" title="Vista allenamento">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/>
+          </svg>
+        </button>
         <button class="close-btn" onclick="confirmEnd()">✕</button>
       </div>
     </div>
@@ -1249,7 +1344,14 @@ html.theme-light .close-btn{
   <div class="hdr">
     <div class="hdr-top">
       <div class="hdr-title" id="recTitle"></div>
-      <button class="close-btn" onclick="confirmEnd()">✕</button>
+      <div class="hdr-right">
+        <button class="list-btn" onclick="openWorkoutOverview()" title="Vista allenamento">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/>
+          </svg>
+        </button>
+        <button class="close-btn" onclick="confirmEnd()">✕</button>
+      </div>
     </div>
     <div class="prog-row">
       <div class="prog-ring-sm">
@@ -1870,7 +1972,7 @@ function toggleNote(){
 
 /* ── Timer esercizio a tempo ── */
 function startTimedEx(){
-  clearInterval(timedExInt);
+  cancelAnimationFrame(_timedRafId); _timedRafId = null;
   const ex = WORKOUT.exs[curEx];
   timedExSec = ex.reps;
 
@@ -1893,23 +1995,28 @@ function startTimedEx(){
     return `<div class="${cls}">${j<sd[curEx]?'✓':j+1}</div>`;
   }).join('');
 
-  updateTimedDisplay();
-  timedExInt = setInterval(()=>{
-    if(timedExSec <= 0){ clearInterval(timedExInt); onFineSerie(); return; }
-    timedExSec--;
-    updateTimedDisplay();
-  }, 1000);
+  cancelAnimationFrame(_timedRafId);
+  _timedTs = performance.now();
+  _timedRafLoop();
 }
 
-function updateTimedDisplay(){
-  const ex   = WORKOUT.exs[curEx];
-  const pct  = ex.reps > 0 ? timedExSec / ex.reps : 0;
-  const fill = document.getElementById('timedRingFill');
-  const num  = document.getElementById('timedRingNum');
-  if(fill) fill.style.strokeDashoffset = Math.max(0, CIRC * (1 - pct));
-  if(num)  num.textContent = timedExSec >= 60
-    ? Math.floor(timedExSec/60) + ':' + (timedExSec%60).toString().padStart(2,'0')
-    : timedExSec + 's';
+let _timedRafId = null, _timedTs = 0;
+function _timedRafLoop(){
+  const elapsed   = (performance.now() - _timedTs) / 1000;
+  const remaining = Math.max(0, timedExSec - elapsed);
+  const fillPct   = timedExSec > 0 ? remaining / timedExSec : 0;
+  const fill      = document.getElementById('timedRingFill');
+  const num       = document.getElementById('timedRingNum');
+  if(fill) fill.style.strokeDashoffset = Math.max(0, CIRC * (1 - fillPct));
+  if(num)  num.textContent = remaining >= 60
+    ? Math.floor(remaining/60) + ':' + Math.floor(remaining % 60).toString().padStart(2,'0')
+    : Math.ceil(remaining) + 's';
+  if(remaining > 0){
+    _timedRafId = requestAnimationFrame(_timedRafLoop);
+  } else {
+    _timedRafId = null;
+    onFineSerie();
+  }
 }
 
 /* ── Feedback stanchezza ── */
@@ -1952,6 +2059,14 @@ function startSessTimer(){
 
 /* ── Render esercizio ── */
 function renderEx(){
+  /* aggiorna sempre il cache — previene riferimenti null al primo avvio */
+  ['exTitle','exFill','exProgLbl','exCircle','exName','exSub',
+   'circuitBadge','circuitPos','seriesDots',
+   'inputWeight','inputReps','noteField','noteBtn','weightHint',
+   'exBodyWrap','screenTimedBody','nextCard','nextIcon','nextName','nextSets',
+   'recTitle','recFill','recProgLbl','rncCard','timedSeriesDots','ringNum','ringFill'
+  ].forEach(id=>{ EL[id] = document.getElementById(id); });
+  if(!EL.exTitle) return;   /* DOM non pronto — non accade in condizioni normali */
   const ex = WORKOUT.exs[curEx];
   const d  = sd[curEx];
   const _p = pct();
@@ -2034,7 +2149,7 @@ function renderEx(){
     EL.exBodyWrap.style.display      = '';
     EL.screenTimedBody.style.display = 'none';
     EL.nextCard.style.display        = '';
-    clearInterval(timedExInt);
+    cancelAnimationFrame(_timedRafId); _timedRafId = null;
   }
 
   const nx = WORKOUT.exs[curEx+1];
@@ -2058,7 +2173,7 @@ function renderEx(){
 function onFineSerie(){
   haptic([30]);               /* vibrazione breve — serie completata */
   _tickMomentum();            /* avanza la momentum bar */
-  clearInterval(timedExInt);  /* ferma timer a tempo se attivo */
+  cancelAnimationFrame(_timedRafId); _timedRafId = null; /* ferma timer rAF se attivo */
   lastCompletedEx = curEx;    /* salva PRIMA di qualsiasi routing */
   const ex = WORKOUT.exs[curEx];
 
@@ -2148,30 +2263,48 @@ function openRec(sec){
     ? `<div class="rnc-icon">${ftIcon(nx.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${nx.sets} serie · ${nx.reps} rep</div></div>`
     : `<div class="rnc-icon">${ftIcon(ex.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1} · ${ex.reps} rep</div></div>`;
 
-  updateRing();
   show('screenRec');
-  clearInterval(recInt);
-  recInt = setInterval(()=>{
-    if(recSec<=0){ clearInterval(recInt); skipRec(); return; }
-    recSec--; updateRing();
-  }, 1000);
+  cancelAnimationFrame(_recRafId);
+  _recTs = performance.now();
+  _recStartSec = recSec;
+  _recRafLoop();
 }
 
-function updateRing(){
-  EL.ringNum.textContent = fmt(recSec);
-  EL.ringFill.style.strokeDashoffset = Math.max(0, CIRC*(1-recSec/recMax));
+let _recRafId = null, _recTs = 0, _recStartSec = 0;
+function _recRafLoop(){
+  const elapsed   = (performance.now() - _recTs) / 1000;
+  const remaining = Math.max(0, _recStartSec - elapsed);
+  EL.ringNum.textContent             = fmt(Math.ceil(remaining));
+  EL.ringFill.style.strokeDashoffset = Math.max(0, CIRC * (1 - remaining / recMax));
+  if(remaining > 0){
+    _recRafId = requestAnimationFrame(_recRafLoop);
+  } else {
+    _recRafId = null;
+    skipRec();
+  }
 }
-function addSec(n){ recSec=Math.min(recSec+n,599); recMax=Math.max(recMax,recSec); updateRing(); }
+
+function addSec(n){
+  const elapsed   = (performance.now() - _recTs) / 1000;
+  const remaining = Math.max(0, _recStartSec - elapsed);
+  _recStartSec    = Math.min(remaining + n, 599);
+  _recTs          = performance.now();
+  recMax          = Math.max(recMax, _recStartSec);
+}
+
 function skipRec(){
   haptic([15]);
-  clearInterval(recInt);
+  cancelAnimationFrame(_recRafId);
+  _recRafId = null;
   if(afterExDone) curEx++;
   show('screenEx'); renderEx();
 }
 
 /* ══ FINE SESSIONE → SALVA E MOSTRA RIEPILOGO ══ */
 function endSession(){
-  clearInterval(sessInt); clearInterval(recInt);
+  clearInterval(sessInt);
+  cancelAnimationFrame(_recRafId); _recRafId = null;
+  cancelAnimationFrame(_timedRafId); _timedRafId = null;
   _releaseWakeLock();
   haptic([40, 20, 40, 20, 80]); /* 8. vibrazione celebrazione fine allenamento */
 
@@ -2871,8 +3004,8 @@ function _downloadCanvas(cv){
 /* ── Cleanup intervalli su uscita (bfcache / tasto indietro) ── */
 window.addEventListener('pagehide', ()=>{
   clearInterval(sessInt);
-  clearInterval(recInt);
-  clearInterval(timedExInt);
+  cancelAnimationFrame(_recRafId); _recRafId = null;
+  cancelAnimationFrame(_timedRafId); _timedRafId = null;
   clearTimeout(prBannerTimer);
   clearTimeout(_noteDebounce);
   clearTimeout(_kmDebounce);
@@ -2880,9 +3013,10 @@ window.addEventListener('pagehide', ()=>{
 });
 
 /* ── START ── */
-if(!_isGpsMode){
+if(!['run','bike'].includes(WORKOUT.type)){
   _initMomentum();
   startSessTimer();
+  show('screenEx');
   renderEx();
 }
 
@@ -2890,7 +3024,96 @@ if(!_isGpsMode){
 document.querySelectorAll('.fine-btn').forEach(btn=>{
   btn.addEventListener('pointerdown', e=>triggerRipple(btn, e));
 });
+
+/* ══════════════════════════════════════════════
+   WORKOUT OVERVIEW
+══════════════════════════════════════════════ */
+function openWorkoutOverview(){
+  if(typeof FtHaptic !== 'undefined') FtHaptic.tap();
+  _renderWoOverview();
+  document.getElementById('woOvOverlay').classList.add('open');
+}
+
+function closeWorkoutOverview(e){
+  if(e && e.target !== document.getElementById('woOvOverlay')) return;
+  document.getElementById('woOvOverlay').classList.remove('open');
+}
+
+function _renderWoOverview(){
+  const exs   = WORKOUT.exs;
+  const done  = exs.filter((_,i) => (sd[i]||0) >= exs[i].sets).length;
+  const rem   = exs.length - done;
+
+  document.getElementById('woOvTitle').textContent = WORKOUT.name || 'Allenamento';
+  document.getElementById('woOvCount').textContent =
+    `${done} completat${done===1?'o':'i'} · ${rem} rimanent${rem===1?'e':'i'}`;
+
+  document.getElementById('woOvList').innerHTML = exs.map((ex, i) => {
+    const seriesDone = sd[i] || 0;
+    const isCompleted = seriesDone >= ex.sets;
+    const isCurrent   = i === curEx && !isCompleted;
+    const stateClass  = isCompleted ? 'ov-done' : isCurrent ? 'ov-current' : '';
+    const numLabel    = isCompleted ? '✓' : i + 1;
+    const clickAttr   = (!isCompleted && !isCurrent) ? `onclick="jumpToEx(${i})"` : '';
+
+    let stateEl = '';
+    if(isCompleted)    stateEl = '<span class="wo-ov-check">✓</span>';
+    else if(isCurrent) stateEl = '<span class="wo-ov-current-pill">IN CORSO</span>';
+    else               stateEl = `<button class="wo-ov-skip-btn" onclick="event.stopPropagation();moveExToEnd(${i})">→ fine</button>`;
+
+    const repsLabel = ex.timed ? `${ex.reps}s` : `${ex.reps} rep`;
+
+    return `
+    <div class="wo-ov-item ${stateClass}" ${clickAttr}>
+      <div class="wo-ov-num">${numLabel}</div>
+      <div class="wo-ov-icon">${ftIcon(ex.iconKey||'altro')}</div>
+      <div class="wo-ov-info">
+        <div class="wo-ov-name">${ex.name}</div>
+        <div class="wo-ov-sets">${seriesDone}/${ex.sets} serie · ${repsLabel}</div>
+      </div>
+      <div class="wo-ov-state">${stateEl}</div>
+    </div>`;
+  }).join('');
+}
+
+function jumpToEx(idx){
+  if(idx <= curEx) return;
+  curEx = idx;
+  afterExDone = false;
+  closeWorkoutOverview();
+  show('screenEx');
+  renderEx();
+  if(typeof FtHaptic !== 'undefined') FtHaptic.light();
+}
+
+function moveExToEnd(idx){
+  if(idx <= curEx) return;
+  const [exItem] = WORKOUT.exs.splice(idx, 1);
+  WORKOUT.exs.push(exItem);
+  const [sdItem] = sd.splice(idx, 1);
+  sd.push(sdItem);
+  const [edItem] = exData.splice(idx, 1);
+  exData.push(edItem);
+  if(typeof FtHaptic !== 'undefined') FtHaptic.light();
+  _renderWoOverview();
+  renderEx(); /* aggiorna la next-card */
+}
 </script>
+
+<!-- ══ WORKOUT OVERVIEW ══ -->
+<div class="wo-ov-overlay" id="woOvOverlay" onclick="closeWorkoutOverview(event)">
+  <div class="wo-ov-sheet">
+    <div class="wo-ov-handle"></div>
+    <div class="wo-ov-head">
+      <div>
+        <div class="wo-ov-title" id="woOvTitle">Allenamento</div>
+        <div class="wo-ov-count" id="woOvCount"></div>
+      </div>
+      <button class="wo-ov-close" onclick="closeWorkoutOverview()">✕</button>
+    </div>
+    <div class="wo-ov-list" id="woOvList"></div>
+  </div>
+</div>
 
 <!-- ── Modale permesso notifiche ── -->
 <div id="notifPermOverlay" onclick="_npOverlayClick(event)">

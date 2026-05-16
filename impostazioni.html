@@ -872,7 +872,7 @@ html.theme-light .section{
     <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini</a>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.47</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.53</p>
 
 </div>
 
@@ -1933,16 +1933,19 @@ const _fbConfig = {
   messagingSenderId: "502254449477",
   appId:             "1:502254449477:web:0e38cddc20a8eb28ba442c"
 };
-const _fbApp = firebase.initializeApp(_fbConfig);
-const _db    = firebase.firestore();
+let _fbApp, _db, _auth;
+try {
+  _fbApp = firebase.initializeApp(_fbConfig);
+  _db    = firebase.firestore();
+  _auth  = firebase.auth();
+} catch(e){ console.warn('[FT] Firebase non disponibile:', e); }
 
 /* ── CLOUD SYNC ── */
-const _auth = firebase.auth();
 let _cloudUser = null;
 let _autoSyncInterval = null;
 let _storageListenerFn = null;
 
-_auth.onAuthStateChanged(function(user) {
+if(_auth) _auth.onAuthStateChanged(function(user) {
   _cloudUser = user;
   if (user) {
     document.getElementById('cloudLoggedOut').style.display = 'none';
@@ -2070,7 +2073,7 @@ function _setToggle(key, val){
 }
 
 /* carica privacy da Firestore quando l'utente è loggato */
-_auth.onAuthStateChanged(async function(user){
+if(_auth) _auth.onAuthStateChanged(async function(user){
   const loginMsg = document.getElementById('privacyLoginMsg');
   const toggles  = document.getElementById('privacyToggles');
   if(!user){ loginMsg.style.display=''; toggles.style.display='none'; return; }

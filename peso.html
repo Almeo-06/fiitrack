@@ -184,6 +184,8 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .chart-dot-cmp{ fill:#ffaa00; stroke:var(--bg2); stroke-width:2; cursor:pointer; transition:r .15s; }
 .chart-dot-cmp:hover{ r:6; }
 .chart-label{ font-family:var(--mono); font-size:10px; fill:var(--textm); text-anchor:middle; }
+.chart-ylabel{ font-family:var(--mono); font-size:10px; fill:var(--textm); text-anchor:end; dominant-baseline:middle; }
+.chart-gridline{ stroke:var(--border); stroke-width:1; }
 .chart-ylabel{ font-family:var(--mono); font-size:10px; fill:var(--textm); text-anchor:end; }
 .chart-gridline{ stroke:var(--border); stroke-width:1; }
 .chart-empty{ text-align:center; padding:40px 0; color:var(--textm); font-size:13px; }
@@ -446,6 +448,23 @@ html.theme-light .storico-card{
     </div>
   </div>
 
+  <!-- grafico -->
+  <div class="chart-card" id="wgt-chart">
+    <div class="chart-header">
+      <div class="card-title" style="margin-bottom:0"><div class="card-dot" style="background:var(--a2)"></div>Andamento peso</div>
+      <div class="chart-range" id="chartRange"></div>
+    </div>
+    <!-- selettore periodo -->
+    <div style="margin-bottom:14px;">
+      <select class="compare-sel" id="selMain" onchange="renderChart()" style="width:auto;min-width:120px;"></select>
+    </div>
+    <div class="chart-wrap">
+      <svg class="chart-svg" id="chartSvg" style="height:160px"></svg>
+      <div class="chart-tooltip" id="tooltip"></div>
+    </div>
+    <div class="chart-empty" id="chartEmpty" style="display:none">Aggiungi almeno 2 pesate per vedere il grafico</div>
+  </div>
+
   <!-- input pesata -->
   <div class="input-card" id="wgt-input">
     <div class="card-title"><div class="card-dot" style="background:var(--a1)"></div>Aggiungi pesata</div>
@@ -476,48 +495,7 @@ html.theme-light .storico-card{
         </div>
       </div>
     </div>
-    <button class="salva-btn" style="background:var(--bg3);border:1px solid var(--border);color:var(--textm);box-shadow:none;" onclick="saveMisure()">Salva misure</button>
-  </div>
-
-  <!-- grafico -->
-  <div class="chart-card" id="wgt-chart">
-    <div class="chart-header">
-      <div class="card-title" style="margin-bottom:0"><div class="card-dot" style="background:var(--a2)"></div>Andamento</div>
-      <div class="chart-range" id="chartRange"></div>
-    </div>
-    <!-- selettori confronto -->
-    <div class="compare-row">
-      <div class="compare-group">
-        <div class="compare-lbl">
-          <span class="compare-dot" style="background:var(--a2)"></span>
-          Periodo principale
-        </div>
-        <select class="compare-sel" id="selMain" onchange="renderChart()"></select>
-      </div>
-      <div class="compare-group">
-        <div class="compare-lbl">
-          <span class="compare-dot" style="background:#ffaa00"></span>
-          Confronta con
-        </div>
-        <select class="compare-sel" id="selCmp" onchange="renderChart()"></select>
-      </div>
-    </div>
-    <div class="chart-wrap">
-      <svg class="chart-svg" id="chartSvg" style="height:160px"></svg>
-      <div class="chart-tooltip" id="tooltip"></div>
-    </div>
-    <div class="chart-empty" id="chartEmpty" style="display:none">Aggiungi almeno 2 pesate per vedere il grafico</div>
-    <!-- legenda -->
-    <div class="chart-legend" id="chartLegend" style="display:none">
-      <div class="chart-legend-item">
-        <span class="legend-line" style="background:linear-gradient(90deg,var(--a1),var(--a2))"></span>
-        <span id="legendMain">—</span>
-      </div>
-      <div class="chart-legend-item">
-        <span class="legend-line-cmp"></span>
-        <span id="legendCmp">—</span>
-      </div>
-    </div>
+    <button class="salva-btn" id="btnSalvaMisure" style="background:var(--bg3);border:1px solid var(--border);color:var(--textm);box-shadow:none;transition:background .25s,color .25s,box-shadow .25s,border-color .25s;" onclick="saveMisure()">Salva misure</button>
   </div>
 
   <!-- storico -->
@@ -801,6 +779,28 @@ function onMisureChange(){
     document.getElementById('bmiCat').style.color  = color;
     document.getElementById('bmiVal').style.color  = color;
   }
+
+  // illumina il bottone se i valori sono cambiati rispetto a quelli salvati
+  const curH = parseFloat(document.getElementById('altezza').value);
+  const curG = parseFloat(document.getElementById('obiettivo').value);
+  const changed = (curH && curH !== data.height) || (curG && curG !== data.goalWeight);
+  const btn = document.getElementById('btnSalvaMisure');
+  if(changed){
+    btn.style.background   = 'linear-gradient(135deg,var(--a1),var(--a2))';
+    btn.style.color        = '#fff';
+    btn.style.borderColor  = 'transparent';
+    btn.style.boxShadow    = '0 0 16px rgba(var(--a1-rgb),.45)';
+  } else {
+    _resetMisureBtn(btn);
+  }
+}
+
+function _resetMisureBtn(btn){
+  btn = btn || document.getElementById('btnSalvaMisure');
+  btn.style.background  = 'var(--bg3)';
+  btn.style.color       = 'var(--textm)';
+  btn.style.borderColor = 'var(--border)';
+  btn.style.boxShadow   = 'none';
 }
 
 function saveMisure(){
@@ -810,6 +810,7 @@ function saveMisure(){
   if(g) data.goalWeight  = g;
   saveData(data);
   renderHero();
+  _resetMisureBtn();
   showToast('✓ Misure salvate');
 }
 
@@ -834,22 +835,16 @@ function monthLabel(key){ // "2025-03" → "Mar 2025"
 }
 
 function fillSelectors(){
-  const keys   = buildMonthOptions();
+  const keys    = buildMonthOptions();
   const selMain = document.getElementById('selMain');
-  const selCmp  = document.getElementById('selCmp');
   const prevMain = selMain.value;
-  const prevCmp  = selCmp.value;
 
-  const allOpt  = `<option value="all">Tutto</option>`;
+  const allOpt    = `<option value="all">Tutto</option>`;
   const monthOpts = keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');
-  const noneOpt  = `<option value="none">Nessuno</option>`;
 
   selMain.innerHTML = allOpt + monthOpts;
-  selCmp.innerHTML  = noneOpt + monthOpts;
 
-  // ripristina selezione precedente se ancora valida
   if(prevMain && [...selMain.options].some(o=>o.value===prevMain)) selMain.value = prevMain;
-  if(prevCmp  && [...selCmp.options].some(o=>o.value===prevCmp))   selCmp.value  = prevCmp;
 }
 
 function filterByKey(key){
@@ -888,21 +883,16 @@ function renderChart(){
 
   const svg   = document.getElementById('chartSvg');
   const empty = document.getElementById('chartEmpty');
-  const legend= document.getElementById('chartLegend');
   const log   = [...data.weightLog].reverse();
 
   const selMain = document.getElementById('selMain');
-  const selCmp  = document.getElementById('selCmp');
   const mainKey = selMain.value || 'all';
-  const cmpKey  = selCmp.value  || 'none';
 
   const ptsMain = filterByKey(mainKey);
-  const ptsCmp  = cmpKey !== 'none' ? filterByKey(cmpKey) : [];
 
   if(ptsMain.length < 2){
     svg.style.display   = 'none';
     empty.style.display = 'block';
-    legend.style.display= 'none';
     document.getElementById('chartRange').textContent = '';
     return;
   }
@@ -919,18 +909,16 @@ function renderChart(){
   svg.style.display   = 'block';
   empty.style.display = 'none';
 
-  // max 10 punti per serie
-  const pts  = ptsMain.slice(-10);
-  const ptsC = ptsCmp.length >= 2 ? ptsCmp.slice(-10) : [];
+  // max 10 punti
+  const pts = ptsMain.slice(-10);
 
   const W = _rawW;
   const H = 140;
-  const PAD = { top:12, right:12, bottom:28, left:36 };
+  const PAD = { top:12, right:12, bottom:28, left:40 };
   const iW  = W - PAD.left - PAD.right;
   const iH  = H - PAD.top  - PAD.bottom;
 
-  // scala Y unificata su entrambe le serie (filtra NaN/undefined per sicurezza)
-  const allWeights = [...pts.map(p=>p.kg), ...ptsC.map(p=>p.kg)].filter(v => isFinite(v));
+  const allWeights = pts.map(p=>p.kg).filter(v => isFinite(v));
   if(!allWeights.length){ svg.style.display='none'; empty.style.display='block'; return; }
   const minW = Math.min(...allWeights);
   const maxW = Math.max(...allWeights);
@@ -939,10 +927,8 @@ function renderChart(){
   const xScaleN = (i, n) => PAD.left + (n<=1 ? iW/2 : (i/(n-1))*iW);
   const yScale  = v => PAD.top + iH - ((v - minW) / range) * iH;
 
-  const coordsM = pts.map((p,i)=>({ x:xScaleN(i,pts.length),  y:yScale(p.kg), ...p }));
-  const coordsC = ptsC.map((p,i)=>({ x:xScaleN(i,ptsC.length), y:yScale(p.kg), ...p }));
+  const coordsM = pts.map((p,i)=>({ x:xScaleN(i,pts.length), y:yScale(p.kg), ...p }));
 
-  // etichette range (periodo principale)
   const first = pts[0].date.slice(5).replace('-','/');
   const last  = pts[pts.length-1].date.slice(5).replace('-','/');
   document.getElementById('chartRange').textContent = `${first} – ${last}`;
@@ -953,19 +939,17 @@ function renderChart(){
   const pathM  = smoothPath(coordsM);
   const bottom = (PAD.top + iH).toFixed(1);
   const areaM  = pathM + ` L${coordsM[coordsM.length-1].x.toFixed(1)},${bottom} L${coordsM[0].x.toFixed(1)},${bottom} Z`;
-  const pathC  = coordsC.length >= 2 ? smoothPath(coordsC) : '';
 
-  // y labels (3 valori)
-  const yLabels = [minW,(minW+maxW)/2,maxW].map(v=>({ y:yScale(v), val:v.toFixed(1) }));
-
-  // x labels (max 5, dalla serie principale)
-  const step   = Math.max(1,Math.floor(pts.length/5));
+  const step    = Math.max(1,Math.floor(pts.length/5));
   const xLabels = pts.filter((_,i)=>i===0||i===pts.length-1||i%step===0).map(p=>{
     const i=pts.indexOf(p);
     return { x:xScaleN(i,pts.length), lbl:p.date.slice(5).replace('-','/') };
   });
 
   const today = new Date().toISOString().split('T')[0];
+
+  /* 3 livelli asse Y: max, mid, min */
+  const yTicks = [maxW, (minW + maxW) / 2, minW];
 
   svg.innerHTML = `
     <defs>
@@ -979,33 +963,50 @@ function renderChart(){
         <stop offset="100%" stop-color="#0088ff" stop-opacity="0"/>
       </linearGradient>
     </defs>
-    <!-- area principale -->
-    <path class="chart-area" d="${areaM}"/>
-    <!-- linea confronto -->
-    ${pathC ? `<path class="chart-line-cmp" d="${pathC}"/>` : ''}
-    <!-- linea principale -->
-    <path class="chart-line" d="${pathM}"/>
-    <!-- x labels -->
+    ${yTicks.map(v => {
+      const y = yScale(v).toFixed(1);
+      const lbl = Number.isInteger(v) ? v : v.toFixed(1);
+      return `<line class="chart-gridline" x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke-dasharray="3,3"/>
+              <text class="chart-ylabel" x="${PAD.left - 5}" y="${y}">${lbl}</text>`;
+    }).join('')}
+    <path class="chart-area" id="chartMainArea" d="${areaM}"/>
+    <path class="chart-line" id="chartMainLine" d="${pathM}"/>
     ${xLabels.map(l=>`<text class="chart-label" x="${l.x.toFixed(1)}" y="${H-4}">${l.lbl}</text>`).join('')}
-    <!-- dots confronto -->
-    ${coordsC.map(c=>`<circle class="chart-dot-cmp" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.5"
-      onmouseenter="showTooltip(event,${c.x.toFixed(1)},${c.y.toFixed(1)},'${c.date}',${c.kg},true)"
-      onmouseleave="hideTooltip()"
-      ontouchstart="showTooltip(event,${c.x.toFixed(1)},${c.y.toFixed(1)},'${c.date}',${c.kg},true)"/>`).join('')}
-    <!-- dots principali -->
     ${coordsM.map(c=>`<circle class="chart-dot${c.date===today?' today':''}" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="4"
       onmouseenter="showTooltip(event,${c.x.toFixed(1)},${c.y.toFixed(1)},'${c.date}',${c.kg},false)"
       onmouseleave="hideTooltip()"
       ontouchstart="showTooltip(event,${c.x.toFixed(1)},${c.y.toFixed(1)},'${c.date}',${c.kg},false)"/>`).join('')}
   `;
 
-  // legenda
-  const hasCmp = coordsC.length >= 2;
-  legend.style.display = hasCmp ? 'flex' : 'none';
-  if(hasCmp){
-    document.getElementById('legendMain').textContent = mainKey==='all' ? 'Tutto il periodo' : monthLabel(mainKey);
-    document.getElementById('legendCmp').textContent  = monthLabel(cmpKey);
+  _animateChart();
+}
+
+function _animateChart(){
+  const line = document.getElementById('chartMainLine');
+  const area = document.getElementById('chartMainArea');
+  if(!line) return;
+  const len = line.getTotalLength();
+  line.style.strokeDasharray  = len;
+  line.style.strokeDashoffset = len;
+  if(area) area.style.opacity = '0';
+  const DUR   = 900;
+  const start = performance.now();
+  function step(now){
+    const t    = Math.min((now - start) / DUR, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    line.style.strokeDashoffset = len * (1 - ease);
+    if(area){
+      const aT    = Math.max(0, (t - 0.3) / 0.7);
+      const aEase = 1 - Math.pow(1 - aT, 2);
+      area.style.opacity = aEase.toFixed(3);
+    }
+    if(t < 1) requestAnimationFrame(step);
+    else {
+      line.style.strokeDashoffset = '0';
+      if(area) area.style.opacity = '1';
+    }
   }
+  requestAnimationFrame(step);
 }
 
 function showTooltip(e, x, y, date, kg, isCmp){
