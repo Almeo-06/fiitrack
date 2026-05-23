@@ -48,11 +48,11 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 /* ══ ESERCIZIO ATTIVO ══ */
 #screenEx{ background:var(--bg); }
 .ex-body-wrap{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 24px calc(16px + env(safe-area-inset-bottom, 0px)); overflow-y:auto; }
-.ex-big-circle{ width:160px; height:160px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:62px; margin-bottom:18px; background:radial-gradient(circle at 35% 35%,#030e1a,#020810); border:2px solid rgba(var(--a1-rgb),.3); box-shadow:0 0 40px rgba(var(--a1-rgb),.1); }
+.ex-big-circle{ width:160px; height:160px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:62px; margin-bottom:18px; background:radial-gradient(circle at 35% 35%, var(--bg3), var(--bg2)); border:2px solid rgba(var(--a1-rgb),.35); box-shadow:0 0 40px rgba(var(--a1-rgb),.12); }
 .ex-big-name{ font-size:26px; font-weight:600; color:var(--text); text-align:center; margin-bottom:4px; }
 .ex-big-sub{ font-size:13px; color:var(--textm); margin-bottom:22px; }
 .series-dots{ display:flex; gap:8px; justify-content:center; margin-bottom:22px; flex-wrap:wrap; }
-.sdot{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:500; border:1.5px solid var(--border); background:#030e1a; color:var(--textm); transition:all .2s; }
+.sdot{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:500; border:1.5px solid var(--border); background:var(--bg3); color:var(--textm); transition:all .2s; }
 .sdot.done{ background:rgba(0,230,118,.1); border-color:rgba(0,230,118,.3); color:var(--green); }
 .sdot.next{ background:rgba(var(--a1-rgb),.1); border-color:rgba(var(--a1-rgb),.35); color:var(--a1); }
 .fine-btn{ width:100%; padding:14px; background:linear-gradient(135deg,var(--a1),var(--a2)); border:none; border-radius:14px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:var(--font); box-shadow:0 4px 20px rgba(0,0,0,.2); transition:transform .1s; }
@@ -886,7 +886,7 @@ html.theme-light .close-btn{
 /* ══ VICTORY SCREEN ══ */
 #victoryOverlay{
   position:fixed; inset:0; z-index:200;
-  background:linear-gradient(150deg,#020810 0%,#050d1a 60%,#070b20 100%);
+  background:var(--bg);
   display:flex; align-items:center; justify-content:center;
   opacity:0; pointer-events:none;
   transition:opacity .4s ease;
@@ -1146,20 +1146,30 @@ html.theme-light .close-btn{
   transition:color .15s, border-color .15s;
 }
 .wo-ov-skip-btn:active{ color:var(--a2); border-color:rgba(var(--a1-rgb),.35); }
+
+/* ── Light theme overrides ── */
+html.theme-light #screenEx{ background:var(--bg); }
+html.theme-light #screenRec{ background:var(--bg); }
+html.theme-light #screenEnd{ background:var(--bg); }
+html.theme-light .hdr{ background:var(--bg2); border-bottom-color:var(--border); }
+html.theme-light .ex-big-circle{ box-shadow:0 0 32px rgba(var(--a1-rgb),.1); }
+html.theme-light .save-flash{ background:var(--bg2); }
+html.theme-light body::before{ display:none; }
 </style>
 <script>
 (function(){try{
   var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}
   var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};
-  var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;
+  var tn=(d&&d.theme)||'purple';var t=th[tn]||th.purple;
   document.documentElement.style.setProperty('--a1',t[0]);
   document.documentElement.style.setProperty('--a2',t[1]);
   if(tn==='light')document.documentElement.classList.add('theme-light');
   var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';
   /* colori contrastanti per il timer esercizi a tempo */
-  var tt={blue:['#7c3aed','#a855f7','124,58,237','168,85,247'],
-          purple:['#f97316','#fbbf24','249,115,22','251,191,36']};
-  var tc=tt[(d&&d.theme)||'light']||tt.blue;
+  var tt={blue:  ['#7c3aed','#a855f7','124,58,237','168,85,247'],
+          purple:['#f97316','#fbbf24','249,115,22','251,191,36'],
+          light: ['#7c3aed','#a855f7','124,58,237','168,85,247']};
+  var tc=tt[(d&&d.theme)||'purple']||tt.purple;
   document.documentElement.style.setProperty('--t1',tc[0]);
   document.documentElement.style.setProperty('--t2',tc[1]);
   document.documentElement.style.setProperty('--t1-rgb',tc[2]);
@@ -1586,7 +1596,7 @@ if(!WORKOUT || !WORKOUT.exs || !WORKOUT.exs.length){
         type:      _fwo.type,
         typeLabel: _fTLabel[_fwo.type]||'Altro',
         typeIcon:  _fTIcon[_fwo.type]||'💪',
-        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',circuitGroup:ex.circuitGroup??null,weight:ex.weight??null,km:ex.km??null,timed:ex.timed||false}))
+        exs: _fwo.exs.map(ex=>({name:ex.name,sets:ex.sets,reps:ex.reps,rec:ex.rec||90,icon:_fTIcon[_fwo.type]||'💪',iconKey:ex.iconKey||null,circuitGroup:ex.circuitGroup??null,weight:ex.weight??null,km:ex.km??null,timed:ex.timed||false}))
       };
     } else {
       location.replace('scegli.html');
@@ -2157,7 +2167,7 @@ function renderEx(){
     EL.nextCard.style.display = 'flex';
     EL.nextIcon.innerHTML     = ftIcon(nx.iconKey || 'altro');
     EL.nextName.textContent   = nx.name;
-    EL.nextSets.textContent   = `${nx.sets} serie · ${nx.reps} rep`;
+    EL.nextSets.textContent   = nx.timed ? `${nx.sets} serie · ${nx.reps}s` : nx.km ? `${nx.sets} serie · ${nx.km} km` : `${nx.sets} serie · ${nx.reps} rep`;
   } else {
     EL.nextCard.style.display = 'none';
   }
@@ -2259,9 +2269,10 @@ function openRec(sec){
       : `Serie ${sd[lastCompletedEx]} / ${_lastEx?.sets||ex.sets} completata`;
 
   const nx = afterExDone && WORKOUT.exs[curEx+1];
+  const _fmtEx = e => e.timed ? `${e.sets} serie · ${e.reps}s` : e.km ? `${e.sets} serie · ${e.km} km` : `${e.sets} serie · ${e.reps} rep`;
   EL.rncCard.innerHTML = nx
-    ? `<div class="rnc-icon">${ftIcon(nx.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${nx.sets} serie · ${nx.reps} rep</div></div>`
-    : `<div class="rnc-icon">${ftIcon(ex.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1} · ${ex.reps} rep</div></div>`;
+    ? `<div class="rnc-icon">${ftIcon(nx.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossimo esercizio</div><div class="rnc-name">${nx.name}</div><div class="rnc-sets">${_fmtEx(nx)}</div></div>`
+    : `<div class="rnc-icon">${ftIcon(ex.iconKey||'altro')}</div><div><div class="rnc-lbl">Prossima serie</div><div class="rnc-name">${ex.name}</div><div class="rnc-sets">Serie ${d+1}${ex.timed?` · ${ex.reps}s`:ex.km?` · ${ex.km} km`:` · ${ex.reps} rep`}</div></div>`;
 
   show('screenRec');
   cancelAnimationFrame(_recRafId);

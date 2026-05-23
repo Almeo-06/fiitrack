@@ -24,7 +24,7 @@
   try{
     var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}
     var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};
-    var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;
+    var tn=(d&&d.theme)||'purple';var t=th[tn]||th.light;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
     if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';
@@ -41,18 +41,27 @@ body{
 
 /* header */
 .hdr{
-  display:flex; align-items:center; gap:12px;
-  padding:16px 20px 14px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 20px 16px;
   flex-shrink:0;
 }
+.hdr-left{ display:flex; align-items:center; gap:12px; }
 .back-btn{
-  width:36px; height:36px; border-radius:50%; background:var(--bg3);
+  width:34px; height:34px; border-radius:50%; background:var(--bg2);
   border:1px solid var(--border); color:var(--textm); font-size:16px;
   display:flex; align-items:center; justify-content:center; cursor:pointer;
   flex-shrink:0;
 }
-.hdr-title{ font-size:16px; font-weight:600; color:var(--text); }
-.hdr-sub{ font-size:11px; color:var(--textm); margin-top:1px; }
+.hdr-title{ font-size:20px; font-weight:700; color:var(--text); letter-spacing:-.3px; }
+.hdr-sub{ font-size:11px; color:var(--textm); margin-top:2px; }
+.hdr-add{
+  width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  border:none; color:#fff; font-size:20px; font-weight:300;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0;
+  box-shadow:0 4px 14px rgba(var(--a1-rgb),.35);
+}
 
 /* scroll */
 .scroll-area{ flex:1; overflow-y:auto; padding:20px 16px calc(120px + env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling:touch; }
@@ -70,87 +79,66 @@ body{
   content:''; flex:1; height:1px; background:var(--border);
 }
 
-/* card allenamento */
+/* card allenamento — nuovo stile */
 .wo-card{
-  background:var(--bg2); border:1.5px solid var(--border);
-  border-radius:16px; padding:14px 16px; margin-bottom:10px;
-  cursor:pointer; transition:border-color .18s, box-shadow .18s;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:18px; padding:14px 16px; margin-bottom:10px;
+  cursor:pointer; display:flex; align-items:center; gap:14px;
+  transition:transform .15s, border-color .18s, box-shadow .18s;
   position:relative; overflow:hidden;
 }
-.wo-card:active{ transform:scale(.98); }
+.wo-card:active{ transform:scale(.985); }
 .wo-card.selected{
-  border-color:var(--a1);
-  box-shadow:0 0 0 1px var(--a1), 0 4px 24px rgba(var(--a1-rgb),.18);
+  border-color:rgba(var(--a1-rgb),.55);
+  box-shadow:0 0 0 1px rgba(var(--a1-rgb),.2), 0 4px 24px rgba(var(--a1-rgb),.14);
 }
 .wo-card.oggi-card{
   border-color:rgba(var(--a1-rgb),.35);
-  background:linear-gradient(135deg,#060d1a,#051020);
 }
-.wo-card.oggi-card.selected{
-  border-color:var(--a1);
-  box-shadow:0 0 0 1px var(--a1), 0 4px 28px rgba(var(--a1-rgb),.25);
+
+/* icona card */
+.wo-icon{
+  width:48px; height:48px; border-radius:14px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+  box-shadow:0 4px 14px rgba(var(--a1-rgb),.30);
 }
+.wo-card.libero .wo-icon{ background:linear-gradient(135deg,var(--green),#00aa55); box-shadow:0 4px 14px rgba(0,230,118,.25); }
+.wo-card.manuale .wo-icon{ background:linear-gradient(135deg,#ff9800,#ff6500); box-shadow:0 4px 14px rgba(255,152,0,.25); }
+
+/* body card */
+.wo-body{ flex:1; min-width:0; }
+.wo-name{ font-size:15px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wo-date{ font-size:10px; color:var(--textm); margin-top:2px; font-family:var(--mono); }
+.wo-chips{ display:flex; gap:6px; margin-top:7px; flex-wrap:wrap; }
+.wo-chip{
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+  border-radius:6px; padding:3px 8px;
+  font-size:10px; color:var(--textm);
+}
+
+/* freccia */
+.wo-arrow{ font-size:20px; color:var(--textm); flex-shrink:0; opacity:.5; }
+.wo-card.selected .wo-arrow{ color:var(--a2); opacity:1; }
 
 /* badge oggi */
 .oggi-badge{
-  position:absolute; top:12px; right:12px;
+  position:absolute; top:10px; right:36px;
   background:rgba(var(--a1-rgb),.15); border:1px solid rgba(var(--a1-rgb),.3);
-  border-radius:99px; padding:3px 10px;
-  font-size:10px; font-weight:500; color:var(--a2); letter-spacing:.5px;
+  border-radius:99px; padding:2px 8px;
+  font-size:9px; font-weight:500; color:var(--a2); letter-spacing:.5px;
   font-family:var(--mono); text-transform:uppercase;
 }
 .selected-check{
-  position:absolute; top:12px; right:12px;
-  width:22px; height:22px; border-radius:50%;
+  position:absolute; top:10px; right:12px;
+  width:20px; height:20px; border-radius:50%;
   background:linear-gradient(135deg,var(--a1),var(--a2));
   display:flex; align-items:center; justify-content:center;
-  font-size:11px; color:#fff;
+  font-size:10px; color:#fff;
   opacity:0; transform:scale(.6);
   transition:opacity .2s, transform .2s cubic-bezier(.34,1.56,.64,1);
 }
 .wo-card.selected .selected-check{ opacity:1; transform:scale(1); }
-.wo-card.oggi-card .oggi-badge{ display:block; }
-.wo-card.oggi-card.selected .oggi-badge{ display:none; }
-
-.wo-top{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-.wo-icon{
-  width:44px; height:44px; border-radius:12px; flex-shrink:0;
-  background:var(--bg3); border:1px solid rgba(var(--a1-rgb),.15);
-  display:flex; align-items:center; justify-content:center; font-size:20px;
-}
-.wo-name{ font-size:15px; font-weight:600; color:var(--text); }
-.wo-type{ font-size:11px; color:var(--textm); margin-top:2px; }
-
-.wo-meta{
-  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;
-}
-.wo-chip{
-  background:var(--bg3); border:1px solid var(--border);
-  border-radius:99px; padding:4px 10px;
-  font-size:10px; color:var(--textm); font-family:var(--mono);
-}
-
-/* lista esercizi (collassabile) */
-.wo-exs{ display:none; flex-direction:column; gap:6px; }
-.wo-card.expanded .wo-exs{ display:flex; }
-.ex-row{
-  display:flex; align-items:center; gap:8px;
-  background:var(--bg3); border-radius:8px; padding:7px 10px;
-}
-.ex-row-icon{ font-size:14px; width:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.ex-row-name{ font-size:12px; color:var(--text); flex:1; }
-.ex-row-detail{ font-size:10px; color:var(--textm); font-family:var(--mono); }
-
-.expand-btn{
-  font-size:10px; color:var(--a2); font-family:var(--mono);
-  letter-spacing:.5px; margin-top:2px; display:inline-block;
-}
-
-/* card allenamento libero */
-.wo-card.libero .wo-icon{
-  background:rgba(0,230,118,.08); border-color:rgba(0,230,118,.2);
-}
-.wo-card.libero .wo-name{ color:var(--a2); }
 
 /* footer fisso */
 .footer{
@@ -303,40 +291,22 @@ html.theme-light body::before{ display:none; }
   .start-btn::after { animation: none; }
 }
 
-/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
-.wo-card{
-  background:transparent; border:none; border-radius:0;
-  border-bottom:1px solid var(--border);
-  padding:14px 0; margin-bottom:0;
-}
-.wo-card:last-child{ border-bottom:none; }
-.wo-card.selected{
-  background:rgba(var(--a1-rgb),.04);
-  border-bottom-color:rgba(var(--a1-rgb),.25);
-  box-shadow:none;
-}
-.wo-card.oggi-card{
-  background:rgba(var(--a1-rgb),.04); border-color:rgba(var(--a1-rgb),.2);
-}
-html.theme-light .wo-card{
-  background:transparent !important; border-top:none !important;
-  border-left:none !important; border-right:none !important;
-  border-bottom:1px solid var(--border) !important; box-shadow:none !important;
-}
-html.theme-light .wo-card.selected{
-  background:rgba(var(--a1-rgb),.04) !important;
-}
-/* ════ fine OPEN LAYOUT ════ */
+/* light theme cards */
+html.theme-light .wo-card{ background:#fff; border-color:rgba(0,102,221,.14); }
+html.theme-light .wo-chip{ background:rgba(0,102,221,.06); border-color:rgba(0,102,221,.12); }
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <button class="back-btn" onclick="history.back()">←</button>
-  <div>
-    <div class="hdr-title">Scegli allenamento</div>
-    <div class="hdr-sub" id="hdrSub">Cosa vuoi fare oggi?</div>
+  <div class="hdr-left">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="hdr-title">I miei allenamenti</div>
+      <div class="hdr-sub" id="hdrSub">Seleziona cosa fare oggi</div>
+    </div>
   </div>
+  <button class="hdr-add" onclick="location.href='editor-workout.html'" title="Nuovo allenamento">+</button>
 </div>
 
 <div class="scroll-area" id="scrollArea"></div>
@@ -447,35 +417,27 @@ function minStimati(exs){
 
 function renderCard(wo, isToday, delay){
   const min = minStimati(wo.exs);
-  const exsHtml = wo.exs.map(ex=>`
-    <div class="ex-row">
-      <span class="ex-row-icon">${ftIcon(ex.iconKey || 'corpo_libero')}</span>
-      <span class="ex-row-name">${ex.name}</span>
-      <span class="ex-row-detail">${ex.sets}×${ex.reps}</span>
-    </div>`).join('');
+  const isRun = wo.type==='run'||wo.type==='bike';
+  const kcal = Math.round(min*(isRun?8:5.5));
+  const kmChip = isRun ? `<span class="wo-chip">📍 ${wo.exs.reduce((a,e)=>a+(e.km||0),0)||'—'} km</span>` : '';
 
   return `
     <div class="wo-card${isToday?' oggi-card':''}" id="card_${wo.id}"
          style="animation-delay:${delay}s"
          onclick="selectCard('${wo.id}', event)">
-      ${isToday ? '<div class="oggi-badge">● consigliato oggi</div>' : ''}
+      ${isToday ? '<div class="oggi-badge">● oggi</div>' : ''}
       <div class="selected-check">✓</div>
-      <div class="wo-top">
-        <div class="wo-icon">${ftIcon(wo.iconKey || 'corpo_libero')}</div>
-        <div>
-          <div class="wo-name">${wo.name}</div>
-          <div class="wo-type">${wo.typeLabel}</div>
+      <div class="wo-icon">${ftIcon(wo.iconKey || 'corpo_libero')}</div>
+      <div class="wo-body">
+        <div class="wo-name">${wo.name}</div>
+        <div class="wo-date">${wo.typeLabel} · ${wo.exs.length} esercizi</div>
+        <div class="wo-chips">
+          <span class="wo-chip">⏱ ~${min} min</span>
+          <span class="wo-chip">🔥 ~${kcal} kcal</span>
+          ${kmChip}
         </div>
       </div>
-      <div class="wo-meta">
-        <span class="wo-chip" style="display:inline-flex;align-items:center;gap:4px;">${ftIcon('bilanciere')} ${wo.exs.length} esercizi</span>
-        <span class="wo-chip">⏱ ~${min} min</span>
-        <span class="wo-chip">🔥 ~${Math.round(min*5.5)} kcal</span>
-      </div>
-      <span class="expand-btn" onclick="toggleExpand('${wo.id}', event)">
-        Mostra esercizi ▾
-      </span>
-      <div class="wo-exs">${exsHtml}</div>
+      <div class="wo-arrow">›</div>
     </div>`;
 }
 
@@ -518,32 +480,28 @@ function buildUI(){
   }
 
   /* allenamento libero + log manuale */
-  html += `<div class="section-lbl">Libero</div>
+  html += `<div class="section-lbl">Altro</div>
     <div class="wo-card libero" id="card_libero"
          style="animation-delay:${WORKOUTS.length*0.05}s"
          onclick="selectCard('libero', event)">
       <div class="selected-check">✓</div>
-      <div class="wo-top">
-        <div class="wo-icon">✏️</div>
-        <div>
-          <div class="wo-name">Allenamento libero</div>
-          <div class="wo-type">Scegli gli esercizi prima di iniziare</div>
-        </div>
+      <div class="wo-icon" style="font-size:22px">✏️</div>
+      <div class="wo-body">
+        <div class="wo-name">Allenamento libero</div>
+        <div class="wo-date">Personalizza gli esercizi al volo</div>
+        <div class="wo-chips"><span class="wo-chip">Personalizzabile</span></div>
       </div>
-      <div class="wo-meta">
-        <span class="wo-chip">Personalizzabile</span>
-      </div>
+      <div class="wo-arrow">›</div>
     </div>
     <div class="wo-card manuale" id="card_manuale"
          style="animation-delay:${(WORKOUTS.length+1)*0.05}s"
          onclick="openLogManuale()">
-      <div class="wo-top">
-        <div class="wo-icon">📋</div>
-        <div>
-          <div class="wo-name">Registra attività passata</div>
-          <div class="wo-type">Aggiungi una sessione già completata</div>
-        </div>
+      <div class="wo-icon" style="font-size:22px">📋</div>
+      <div class="wo-body">
+        <div class="wo-name">Registra attività passata</div>
+        <div class="wo-date">Aggiungi una sessione già completata</div>
       </div>
+      <div class="wo-arrow">›</div>
     </div>`;
 
   area.innerHTML = html;

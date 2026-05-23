@@ -35,10 +35,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 
 /* ── HEADER ── */
 .header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-.logo{ font-weight:600; font-size:20px; color:var(--text); }
-.logo span{ color:var(--a2); }
-.page-label{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:1px; }
-.header-right{ display:flex; align-items:center; gap:10px; }
+.header-right{ display:flex; align-items:center; gap:8px; }
 
 /* bell button */
 .bell-btn{
@@ -637,13 +634,6 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .feed-del-btn[data-confirm="1"] .del-svg polyline,
 .feed-del-btn[data-confirm="1"] .del-svg line{ stroke:#ff4455; }
 
-/* ── TAB BAR ── */
-  position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
-  background:rgba(6,13,26,.97); border-top:1px solid var(--border);
-  display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px)); z-index:20;
-}
-.tab-item.on::after{ content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:18px; height:2px; border-radius:0 0 3px 3px; background:var(--a2); box-shadow:0 0 8px var(--a2); }
-
 /* toast */
 .toast{
   position:fixed; bottom:calc(90px + env(safe-area-inset-bottom,0px)); left:50%;
@@ -754,7 +744,7 @@ html.theme-light body::before{ display:none; }
   try{
     var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}
     var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};
-    var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;
+    var tn=(d&&d.theme)||'purple';var t=th[tn]||th.purple;
     document.documentElement.style.setProperty('--a1',t[0]);
     document.documentElement.style.setProperty('--a2',t[1]);
     if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';
@@ -769,11 +759,13 @@ html.theme-light body::before{ display:none; }
 <div class="scroll-area">
   <!-- HEADER -->
   <div class="header">
-    <div class="logo">Fiit<span>Track</span></div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:var(--text);">Community</div>
+      <div style="font-size:11px;color:var(--textm);">feed &amp; amici</div>
+    </div>
     <div class="header-right">
-      <div class="page-label">AMICI</div>
       <div class="bell-btn" id="bellBtn" onclick="openNotif()" style="display:none">
-        🔔
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <div class="bell-badge" id="bellBadge" style="display:none">0</div>
       </div>
     </div>

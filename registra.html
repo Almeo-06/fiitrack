@@ -27,11 +27,14 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 .scroll-area::-webkit-scrollbar{ width:0; }
 
 /* header */
-.header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-.logo{ font-weight:600; font-size:20px; color:var(--text); }
-.logo span{ color:var(--a2); }
-.page-label{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:1px; }
-.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--a1); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; }
+.header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:10px; }
+.hdr-back{ width:34px; height:34px; border-radius:50%; background:var(--bg2); border:1px solid var(--border); color:var(--textm); font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+.hdr-month{ font-size:17px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:5px; cursor:pointer; letter-spacing:-.2px; }
+.hdr-month-arrow{ font-size:11px; color:var(--textm); }
+.hdr-icons{ display:flex; align-items:center; gap:8px; }
+.hdr-icon-btn{ height:34px; border-radius:17px; background:var(--bg2); border:1px solid var(--border); color:var(--textm); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; padding:0 10px; gap:3px; }
+#streakBadge{ min-width:34px; }
+.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--a1); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; cursor:pointer; }
 
 /* streak hero compatto */
 .streak-hero{
@@ -354,18 +357,6 @@ body::before{
 .ms-delta.down{ background:rgba(255,68,85,.1); color:#ff4455; }
 .ms-delta.neutral{ background:rgba(48,72,112,.3); color:var(--textm); }
 
-/* active indicator tab */
-.tab-item.on::after{
-  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:18px; height:2px; border-radius:0 0 3px 3px;
-  background:var(--a2); box-shadow:0 0 8px var(--a2);
-}
-
-/* tab bar */
-  position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
-  background:rgba(6,13,26,.97); border-top:1px solid var(--border);
-  display:flex; padding:8px 0 calc(12px + env(safe-area-inset-bottom, 0px)); z-index:20;
-}
 /* ══ LIGHT THEME — variabili base in shared.css ══ */
 html.theme-light body::before{ display:none; }
 html.theme-light .streak-hero{
@@ -591,36 +582,6 @@ html.theme-light .streak-hero::before{ display:none; }
 }
 .annual-dot.future{ opacity:.18; }
 
-/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
-.cal-card{
-  background:transparent; border:none; border-radius:0;
-  padding:0 0 20px; margin-bottom:0;
-}
-.storico-sess-card{
-  background:transparent; border:none; border-radius:0;
-  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
-}
-.pr-section{
-  background:transparent; border:none; border-radius:0;
-  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
-}
-.month-stats{
-  background:transparent; border:none; border-radius:0;
-  border-top:1px solid var(--border); padding:20px 0; margin-bottom:0;
-}
-html.theme-light .cal-card,
-html.theme-light .storico-sess-card,
-html.theme-light .pr-section,
-html.theme-light .month-stats{
-  background:transparent !important; box-shadow:none !important;
-  border-left:none !important; border-right:none !important; border-bottom:none !important;
-}
-html.theme-light .storico-sess-card,
-html.theme-light .pr-section,
-html.theme-light .month-stats{
-  border-top:1px solid var(--border) !important;
-}
-/* ════ fine OPEN LAYOUT ════ */
 
 /* ══ VOLUME SETTIMANALE ══ */
 .week-vol-section{
@@ -639,7 +600,7 @@ html.theme-light .month-stats{
 .wv-sub{ font-size:11px; color:var(--textm); margin-top:3px; }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'purple';var t=th[tn]||th.purple;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
 </script>
 </head>
 <body>
@@ -650,19 +611,19 @@ html.theme-light .month-stats{
 
   <!-- header -->
   <div class="header">
-    <div class="logo">Fiit<span>Track</span></div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="page-label">REGISTRA</div>
-      <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
+    <button class="hdr-back" onclick="history.length>1?history.back():location.href='home.html'" aria-label="Indietro">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="hdr-month" id="hdrMonthBtn" onclick="toggleMonthPicker()">
+      <span id="hdrMonthLabel">Maggio</span>
+      <span class="hdr-month-arrow">▾</span>
     </div>
-  </div>
-
-  <!-- streak compatto -->
-  <div class="streak-hero">
-    <div class="streak-num" id="streakNum">0</div>
-    <div class="streak-info">
-      <div class="streak-lbl">giorni streak 🔥</div>
-      <div class="streak-best">Record personale: <span id="bestStreak">0</span> giorni</div>
+    <div class="hdr-icons">
+      <div class="hdr-icon-btn" id="streakBadge" title="Streak">
+        <span style="font-size:13px;">🔥</span>
+        <span id="streakNum" style="font-size:11px;font-weight:600;color:var(--a2);margin-left:1px;">0</span>
+      </div>
+      <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
     </div>
   </div>
 
@@ -872,12 +833,13 @@ const doneDates = new Set(data.sessions.map(s => s.date));
 const dateTypeMap = {};
 data.sessions.forEach(s => { if(!dateTypeMap[s.date]) dateTypeMap[s.date] = s.type; });
 
-document.getElementById('streakNum').textContent  = data.streak;
-document.getElementById('bestStreak').textContent = data.bestStreak;
+document.getElementById('streakNum').textContent = data.streak;
+const _bsEl = document.getElementById('bestStreak'); if(_bsEl) _bsEl.textContent = data.bestStreak;
 
 /* ── render calendario ── */
 function renderCalendar(){
   document.getElementById('calMonth').textContent = MONTHS[curMonth] + ' ' + curYear;
+  const _hl = document.getElementById('hdrMonthLabel'); if(_hl) _hl.textContent = MONTHS[curMonth] + ' ' + curYear;
 
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
@@ -917,6 +879,10 @@ function renderCalendar(){
 
     grid.appendChild(el);
   }
+}
+
+function toggleMonthPicker(){
+  setCalView(document.getElementById('toggleAnnual').classList.contains('active') ? 'monthly' : 'annual');
 }
 
 function prevMonth(){

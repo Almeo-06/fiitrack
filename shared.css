@@ -22,29 +22,59 @@
 html,body{ height:100%; overflow:hidden; }
 html{ height:-webkit-fill-available; }
 
-/* ── Tab bar ── */
+/* ── Tab bar — Liquid Glass ── */
 .tab-bar{
-  position:fixed; bottom:0; left:0; right:0;
-  max-width:480px; margin:0 auto;
-  background:rgba(6,13,26,.97);
-  border-top:1px solid var(--border);
-  display:flex;
-  /* max() garantisce almeno 20px anche se --safe-b è 0 su Android */
-  padding:8px 0 max(20px, calc(8px + var(--safe-b, env(safe-area-inset-bottom, 0px))));
-  z-index:20;
+  position:fixed;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 456px;
+
+  /* Glass */
+  background: rgba(8,14,30,0.52);
+  backdrop-filter: blur(28px) saturate(1.9) brightness(1.08);
+  -webkit-backdrop-filter: blur(28px) saturate(1.9) brightness(1.08);
+
+  /* Bordi e profondità */
+  border: 1px solid rgba(255,255,255,0.10);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.50),
+    0 4px 12px rgba(0,0,0,0.25),
+    inset 0 1.5px 0 rgba(255,255,255,0.13),
+    inset 0 -1px 0 rgba(0,0,0,0.20);
+  border-radius: 26px;
+
+  display: flex;
+  padding: 10px 8px;
+  z-index: 20;
 }
-.tab-bar::before{
-  content:''; position:absolute; bottom:100%; left:0; right:0; height:56px;
-  pointer-events:none;
-  background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+/* Rimuovi il vecchio gradiente fade verso il basso */
+.tab-bar::before{ display:none; }
+
+/* Item base */
+.tab-item{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:10px; color:var(--textm); cursor:pointer; position:relative; z-index:1;
 }
-.tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:var(--textm); cursor:pointer; position:relative; }
+
+/* Bolla glassy sull'item attivo */
 .tab-item.on{ color:var(--a2); }
 .tab-item.on::after{
-  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:18px; height:2px; border-radius:0 0 3px 3px;
-  background:var(--a2); box-shadow:0 0 8px var(--a2);
+  content:'';
+  position:absolute;
+  inset: -2px 0px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(var(--a1-rgb),0.22) 0%, rgba(var(--a1-rgb),0.09) 100%);
+  border: 1px solid rgba(var(--a1-rgb),0.28);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.10),
+    0 0 18px -4px rgba(var(--a1-rgb),0.45);
+  z-index: -1;
 }
+
 .tab-icon{ width:20px; height:20px; display:flex; align-items:center; justify-content:center; }
 .tab-icon svg{ width:20px; height:20px; }
 
@@ -58,20 +88,34 @@ html.theme-light{
 }
 html.theme-light body{ background:var(--bg); }
 html.theme-light .tab-bar{
-  background:rgba(255,255,255,.98) !important;
-  border-top:1.5px solid rgba(0,102,221,.15) !important;
-  box-shadow:0 -4px 16px rgba(0,102,221,.08) !important;
+  background: rgba(230,242,255,0.62) !important;
+  backdrop-filter: blur(28px) saturate(1.6) brightness(1.12) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.6) brightness(1.12) !important;
+  border: 1px solid rgba(0,102,221,0.14) !important;
+  border-bottom: 1px solid rgba(0,102,221,0.08) !important;
+  box-shadow:
+    0 12px 40px rgba(0,80,200,0.14),
+    0 3px 10px rgba(0,80,200,0.08),
+    inset 0 1.5px 0 rgba(255,255,255,0.80),
+    inset 0 -1px 0 rgba(0,0,0,0.04) !important;
 }
-html.theme-light .tab-bar::before{ background:linear-gradient(to bottom, transparent 0%, rgba(255,255,255,.98) 100%); }
+html.theme-light .tab-bar::before{ display:none; }
 html.theme-light .tab-item.on{ color:var(--a1); }
+html.theme-light .tab-item.on::after{
+  background: linear-gradient(160deg, rgba(var(--a1-rgb),0.14) 0%, rgba(var(--a1-rgb),0.06) 100%) !important;
+  border-color: rgba(var(--a1-rgb),0.22) !important;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.90),
+    0 0 16px -4px rgba(var(--a1-rgb),0.25) !important;
+}
 
 /* ── Padding scroll-area basato sull'altezza reale della tab bar ──
    --tab-bar-h viene impostata da JS (ResizeObserver) in widgetLayout.js
    e nello snippet inline di ogni pagina senza widgetLayout.
    Il fallback calc(...) copre il primo frame prima che JS giri. ── */
 .scroll-area{
-  /* +24px di buffer sopra la tab bar per non finire sotto il gradiente ::before */
-  padding-bottom: calc(var(--tab-bar-h, calc(88px + var(--safe-b, env(safe-area-inset-bottom, 0px)))) + 24px) !important;
+  /* +12px per floating offset tab bar + 28px buffer visivo */
+  padding-bottom: calc(var(--tab-bar-h, calc(80px + var(--safe-b, env(safe-area-inset-bottom, 0px)))) + 40px) !important;
 }
 
 /* ── Glassmorphism sugli sheet ── */

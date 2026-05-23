@@ -27,10 +27,7 @@ body{ background:var(--bg); color:var(--text); font-family:var(--font); max-widt
 
 /* header */
 .header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-.logo{ font-weight:600; font-size:20px; color:var(--text); }
-.logo span{ color:var(--a2); }
-.page-label{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:1px; }
-.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--a1); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; }
+.avatar{ width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--a1); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; cursor:pointer; }
 
 /* ── SEZIONE A TENDINA ── */
 .section{
@@ -323,11 +320,6 @@ body::before{
 .scroll-area.slide-out-right{ animation:slideOutToRight  .22s cubic-bezier(.4,0,.6,1) both; }
 .sec-header{ transition:background .15s; }
 .sec-header:hover{ background:rgba(var(--a1-rgb),.04); }
-.tab-item.on::after{
-  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-  width:18px; height:2px; border-radius:0 0 3px 3px;
-  background:var(--a2); box-shadow:0 0 8px var(--a2);
-}
 .save-btn{ position:relative; overflow:hidden; }
 .save-btn::after{
   content:''; position:absolute; top:0; left:-60%;
@@ -492,24 +484,10 @@ html.theme-light body::before{ display:none; }
   .save-btn::after { animation: none; }
 }
 
-/* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
-.section{
-  background:transparent; border:none; border-radius:0;
-  border-top:1px solid var(--border); margin-bottom:0; overflow:visible;
-}
-.section:first-of-type{ border-top:none; }
-.sec-header{ padding:16px 0; }
-.sec-header:active{ background:transparent; }
-.sec-inner{
-  border-top:1px solid var(--border);
-  padding-left:0; padding-right:0;
-}
-html.theme-light .section{
-  background:transparent !important; border:none !important;
-  border-top:1px solid var(--border) !important; box-shadow:none !important;
-}
-/* ════ fine OPEN LAYOUT ════ */
 </style>
+<script>
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'purple';var t=th[tn]||th.purple;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
+</script>
 </head>
 <body>
 
@@ -555,9 +533,11 @@ html.theme-light .section{
 <div class="scroll-area">
 
   <div class="header">
-    <div class="logo">Fiit<span>Track</span></div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="page-label">IMPOSTAZIONI</div>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:var(--text);">Impostazioni</div>
+      <div style="font-size:11px;color:var(--textm);">profilo &amp; preferenze</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
       <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo" style="cursor:pointer;">😎</div>
     </div>
   </div>
@@ -872,7 +852,7 @@ html.theme-light .section{
     <a href="terms.html"   style="font-family:var(--mono); font-size:11px; color:var(--textm); text-decoration:none; letter-spacing:.5px;">Termini</a>
   </div>
 
-  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.53</p>
+  <p style="text-align:center; font-family:var(--mono); font-size:11px; color:var(--textm); padding:6px 0 10px; letter-spacing:1px;">FiitTracker™ v.55</p>
 
 </div>
 

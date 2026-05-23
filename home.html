@@ -548,6 +548,27 @@ html.theme-light #installBanner{
   .hero-track { transition: none; }
 }
 
+/* ── HEADER GREETING ── */
+.greeting{ font-size:22px; font-weight:700; color:var(--text); letter-spacing:-.3px; line-height:1.15; }
+.greeting-sub{ font-size:12px; color:var(--textm); margin-top:3px; }
+.notif-btn{ width:36px; height:36px; border-radius:50%; background:var(--bg2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--textm); flex-shrink:0; }
+
+/* ── PIANO v2 ── */
+.plan-week-hdr{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.plan-week-range{ font-family:var(--mono); font-size:11px; color:var(--textm); letter-spacing:.5px; }
+.day-num-box{ width:42px; height:42px; border-radius:12px; background:var(--bg3); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; gap:1px; transition:background .3s,border-color .3s; }
+.day-num-wd{ font-size:9px; color:var(--textm); text-transform:uppercase; letter-spacing:.5px; font-weight:500; line-height:1; }
+.day-num-d{ font-size:17px; font-weight:700; color:var(--text); line-height:1.1; }
+.day-row.today .day-num-box{ background:linear-gradient(135deg,rgba(var(--a1-rgb),.18),rgba(var(--a1-rgb),.06)); border-color:rgba(var(--a1-rgb),.4); }
+.day-row.today .day-num-wd,.day-row.today .day-num-d{ color:var(--a2); }
+.day-row.status-fatto .day-num-box{ background:rgba(0,230,118,.1); border-color:rgba(0,230,118,.28); }
+.day-row.status-fatto .day-num-d{ color:var(--green); }
+.day-row.rest .day-num-box{ opacity:.5; }
+.day-chip-row{ display:flex; gap:8px; margin-top:3px; flex-wrap:wrap; }
+.day-chip{ font-size:10px; color:var(--textm); }
+.plan-cal-btn{ width:100%; padding:12px; margin-top:10px; background:transparent; border:1px solid var(--border); border-radius:12px; color:var(--textm); font-size:12px; font-weight:500; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:6px; transition:background .15s; letter-spacing:.3px; }
+.plan-cal-btn:active{ background:var(--bg3); }
+
 /* ════ OPEN LAYOUT — rimuovi questo blocco per tornare alle card ════ */
 .recap-card{
   background:transparent; border:none; border-radius:0;
@@ -599,9 +620,89 @@ html.theme-light .plan-card{
 .cmp-val{ font-size:13px; color:var(--text); font-weight:500; font-family:var(--mono); }
 .cmp-divider{ width:1px; background:var(--border); align-self:stretch; }
 .cmp-delta{ font-size:13px; font-weight:700; font-family:var(--mono); margin-top:10px; }
+
+/* ── SHEET ASSEGNA GIORNO ── */
+.assign-overlay{
+  position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.55);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s;
+}
+.assign-overlay.open{ opacity:1; pointer-events:all; }
+.assign-sheet{
+  width:100%; max-width:480px;
+  background:var(--bg2); border-radius:22px 22px 0 0;
+  border-top:1px solid rgba(var(--a1-rgb),.3);
+  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  transform:translateY(100%);
+  transition:transform .36s cubic-bezier(.25,1,.3,1);
+  max-height:82dvh; display:flex; flex-direction:column;
+}
+.assign-overlay.open .assign-sheet{ transform:translateY(0); }
+.assign-handle{ width:36px; height:4px; border-radius:2px; background:var(--border); margin:12px auto 0; flex-shrink:0; }
+.assign-hdr{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px 12px; flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+.assign-day-name{ font-size:16px; font-weight:700; color:var(--text); }
+.assign-day-sub{ font-size:11px; color:var(--textm); margin-top:2px; }
+.assign-close{
+  width:30px; height:30px; border-radius:50%;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--textm); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.assign-list{ overflow-y:auto; padding:10px 14px 4px; flex:1; }
+.assign-list::-webkit-scrollbar{ width:0; }
+.assign-wo-row{
+  display:flex; align-items:center; gap:13px;
+  padding:13px 14px; border-radius:14px;
+  margin-bottom:8px; cursor:pointer;
+  background:var(--bg3); border:1.5px solid var(--border);
+  transition:border-color .15s, background .15s;
+}
+.assign-wo-row:active{ opacity:.8; }
+.assign-wo-row.selected{
+  background:rgba(var(--a1-rgb),.08);
+  border-color:rgba(var(--a1-rgb),.4);
+}
+.assign-wo-icon{
+  width:40px; height:40px; border-radius:12px;
+  background:linear-gradient(135deg,rgba(var(--a1-rgb),.25),rgba(var(--a1-rgb),.12));
+  border:1px solid rgba(var(--a1-rgb),.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.assign-wo-info{ flex:1; min-width:0; }
+.assign-wo-name{ font-size:14px; font-weight:600; color:var(--text); }
+.assign-wo-meta{ font-size:11px; color:var(--textm); margin-top:2px; }
+.assign-check{
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid var(--border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:12px;
+}
+.assign-wo-row.selected .assign-check{
+  background:var(--a1); border-color:var(--a1);
+}
+.assign-rest-row{
+  display:flex; align-items:center; gap:13px;
+  padding:13px 14px; border-radius:14px;
+  margin-bottom:8px; cursor:pointer;
+  background:var(--bg3); border:1.5px solid var(--border);
+  transition:border-color .15s;
+}
+.assign-rest-row.selected{
+  background:rgba(255,68,85,.06);
+  border-color:rgba(255,68,85,.3);
+}
+html.theme-light .assign-wo-row{ background:var(--bg2); }
+html.theme-light .assign-rest-row{ background:var(--bg2); }
 </style>
 <script>
-(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'light';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
+(function(){try{var d=JSON.parse(localStorage.getItem('fittrack_v4'));if(d&&d.theme==='orange'){d.theme='light';try{localStorage.setItem('fittrack_v4',JSON.stringify(d));}catch(e){}}var th={blue:['#0088ff','#00ccff'],purple:['#7c3aed','#a855f7'],light:['#0066dd','#0099ff']};var tn=(d&&d.theme)||'purple';var t=th[tn]||th.light;document.documentElement.style.setProperty('--a1',t[0]);document.documentElement.style.setProperty('--a2',t[1]);if(tn==='light')document.documentElement.classList.add('theme-light');var rgb={blue:'0,136,255',purple:'124,58,237',light:'0,102,221'};document.documentElement.style.setProperty('--a1-rgb',rgb[tn]||rgb.light);var mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=tn==='light'?'#dce8ff':'#020810';}catch(e){}})();
 </script>
 </head>
 <body>
@@ -732,9 +833,14 @@ html.theme-light .plan-card{
 
   <div class="scroll-area">
     <div class="header">
-      <div class="logo">Fiit<span>Track</span></div>
+      <div>
+        <div class="greeting" id="greetingText">Ciao 👋</div>
+        <div class="greeting-sub" id="dateBadge"></div>
+      </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <div class="date-badge" id="dateBadge"></div>
+        <button class="notif-btn" title="Notifiche" aria-label="Notifiche">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
         <div class="avatar" id="headerAvatar" onclick="location.href='profilo.html'" title="Profilo">😎</div>
       </div>
     </div>
@@ -875,43 +981,38 @@ html.theme-light .plan-card{
     </div>
 
     <div class="plan-card" id="wgt-plan">
-      <div class="card-title"><div class="card-dot" style="background:var(--a1)"></div>Piano settimana</div>
-      <div class="swipe-hint">
-        <div class="hint-dot"></div><div class="hint-dot"></div><div class="hint-dot"></div>
-        trascina verso destra
+      <div class="plan-week-hdr">
+        <div class="card-title" style="margin-bottom:0"><div class="card-dot" style="background:var(--a1)"></div>Piano settimana</div>
+        <span class="plan-week-range" id="planWeekRange"></span>
       </div>
       <div id="weekPlan"></div>
+      <button class="plan-cal-btn" onclick="navigateTo('registra.html',1)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Visualizza calendario
+      </button>
     </div>
 
-    <div class="recap-card" id="wgt-recap">
-      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Recap settimana</div>
-      <div class="recap-stats">
-        <div class="rstat"><div class="rstat-val" style="color:var(--a2)">1.840</div><div class="rstat-lbl">kcal</div></div>
-        <div class="rstat"><div class="rstat-val" style="color:var(--green)">3</div><div class="rstat-lbl">sessioni</div></div>
-        <div class="rstat"><div class="rstat-val" style="color:var(--a1)">10.4</div><div class="rstat-lbl">km</div></div>
-      </div>
-      <div class="week-bars" id="weekBars"></div>
-
-      <!-- Confronto settimana vs settimana scorsa -->
-      <div class="week-cmp" id="weekCmp" style="display:none">
-        <div class="cmp-row">
-          <div class="cmp-col">
-            <div class="cmp-period">Questa settimana</div>
-            <div class="cmp-val"><span id="cmpCurrSess">0</span> sess · <span id="cmpCurrTon">0</span> kg</div>
-          </div>
-          <div class="cmp-divider"></div>
-          <div class="cmp-col">
-            <div class="cmp-period">Settimana scorsa</div>
-            <div class="cmp-val"><span id="cmpPrevSess">0</span> sess · <span id="cmpPrevTon">0</span> kg</div>
-          </div>
-        </div>
-        <div class="cmp-delta" id="cmpDelta"></div>
-      </div>
-    </div>
     </div>
   </div>
 
 
+</div>
+
+<!-- ── SHEET ASSEGNA GIORNO ── -->
+<div class="assign-overlay" id="assignOverlay" onclick="closeAssignSheet(event)">
+  <div class="assign-sheet" id="assignSheet">
+    <div class="assign-handle"></div>
+    <div class="assign-hdr">
+      <div>
+        <div class="assign-day-name" id="assignDayName">Lunedì</div>
+        <div class="assign-day-sub" id="assignDaySub">Scegli l'allenamento</div>
+      </div>
+      <button class="assign-close" onclick="closeAssignSheet()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="assign-list" id="assignList"></div>
+  </div>
 </div>
 
 <div class="tab-bar">
@@ -953,6 +1054,28 @@ const DN = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 const MN = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 document.getElementById('dateBadge').textContent =
   `${DN[now.getDay()]} ${now.getDate()} ${MN[now.getMonth()]}`.toUpperCase();
+
+// Greeting con nome utente
+(function(){
+  try{
+    const p = _appData.profile || {};
+    const name = p.name || _appData.name || '';
+    const grEl = document.getElementById('greetingText');
+    if(grEl) grEl.textContent = name ? `Ciao ${name} 👋` : 'Ciao 👋';
+  } catch(e){}
+})();
+
+// Range settimana nel piano
+(function(){
+  const mon = new Date(now); mon.setDate(now.getDate() - TODAY); mon.setHours(0,0,0,0);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const MN2 = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const range = mon.getMonth()===sun.getMonth()
+    ? `${mon.getDate()} - ${sun.getDate()} ${MN2[sun.getMonth()]}`
+    : `${mon.getDate()} ${MN2[mon.getMonth()]} - ${sun.getDate()} ${MN2[sun.getMonth()]}`;
+  const el = document.getElementById('planWeekRange');
+  if(el) el.textContent = range;
+})();
 
 // ── Leggi dati da localStorage ──
 let _appData = {sessions:[], streak:0, bestStreak:0, goalSessions:5, workouts:[], assignment:{}};
@@ -1037,7 +1160,8 @@ const PIANO = _DAY_LABELS.map((label, i) => {
       day:  `${label} · ${tLabel}`,
       exs:  wo.exs.map((ex,j) => ({
         name: ex.name, sets: ex.sets, reps: ex.reps,
-        rec: ex.rec||90, icon: tIcon, tc: ['et1','et2','et3'][j%3],
+        rec: ex.rec||90, icon: tIcon, iconKey: ex.iconKey || null,
+        tc: ['et1','et2','et3'][j%3],
         circuitGroup: ex.circuitGroup ?? null,
         weight: ex.weight ?? null,
         km: ex.km ?? null,
@@ -1212,30 +1336,147 @@ function getDayStatus(i){
 })();
 
 // ── Render piano con status reale ──
-const bMap={oggi:'b-oggi OGGI', fatto:'b-fatto FATTO', saltato:'b-saltato SALTATO', arrivo:'b-arr IN ARRIVO', riposo:'b-riposo RIPOSO'};
+const _weekDates = Array.from({length:7}, (_,i)=>{
+  const d2 = new Date(now); d2.setDate(now.getDate() - TODAY + i); return d2.getDate();
+});
+const _shortDays = ['LUN','MAR','MER','GIO','VEN','SAB','DOM'];
+const bMap2 = {oggi:'b-oggi', fatto:'b-fatto', saltato:'b-saltato', arrivo:'b-arr', riposo:'b-riposo'};
+const bLabel2 = {oggi:'Oggi', fatto:'Fatto', saltato:'Saltato', arrivo:'Arrivo', riposo:'Riposo'};
+
+function _woStats(wo, type){
+  if(!wo) return null;
+  const isRun = type==='run'||type==='bike';
+  const min = Math.max(10, Math.round(wo.exs.reduce((a,e)=>a+e.sets*(0.8+(e.rec||90)/60),0)));
+  const kcal = Math.round(min*(isRun?8:5.5));
+  const km = isRun ? wo.exs.reduce((a,e)=>a+(e.km||0),0) : 0;
+  return {min, kcal, km};
+}
+function _doneStats(i){
+  const s = _weekSessions.find(s=>s.dayIndex===i);
+  if(!s) return null;
+  return {min:s.duration?Math.round(s.duration/60):null, kcal:s.kcal||null, km:s.km||null};
+}
+
 document.getElementById('weekPlan').innerHTML=PIANO.map((d,i)=>{
   const st=getDayStatus(i);
-  const [bc,bt]=bMap[st].split(' ');
-  const isOggi = st==='oggi';
-  const sub = d.wo ? `${d.wo.name} · ${d.wo.exs.length} esercizi` : 'Giorno di riposo';
-  const bar = st==='fatto' ? `<div class="mini-prog"><div class="mini-fill" style="width:100%"></div></div><div class="fatto-hint">riepilogo</div>` : '';
-  const grab = d.type!=='rest' ? 'cursor:grab' : 'cursor:default';
+  const bc=bMap2[st], bt=bLabel2[st];
+  const isOggi=st==='oggi';
+  const grab=d.type!=='rest'?'cursor:grab':'cursor:default';
+  const dayWd=_shortDays[i], dayNum=_weekDates[i];
 
-  const infoHtml = isOggi && d.wo
-    ? `<div class="day-name-oggi">${d.wo.name}</div>
-       <div class="oggi-swipe-hint">swipe per iniziare</div>`
-    : `<div class="day-name">${d.label}${isOggi ? ` <span class="oggi-tag">● oggi</span>` : ''}</div>
-       <div class="day-sub">${sub}</div>${bar}`;
+  let chipsHtml='';
+  if(st==='fatto'){
+    const ss=_doneStats(i);
+    if(ss){
+      const parts=[];
+      if(ss.min) parts.push(`⏱ ${ss.min} min`);
+      if(ss.kcal) parts.push(`🔥 ${ss.kcal} kcal`);
+      if(ss.km) parts.push(`📍 ${ss.km.toFixed(1)} km`);
+      if(parts.length) chipsHtml=`<div class="day-chip-row">${parts.map(p=>`<span class="day-chip">${p}</span>`).join('')}</div>`;
+    }
+  } else if(d.wo&&st!=='riposo'){
+    const ws=_woStats(d.wo,d.type);
+    if(ws){
+      const parts=[];
+      if(ws.km) parts.push(`📍 ${ws.km.toFixed(1)} km`);
+      parts.push(`⏱ ~${ws.min} min`);
+      parts.push(`🔥 ~${ws.kcal} kcal`);
+      chipsHtml=`<div class="day-chip-row">${parts.map(p=>`<span class="day-chip">${p}</span>`).join('')}</div>`;
+    }
+  }
+
+  const woName = d.wo ? d.wo.name : 'Riposo';
+  const nameColor = d.type==='rest' ? 'color:var(--textm)' : isOggi ? 'color:var(--a2);font-weight:600' : '';
 
   return `<div class="day-row ${d.type}${isOggi?' today':''} status-${st}" id="row_${i}" data-idx="${i}" style="${grab}">
-    <div class="day-icon" style="${isOggi?'font-size:22px;':''}">${d.icon}</div>
-    <div class="day-info">${infoHtml}</div>
+    <div class="day-num-box">
+      <span class="day-num-wd">${dayWd}</span>
+      <span class="day-num-d">${dayNum}</span>
+    </div>
+    <div class="day-info" style="flex:1;min-width:0">
+      <div class="day-name" style="${nameColor}">${woName}</div>
+      ${chipsHtml}
+      ${st==='fatto'?'<div class="fatto-hint">riepilogo</div>':''}
+    </div>
     <span class="day-badge ${bc}">${bt}</span>
   </div>`;
 }).join('');
 
 // Attacca swipe
 PIANO.forEach((d,i)=>{ if(d.type!=='rest') attachSwipe(i, getDayStatus(i)==='oggi'); });
+
+// ── Tap su giorno → sheet assegna ──
+// Flag globale: viene impostato a true durante un drag e resettato dopo, così il click successivo viene ignorato
+window._planDragHappened = false;
+
+(function(){
+  const ICONS = {gym:'🏋️', run:'🏃', bike:'🚴', other:'💪'};
+  const TYPES = {gym:'Palestra', run:'Corsa', bike:'Bici', other:'Altro'};
+  const DAYS_FULL = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+  let _assignIdx = -1;
+
+  document.querySelectorAll('.day-row').forEach(row => {
+    row.addEventListener('click', function(e) {
+      if(window._planDragHappened){ window._planDragHappened=false; return; }
+      const idx = parseInt(this.dataset.idx);
+      if(isNaN(idx)) return;
+      openAssignSheet(idx);
+    });
+  });
+
+  window.openAssignSheet = function(idx) {
+    _assignIdx = idx;
+    const dayName = DAYS_FULL[idx];
+    document.getElementById('assignDayName').textContent = dayName;
+    const currentWoId = (_appData.assignment||{})[idx] || null;
+    document.getElementById('assignDaySub').textContent = currentWoId ? 'Allenamento assegnato — cambia o togli' : 'Nessun allenamento — scegli uno';
+
+    const list = document.getElementById('assignList');
+    const wos = _appData.workouts || [];
+
+    list.innerHTML = wos.map(wo => {
+      const icon = ICONS[wo.type] || '💪';
+      const type = TYPES[wo.type] || 'Altro';
+      const exCount = (wo.exs||[]).length;
+      const sel = wo.id === currentWoId;
+      return `<div class="assign-wo-row${sel?' selected':''}" onclick="selectAssign('${wo.id}')">
+        <div class="assign-wo-icon">${icon}</div>
+        <div class="assign-wo-info">
+          <div class="assign-wo-name">${wo.name}</div>
+          <div class="assign-wo-meta">${type} · ${exCount} esercizi</div>
+        </div>
+        <div class="assign-check">${sel?'✓':''}</div>
+      </div>`;
+    }).join('') +
+    `<div class="assign-rest-row${!currentWoId?' selected':''}" onclick="selectAssign(null)">
+      <div class="assign-wo-icon" style="background:rgba(255,255,255,.05);border-color:var(--border);">😴</div>
+      <div class="assign-wo-info">
+        <div class="assign-wo-name" style="color:var(--textm)">Riposo</div>
+        <div class="assign-wo-meta">Nessun allenamento questo giorno</div>
+      </div>
+      <div class="assign-check" style="${!currentWoId?'background:var(--a1);border-color:var(--a1)':''}">${!currentWoId?'✓':''}</div>
+    </div>`;
+
+    document.getElementById('assignOverlay').classList.add('open');
+  };
+
+  window.selectAssign = function(woId) {
+    if(_assignIdx < 0) return;
+    if(!_appData.assignment) _appData.assignment = {};
+    if(woId) _appData.assignment[_assignIdx] = woId;
+    else delete _appData.assignment[_assignIdx];
+    try{ localStorage.setItem('fittrack_v4', JSON.stringify(_appData)); } catch(e){}
+    closeAssignSheet();
+    // Ricarica la pagina per aggiornare il piano
+    setTimeout(() => location.reload(), 120);
+  };
+
+  window.closeAssignSheet = function(e) {
+    if(e && e.target !== document.getElementById('assignOverlay')) return;
+    document.getElementById('assignOverlay').classList.remove('open');
+    _assignIdx = -1;
+  };
+})();
 
 // ── Stats e barre settimanali ──
 (function(){
@@ -1368,6 +1609,7 @@ function attachSwipe(idx, full){
   function end(cx){
     if(!drag||isOpen||recapOpen||!activeRow||activeRow!==row) return;
     drag=false;
+    window._planDragHappened = true;
     if(leftMode){
       const w=W(), pw=w*0.88, p=(cx-sx)/pw;
       leftMode=false;

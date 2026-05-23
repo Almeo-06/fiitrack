@@ -22,7 +22,7 @@
 (function(){
   try {
     const d = JSON.parse(localStorage.getItem('fittrack_v4') || '{}');
-    const t = d.theme || 'blue';
+    const t = d.theme || 'purple';
     if (t === 'light') document.documentElement.classList.add('theme-light');
     if (t === 'purple') {
       document.documentElement.style.setProperty('--a1','#7c3aed');
@@ -55,13 +55,9 @@ body::before {
   flex-shrink:0; position:relative; z-index:10;
   padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 12px;
   border-bottom:1px solid var(--border);
-  background:rgba(6,13,26,.97);
+  background:var(--bg2);
   backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
   display:flex; align-items:center; gap:12px;
-}
-html.theme-light .ed-header {
-  background:rgba(255,255,255,.96);
-  border-bottom-color:rgba(0,102,221,.15);
 }
 .ed-back {
   width:34px; height:34px; border-radius:10px;
@@ -406,7 +402,9 @@ html.theme-light body::before { display:none; }
 
 <!-- HEADER -->
 <div class="ed-header">
-  <button class="ed-back" onclick="goBack()">‹</button>
+  <button class="ed-back" onclick="goBack()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
   <div class="ed-title" id="edTitle">Nuovo allenamento</div>
   <button class="ed-save" onclick="saveWorkout()">Salva</button>
 </div>
@@ -686,7 +684,7 @@ function setMetric(i, mode, e) {
 }
 
 function addExManual() {
-  editExs.push({ id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, weight:null, km:null, metric:'weight', timed:false, circuitGroup:null });
+  editExs.push({ id:'ex_'+Date.now(), name:'', sets:3, reps:10, rec:90, weight:null, km:null, metric:'weight', timed:false, circuitGroup:null, iconKey:'altro' });
   openExIdx = editExs.length - 1;
   markDirty();
   renderExRows();
