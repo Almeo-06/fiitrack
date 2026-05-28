@@ -1480,12 +1480,26 @@ function _showListView(){
   void listEl.offsetWidth;
   listEl.classList.add('entering');
 
+  const createRowHtml = `
+    <div class="wk-list-row" onclick="location.href='editor-workout.html'" style="border-left:3px solid var(--a1);border-radius:10px;margin-bottom:6px;">
+      <div class="wk-list-info">
+        <span class="wk-list-icon" style="color:var(--a1);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </span>
+        <div>
+          <div class="wk-list-name" style="color:var(--a1);">Crea / modifica allenamenti</div>
+          <div class="wk-list-sub">Gestisci le tue schede</div>
+        </div>
+      </div>
+      <span style="color:var(--a1);font-size:18px;opacity:.7;">›</span>
+    </div>
+    <div class="wk-altro-sep"></div>`;
+
   if(!workouts.length){
-    listEl.innerHTML = `
+    listEl.innerHTML = createRowHtml + `
       <div class="wk-empty">
         <div class="wk-empty-icon">🏋️</div>
-        <div class="wk-empty-txt">Non hai ancora creato allenamenti.<br>Vai in Impostazioni per aggiungerne.</div>
-        <div class="wk-empty-cta" onclick="location.href='impostazioni.html'">Vai alle impostazioni →</div>
+        <div class="wk-empty-txt">Non hai ancora creato allenamenti.<br>Usa il pulsante qui sopra per aggiungerne.</div>
       </div>
       <div class="wk-altro-sep"></div>
       ${_altroRowHtml()}`;
@@ -1510,7 +1524,7 @@ function _showListView(){
     </div>`;
   }).join('');
 
-  listEl.innerHTML = rowsHtml + `<div class="wk-altro-sep"></div>` + _altroRowHtml();
+  listEl.innerHTML = createRowHtml + rowsHtml + `<div class="wk-altro-sep"></div>` + _altroRowHtml();
 }
 
 function _altroRowHtml(){
@@ -1533,6 +1547,7 @@ function avviaWorkout(wkId){
   const exs = (wk.exs || wk.exercises || []).map(ex=>({
     name: ex.name, sets: ex.sets, reps: ex.reps,
     rec:  ex.rec||90, icon: _tIcon(wk.type),
+    iconKey: ex.iconKey || null,
     circuitGroup: ex.circuitGroup ?? null,
     weight: ex.weight ?? null, timed: ex.timed||false
   }));
@@ -1886,7 +1901,7 @@ function navigateTo(url, toIndex){
    GRAFICO PROGRESSI PR
 ══════════════════════════════════════════════ */
 (function initPRChart(){
-  const data = _appData;
+  const data = loadData();
   const sessions = (data.sessions || []).filter(s => s.exsCompleted && s.exsCompleted.length);
 
   /* Raccoglie storico peso massimo per esercizio da tutte le sessioni guidate */
